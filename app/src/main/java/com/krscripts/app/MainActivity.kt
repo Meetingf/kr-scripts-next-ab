@@ -30,6 +30,7 @@ import com.krscripts.core.ui.ParamsFileChooserRender
 import com.krscripts.app.databinding.ActivityMainBinding
 import com.krscripts.core.model.ClickableNode
 import com.krscripts.core.model.KrScriptActionHandler
+import com.krscripts.core.model.NavNode
 import com.krscripts.core.model.NodeInfoBase
 import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.RunnableNode
@@ -71,21 +72,30 @@ class MainActivity : AppCompatActivity() {
                 var firstTabFragment: Fragment? = null
 
                 pageConfigs.forEachIndexed { index, page ->
-                    val pageItems = getItems(page!!)
-                    val tabFragment = createTab(pageItems!!, page)
 
-                    if (index == 0) {
-                        firstTabFragment = tabFragment
-                    }
+                    page ?: return@forEachIndexed
 
-                    menu.add(page.pageConfigPath.substringAfterLast('/')).apply {
-                        icon = ContextCompat.getDrawable(
-                            this@MainActivity,
-                            R.drawable.baseline_bookmark_24
-                        )!!
-                        setOnMenuItemClickListener {
-                            updateTab(tabFragment)
-                            return@setOnMenuItemClickListener false
+                    getItems(page)?.let { pageItems ->
+
+                        val tabFragment = createTab(pageItems, page)
+
+                        if (index == 0) {
+                            firstTabFragment = tabFragment
+                        }
+
+                        val menuName =
+                            pageItems.last().title.takeIf { it.isNotEmpty() && pageItems.last() is NavNode }
+                                ?: page.pageConfigPath.substringAfterLast('/')
+
+                        menu.add(menuName).apply {
+                            icon = ContextCompat.getDrawable(
+                                this@MainActivity,
+                                R.drawable.baseline_bookmark_24
+                            )!!
+                            setOnMenuItemClickListener {
+                                updateTab(tabFragment)
+                                return@setOnMenuItemClickListener false
+                            }
                         }
                     }
                 }

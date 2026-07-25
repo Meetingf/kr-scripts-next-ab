@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<items>
+<nav title="主页">
     <group title="运行环境测试">
         <page config="samples/env/env.xml" title="环境测试">
             <resource dir="file:///android_asset/samples/env" />
@@ -28,4 +28,4 @@
         <page config="samples/web.xml" title="网页引擎测试" />
     </group>
 
-</items>
+</nav>

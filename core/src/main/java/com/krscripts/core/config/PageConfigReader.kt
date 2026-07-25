@@ -16,6 +16,7 @@ import com.krscripts.core.model.ActionNode
 import com.krscripts.core.model.ActionParamInfo
 import com.krscripts.core.model.ClickableNode
 import com.krscripts.core.model.GroupNode
+import com.krscripts.core.model.NavNode
 import com.krscripts.core.model.NodeInfoBase
 import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.PageNode
@@ -82,31 +83,37 @@ class PageConfigReader {
 
             val mainList = ArrayList<NodeInfoBase>()
             var currentGroup: GroupNode? = null
+            var currentNav: NavNode? = null
             var current: MainNode? = null
-            var isRootNode = true
 
             fun addFinishedNode(node: NodeInfoBase) {
-                val group = currentGroup
-                if (group != null) group.children.add(node) else mainList.add(node)
+                when {
+                    currentGroup != null -> currentGroup!!.children.add(node)
+                    currentNav != null -> currentNav!!.children.add(node)
+                    else -> mainList.add(node)
+                }
             }
-
             while (type != XmlPullParser.END_DOCUMENT) {
                 when (type) {
                     XmlPullParser.START_TAG -> {
                         val name = parser.name
                         when {
+                            name == "nav" -> {
+                               currentNav = navNode(parser)
+                            }
                             name == "group" -> {
-                                currentGroup?.let { if (it.supported) mainList.add(it) }
+                                currentGroup?.let { if (it.supported) addFinishedNode(it) }
                                 currentGroup = groupNode(parser)
                             }
                             currentGroup?.supported == false -> {
                                 // 当前 group 不支持，跳过其内所有项
                             }
                             name == "page" -> {
-                                if (!isRootNode) {
-                                    current = (clickableNode(PageNode(pageConfigAbsPath), parser) as PageNode?)
-                                        ?.let { MainNode.Page(pageNode(it, parser)) }
-                                }
+                                current = (clickableNode(
+                                    PageNode(pageConfigAbsPath),
+                                    parser
+                                ) as PageNode?)
+                                    ?.let { MainNode.Page(pageNode(it, parser)) }
                             }
                             name == "action" -> {
                                 current = (runnableNode(ActionNode(pageConfigAbsPath), parser) as ActionNode?)
@@ -135,10 +142,13 @@ class PageConfigReader {
                                 null -> if (name == "resource") resourceNode(parser)
                             }
                         }
-                        isRootNode = false
                     }
                     XmlPullParser.END_TAG -> {
                         when (parser.name) {
+                            "nav" -> {
+                                currentNav?.let { mainList.add(it) }
+                                currentNav = null
+                            }
                             "group" -> {
                                 currentGroup?.let { if (it.supported) mainList.add(it) }
                                 currentGroup = null
@@ -454,6 +464,13 @@ class PageConfigReader {
         }
         textRow.text = parser.nextText().trim()
         textNode.rows.add(textRow)
+    }
+
+    private fun navNode(parser: XmlPullParser): NavNode {
+        val groupInfo = NavNode(pageConfigAbsPath)
+        parser.attrAny("key", "index", "id")?.let { groupInfo.key = it.trim() }
+        parser.attr("title")?.let { groupInfo.title = it }
+        return groupInfo
     }
 
     private fun groupNode(parser: XmlPullParser): GroupNode {

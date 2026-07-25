@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<nav title="更多">
     <group title="文档">
         <page html="https://buylan01.github.io/kr-scripts-next" title="Kr Scripts Next 开发文档" />
     </group>
@@ -53,4 +53,4 @@
             </set>
         </action>
     </group>
-</page>
+</nav>
