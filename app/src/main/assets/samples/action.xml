@@ -4,24 +4,24 @@
         <action>
             <title>单选下拉</title>
             <param name="test">
-                <option value="A">测试一下 A</option>
-                <option value="B">测试一下 B</option>
+                <option value="1">选项 1</option>
+                <option value="2">选项 2</option>
             </param>
             <set>echo '数值为：' $test</set>
         </action>
         <action>
             <title>单选下拉</title>
             <desc>选项较多时，选择界面会自动调整为全屏弹窗风格</desc>
-            <param name="test" value="X">
-                <option value="Z">测试一下 Z</option>
-                <option value="X">测试一下 X</option>
-                <option value="Y">测试一下 Y</option>
-                <option value="F">测试一下 F</option>
-                <option value="E">测试一下 E</option>
-                <option value="D">测试一下 D</option>
-                <option value="C">测试一下 C</option>
-                <option value="B">测试一下 B</option>
-                <option value="A">测试一下 A</option>
+            <param name="test" value="1">
+                <option value="1">选项 1</option>
+                <option value="2">选项 2</option>
+                <option value="3">选项 3</option>
+                <option value="4">选项 4</option>
+                <option value="5">选项 5</option>
+                <option value="6">选项 6</option>
+                <option value="7">选项 7</option>
+                <option value="8">选项 8</option>
+                <option value="9">选项 9</option>
             </param>
             <set>echo '数值为：' $test</set>
         </action>
@@ -29,15 +29,15 @@
         <action warn="右侧数字显示的时选中项个数">
             <title>多选下拉</title>
             <param name="test" label="多选下拉" multiple="multiple">
-                <option value="Z">测试一下 Z</option>
-                <option value="X">测试一下 X</option>
-                <option value="Y">测试一下 Y</option>
-                <option value="F">测试一下 F</option>
-                <option value="E">测试一下 E</option>
-                <option value="D">测试一下 D</option>
-                <option value="C">测试一下 C</option>
-                <option value="B">测试一下 B</option>
-                <option value="A">测试一下 A</option>
+                <option value="1">选项 1</option>
+                <option value="2">选项 2</option>
+                <option value="3">选项 3</option>
+                <option value="4">选项 4</option>
+                <option value="5">选项 5</option>
+                <option value="6">选项 6</option>
+                <option value="7">选项 7</option>
+                <option value="8">选项 8</option>
+                <option value="9">选项 9</option>
             </param>
             <set>echo '数值为：' $test</set>
         </action>
@@ -45,36 +45,39 @@
         <action>
             <title>自定义多选下拉分隔符</title>
             <param name="test" title="多选下拉" multiple="multiple" separator="@">
-                <option value="Z">测试一下 Z</option>
-                <option value="X">测试一下 X</option>
-                <option value="Y">测试一下 Y</option>
+                <option value="1">选项 1</option>
+                <option value="2">选项 2</option>
+                <option value="3">选项 3</option>
             </param>
             <set>echo '数值为：' $test</set>
         </action>
 
         <action>
-            <title>数字输入（文本）</title>
-            <param name="test" desc="只能输入数字，数值在10~100以内，不能为空" label="数字" max="100" min="10"
-                required="required" type="int" />
-            <set>echo '数值为：' $test</set>
+            <title>文本输入</title>
+            <param name="input_text" title="文本框" label="文本" value="文本喵" required="1" />
+            <param name="input_int" label="数字" max="10" min="0" type="int" value="6" required="1" />
+            <set>
+                echo '文本为：' $input_text
+                echo '数值文本为：' $input_int
+            </set>
         </action>
 
         <action>
-            <title>数字输入（滑块）</title>
-            <param name="test" max="10" min="1" title="数字（滑块）" type="seekbar" value="6" />
-            <set>echo '数值为：' $test</set>
+            <title>滑块输入</title>
+            <param name="input_seekbar" max="10" min="1" title="数字" type="seekbar" value="6" />
+            <set>
+                echo '滑块数值为：' $input_int_seekbar
+            </set>
         </action>
 
         <action>
-            <title>勾选框</title>
-            <param name="test" label="选框" type="bool" />
-            <set>echo '数值为：' $test</set>
-        </action>
-
-        <action>
-            <title>勾选框（开关）</title>
-            <param name="test" label="选框" type="switch" />
-            <set>echo '数值为：' $test</set>
+            <title>布尔输入</title>
+            <param name="input_bool" label="选框" type="bool" />
+            <param name="input_switch" label="开关" type="switch" />
+            <set>
+                echo '选框数值为：' $input_bool
+                echo '开关数值为：' $input_switch
+            </set>
         </action>
     </group>
 
@@ -82,7 +85,7 @@
         <action>
             <title>文件选择 (不限类型)</title>
             <param name="test" label="文件选择" type="file"
-                value="/sdcard/Download/MIUI_update_20190920_ota_sagit.zip" />
+                value="/sdcard/test.txt" />
             <set>echo '路径为：' $test</set>
         </action>
 
@@ -90,7 +93,7 @@
             <title>文件选择（.Zip）</title>
             <param name="test" label="文件选择" type="file"
                 suffix="zip"
-                value="/sdcard/Download/MIUI_update_20190920_ota_sagit.zip" />
+                value="/sdcard/test.zip" />
             <set>echo '路径为：' $test</set>
         </action>
 
@@ -98,20 +101,20 @@
             <title>文件选择(application/zip)</title>
             <param name="test" label="文件选择" type="file"
                 mime="application/zip"
-                value="/sdcard/Download/MIUI_update_20190920_ota_sagit.zip" />
+                value="/sdcard/test.apk" />
             <set>echo '路径为：' $test</set>
         </action>
 
         <action>
             <title>目录选择器</title>
-            <param name="test" type="folder" value="/sdcard/Download" />
+            <param name="test" type="folder" value="/sdcard" />
             <set>echo '路径为：' $test</set>
         </action>
 
         <action>
             <title>允许用户编辑路径</title>
             <desc>file、folder参数都不允许用户手动输入，除非你添加editable="true"</desc>
-            <param name="test" type="folder" value="/sdcard/Download" editable="true" />
+            <param name="test" type="folder" value="/sdcard" editable="true" />
             <set>echo '路径为：' $test</set>
         </action>
     </group>
@@ -153,9 +156,9 @@
             <desc>包名选择器(type=packages)和应用选择器(type=app)的区别在于，它会显示包含在定义的option里，但用户并未安装的应用作为选项</desc>
             <param name="package_name" type="packages" />
             <options>
-                <option value="com.google.android.packageinstaller">软件包安装服务</option>
-                <option value="com.miui.greenguard">安全守护服务</option>
-                <option value="com.krscripts.xxxx">假设个不存在的应用</option>
+                <option value="android">Android 系统</option>
+                <option value="com.android.systemui">系统界面</option>
+                <option value="com.krscripts.next.plus.pro">Kr Scripts Next Plus Pro</option>
             </options>
             <set>echo '包名为：' $package_name</set>
         </action>
