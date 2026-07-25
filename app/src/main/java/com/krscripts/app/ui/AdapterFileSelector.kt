@@ -1,238 +1,246 @@
-package com.krscripts.app.ui;
+package com.krscripts.app.ui
 
-import static android.view.View.GONE;
+import android.os.Handler
+import android.os.Looper
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.BaseAdapter
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import com.google.android.material.snackbar.Snackbar
+import com.krscripts.app.R
+import com.krscripts.common.ui.DialogHelper
+import com.krscripts.common.ui.ProgressBarDialog
+import java.io.File
+import java.text.Collator
+import java.util.Locale
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
-import android.os.Handler;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ImageView;
-import android.widget.TextView;
-import android.widget.Toast;
+class AdapterFileSelector private constructor(
+    rootDir: File,
+    private val fileSelected: Runnable,
+    private val progressBarDialog: ProgressBarDialog,
+    extension: String?,
+    private var folderChooserMode: Boolean = false
+) : BaseAdapter() {
 
-import com.google.android.material.snackbar.Snackbar;
-import com.krscripts.common.ui.DialogHelper;
-import com.krscripts.common.ui.ProgressBarDialog;
-import com.krscripts.app.R;
+    private var items: List<Item> = emptyList()
+    private var currentDir: File = rootDir
+    private var hasParent: Boolean = false
 
-import java.io.File;
-import java.io.FileFilter;
+    private var rootDirPath: String = rootDir.absolutePath
+    private val extension: String? = extension?.let { if (it.startsWith(".")) it else ".$it" }
+    private val leaveRootDir: Boolean = true
 
-public class AdapterFileSelector extends BaseAdapter {
-    private File[] fileArray;
-    private Runnable fileSelected;
-    private File currentDir;
-    private File selectedFile;
-    private Handler handler = new Handler();
-    private ProgressBarDialog progressBarDialog;
-    private String extension;
-    private boolean hasParent = false; // 是否还有父级
-    private String rootDir = "/"; // 根目录
-    private boolean leaveRootDir = true; // 是否允许离开设定的rootDir到更父级的目录去
-    private boolean folderChooserMode = false; // 是否是目录选择模式（目录选择模式下不显示文件，长按目录选中）
+    private val loadExecutor = Executors.newSingleThreadExecutor()
+    private var currentLoadTask: Future<*>? = null
 
-    private AdapterFileSelector(File rootDir, Runnable fileSelected, ProgressBarDialog progressBarDialog, String extension) {
-        init(rootDir, fileSelected, progressBarDialog, extension);
+    var selectedFile: File? = null
+        private set
+
+    private val mainHandler = Handler(Looper.getMainLooper())
+
+    private class ViewHolder(view: View) {
+        val icon: ImageView = view.findViewById(R.id.ItemIcon)
+        val title: TextView = view.findViewById(R.id.ItemTitle)
+        val text: TextView = view.findViewById(R.id.ItemText)
     }
 
-    public static AdapterFileSelector FolderChooser(File rootDir, Runnable fileSelected, ProgressBarDialog progressBarDialog) {
-        AdapterFileSelector adapterFileSelector = new AdapterFileSelector(rootDir, fileSelected, progressBarDialog, null);
-        adapterFileSelector.folderChooserMode = true;
-        return adapterFileSelector;
+    private sealed class Item {
+        data class ParentDir(val parent: File) : Item()
+        data class FileItem(val file: File) : Item()
     }
 
-    public static AdapterFileSelector FileChooser(File rootDir, Runnable fileSelected, ProgressBarDialog progressBarDialog, String extension) {
-        AdapterFileSelector adapterFileSelector = new AdapterFileSelector(rootDir, fileSelected, progressBarDialog, extension);
-        adapterFileSelector.folderChooserMode = false;
-        return adapterFileSelector;
+    init {
+        loadDir(rootDir)
     }
 
-    private void init(File rootDir, Runnable fileSelected, ProgressBarDialog progressBarDialog, String extension) {
-        this.rootDir = rootDir.getAbsolutePath();
-        this.fileSelected = fileSelected;
-        this.progressBarDialog = progressBarDialog;
-        if (extension != null) {
-            if (extension.startsWith(".")) {
-                this.extension = extension;
-            } else {
-                this.extension = "." + extension;
-            }
-        }
-        loadDir(rootDir);
-    }
+    private fun loadDir(dir: File) {
 
-    private void loadDir(final File dir) {
-        progressBarDialog.showDialog("加载中...", 300L);
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                File parent = dir.getParentFile();
-                if (parent != null) {
-                    String parentPath = parent.getAbsolutePath();
-                    hasParent = parent.exists() && parent.canRead() && (leaveRootDir || !(rootDir.startsWith(parentPath) && rootDir.length() > parentPath.length()));
-                } else {
-                    hasParent = false;
-                }
+        currentLoadTask?.cancel(true)
+        progressBarDialog.showDialog("加载中...", 300L)
 
-                if (dir.exists() && dir.canRead()) {
-                    File[] files = dir.listFiles(new FileFilter() {
-                        @Override
-                        public boolean accept(File fileItem) {
-                            if (folderChooserMode) {
-                                return fileItem.isDirectory();
-                            } else {
-                                return fileItem.exists() && (!fileItem.isFile() || extension == null || extension.isEmpty() || fileItem.getName().endsWith(extension));
-                            }
-                        }
-                    });
+        currentLoadTask = loadExecutor.submit {
+            val parent = dir.parentFile
+            val parentPath = parent?.absolutePath.orEmpty()
+            val newHasParent = parent != null &&
+                    parent.exists() &&
+                    parent.canRead() &&
+                    (leaveRootDir || !(rootDirPath.startsWith(parentPath) && rootDirPath.length > parentPath.length))
 
-                    // 文件排序
-                    for (int i = 0; i < files.length; i++) {
-                        for (int j = i + 1; j < files.length; j++) {
-                            if ((files[j].isDirectory() && files[i].isFile())) {
-                                File t = files[i];
-                                files[i] = files[j];
-                                files[j] = t;
-                            } else if (files[j].isDirectory() == files[i].isDirectory() && (files[j].getName().toLowerCase().compareTo(files[i].getName().toLowerCase()) < 0)) {
-                                File t = files[i];
-                                files[i] = files[j];
-                                files[j] = t;
-                            }
-                        }
-                    }
-                    fileArray = files;
-                }
-                currentDir = dir;
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        notifyDataSetChanged();
-                        progressBarDialog.hideDialog();
-                    }
-                });
-            }
-        }).start();
-    }
-
-    public boolean goParent() {
-        if (hasParent) {
-            loadDir(new File(currentDir.getParent()));
-            return true;
-        }
-        return false;
-    }
-
-    @Override
-    public int getCount() {
-        if (hasParent) {
-            if (fileArray == null) {
-                return 1;
-            }
-            return fileArray.length + 1;
-        } else {
-            if (fileArray == null) {
-                return 0;
-            }
-            return fileArray.length;
-        }
-    }
-
-    public void refresh() {
-        if (this.currentDir != null) {
-            this.loadDir(currentDir);
-        }
-    }
-
-    @Override
-    public Object getItem(int position) {
-        if (hasParent) {
-            if (position == 0) {
-                return new File(currentDir.getParent());
-            } else {
-                return fileArray[position - 1];
-            }
-        } else {
-            return fileArray[position];
-        }
-    }
-
-    @Override
-    public long getItemId(int position) {
-        return 0;
-    }
-
-    @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
-        final View view;
-        view = View.inflate(parent.getContext(), R.layout.file_list_item, null);
-        ImageView imageView = view.findViewById(R.id.ItemIcon);
-        if (hasParent && position == 0) {
-            imageView.setImageResource(R.drawable.baseline_folder_24);
-            ((TextView) (view.findViewById(R.id.ItemTitle))).setText("..");
-            view.setOnClickListener(v -> goParent());
-        } else {
-            final File file = (File) getItem(position);
-            if (file.isDirectory()) {
-                imageView.setImageResource(R.drawable.baseline_folder_24);
-                view.findViewById(R.id.ItemText).setVisibility(GONE);
-                view.setOnClickListener(v -> {
-                    if (!file.exists()) {
-                        Toast.makeText(view.getContext(), "所选的文件已被删除，请重新选择！", Toast.LENGTH_SHORT).show();
-                        return;
-                    }
-                    File[] files = file.listFiles();
-                    if (files != null && files.length > 0) {
-                        loadDir(file);
+            val fileList = if (dir.exists() && dir.canRead()) {
+                dir.listFiles { file ->
+                    if (folderChooserMode) {
+                        file.isDirectory
                     } else {
-                        Snackbar.make(view, "该目录下没有文件！", Snackbar.LENGTH_SHORT).show();
+                        file.exists() && (file.isDirectory ||
+                                extension.isNullOrEmpty() ||
+                                file.name.endsWith(extension))
                     }
-                });
-                if (folderChooserMode) {
-                    view.setOnLongClickListener(v -> {
-                        DialogHelper.Companion.confirm(view.getContext(), "选定目录？", file.getAbsolutePath(), (Runnable) () -> {
-                            if (!file.exists()) {
-                                Toast.makeText(view.getContext(), "所选的目录已被删除，请重新选择！", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
-                            selectedFile = file;
-                            fileSelected.run();
-                        });
-                        return true;
-                    });
-                }
+                }?.toList() ?: emptyList()
             } else {
-                imageView.setImageResource(R.drawable.baseline_insert_drive_file_24);
-                long fileLength = file.length();
-                String fileSize;
-                if (fileLength < 1024) {
-                    fileSize = fileLength + "B";
-                } else if (fileLength < 1024 * 1024) {
-                    fileSize = String.format("%.2fKB",file.length() / 1024.0);
-                } else if (fileLength < 1024 * 1024 * 1024) {
-                    fileSize = String.format("%.2fMB", file.length() / 1024.0 * 1024.0);
-                } else {
-                    fileSize = String.format("%.2fGB", file.length() / 1024.0 * 1024.0 * 1024.0);
-                }
-
-                ((TextView) (view.findViewById(R.id.ItemText))).setText(fileSize);
-
-                view.setOnClickListener(v ->
-                        DialogHelper.Companion.confirm(view.getContext(), "选定文件？", file.getAbsolutePath(), () -> {
-                            if (!file.exists()) {
-                                Toast.makeText(view.getContext(), "所选的文件已被删除，请重新选择！", Toast.LENGTH_SHORT).show();
-                                return;
-                            }
-                            selectedFile = file;
-                            fileSelected.run();
-                        })
-                );
+                emptyList()
             }
-            ((TextView) (view.findViewById(R.id.ItemTitle))).setText(file.getName());
+
+            Collator.getInstance(Locale.getDefault()).apply {
+                strength = Collator.PRIMARY
+            }
+            val sorted = fileList.sortedWith(
+                compareByDescending<File> { it.isDirectory }
+                    .thenBy { it.name.lowercase(Locale.ROOT) }
+            )
+
+            val newItems = mutableListOf<Item>()
+            if (newHasParent) {
+                newItems.add(Item.ParentDir(parent))
+            }
+            newItems.addAll(sorted.map { Item.FileItem(it) })
+
+            mainHandler.post {
+
+                if (Thread.currentThread().isInterrupted) return@post
+                hasParent = newHasParent
+                currentDir = dir
+                items = newItems
+                notifyDataSetChanged()
+                progressBarDialog.hideDialog()
+            }
         }
-        return view;
     }
 
-    public File getSelectedFile() {
-        return this.selectedFile;
+    fun goParent(): Boolean {
+        if (hasParent) {
+            loadDir(currentDir.parentFile!!)
+            return true
+        }
+        return false
+    }
+
+    override fun getCount(): Int = items.size
+
+    override fun getItem(position: Int): Any = items[position]
+
+    override fun getItemId(position: Int): Long = 0L
+
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view: View
+        val holder: ViewHolder
+        if (convertView == null) {
+            view = LayoutInflater.from(parent.context).inflate(R.layout.file_list_item, parent, false)
+            holder = ViewHolder(view)
+            view.tag = holder
+        } else {
+            view = convertView
+            holder = convertView.tag as ViewHolder
+        }
+
+        when (
+            val item = items[position]
+        ) {
+            is Item.ParentDir -> {
+                holder.icon.setImageResource(R.drawable.baseline_folder_24)
+                holder.title.text = ".."
+                holder.text.visibility = View.GONE
+                view.setOnClickListener { goParent() }
+                view.setOnLongClickListener(null)
+            }
+            is Item.FileItem -> {
+                val file = item.file
+                if (file.isDirectory) {
+                    holder.icon.setImageResource(R.drawable.baseline_folder_24)
+                    holder.text.visibility = View.GONE
+                    view.setOnClickListener { onDirectoryClick(view, file) }
+                    view.setOnLongClickListener(
+                        if (folderChooserMode) {
+                            { onFileLongClick(view, file, "选定目录？") }
+                        } else null
+                    )
+                } else {
+                    holder.icon.setImageResource(R.drawable.baseline_insert_drive_file_24)
+                    holder.text.text = formatFileSize(file.length())
+                    holder.text.visibility = View.VISIBLE
+                    view.setOnClickListener { onFileClick(view, file) }
+                    view.setOnLongClickListener(null)
+                }
+                holder.title.text = file.name
+            }
+        }
+        return view
+    }
+
+    private fun onDirectoryClick(view: View, dir: File) {
+        if (!dir.exists()) {
+            Toast.makeText(view.context, "所选的文件已被删除，请重新选择！", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val files = dir.listFiles()
+        if (files.isNullOrEmpty()) {
+            Snackbar.make(view, "该目录下没有文件！", Snackbar.LENGTH_SHORT).show()
+        } else {
+            loadDir(dir)
+        }
+    }
+
+    private fun onFileClick(view: View, file: File) {
+        confirmSelection(view, file, "选定文件？")
+    }
+
+    private fun onFileLongClick(view: View, file: File, title: String): Boolean {
+        confirmSelection(view, file, title)
+        return true
+    }
+
+    private fun confirmSelection(view: View, file: File, title: String) {
+        DialogHelper.confirm(view.context, title, file.absolutePath, Runnable {
+            if (!file.exists()) {
+                Toast.makeText(view.context, "所选的文件已被删除，请重新选择！", Toast.LENGTH_SHORT).show()
+                return@Runnable
+            }
+            selectedFile = file
+            fileSelected.run()
+        })
+    }
+
+    private fun formatFileSize(bytes: Long): String {
+        return when {
+            bytes < 1024L -> "${bytes}B"
+            bytes < 1024L * 1024L -> String.format(Locale.getDefault(), "%.2fKB", bytes / 1024.0)
+            bytes < 1024L * 1024L * 1024L -> String.format(Locale.getDefault(), "%.2fMB", bytes / (1024.0 * 1024.0))
+            else -> String.format(Locale.getDefault(), "%.2fGB", bytes / (1024.0 * 1024.0 * 1024.0))
+        }
+    }
+
+    companion object {
+        fun folderChooser(
+            rootDir: File,
+            fileSelected: Runnable,
+            progressBarDialog: ProgressBarDialog
+        ): AdapterFileSelector {
+            return AdapterFileSelector(
+                rootDir = rootDir,
+                fileSelected = fileSelected,
+                progressBarDialog = progressBarDialog,
+                extension = null,
+                folderChooserMode = true
+            )
+        }
+
+        fun fileChooser(
+            rootDir: File,
+            fileSelected: Runnable,
+            progressBarDialog: ProgressBarDialog,
+            extension: String?
+        ): AdapterFileSelector {
+            return AdapterFileSelector(
+                rootDir = rootDir,
+                fileSelected = fileSelected,
+                progressBarDialog = progressBarDialog,
+                extension = extension,
+                folderChooserMode = false
+            )
+        }
     }
 }

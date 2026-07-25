@@ -95,9 +95,9 @@ class ActivityFileSelector : AppCompatActivity() {
                     }
                 }
                 adapterFileSelector = if (mode == MODE_FOLDER) {
-                    AdapterFileSelector.FolderChooser(sdcard, onSelected, ProgressBarDialog(this))
+                    AdapterFileSelector.folderChooser(sdcard, onSelected, ProgressBarDialog(this))
                 } else {
-                    AdapterFileSelector.FileChooser(sdcard, onSelected, ProgressBarDialog(this), extension)
+                    AdapterFileSelector.fileChooser(sdcard, onSelected, ProgressBarDialog(this), extension)
                 }
 
                 binding.fileSelectorList.adapter = adapterFileSelector
