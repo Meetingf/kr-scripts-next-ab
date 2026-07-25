@@ -36,7 +36,7 @@ class PageLayoutRender(
         for (item in actionInfos) {
             if (item.index == key) {
                 return item
-            } else if (item is GroupNode && item.children.size > 0) {
+            } else if (item is GroupNode && item.children.isNotEmpty()) {
                 val result = findItemByDynamicIndex(key, item.children)
                 if (result != null) {
                     return result
@@ -111,25 +111,25 @@ class PageLayoutRender(
     }
 
     private fun mapConfigList(parent: ListItemGroup, actionInfos: ArrayList<NodeInfoBase>) {
-        for (index in 0 until actionInfos.size) {
-            val it = actionInfos[index]
+        for (index in actionInfos.indices) {
+            val actionInfo = actionInfos[index]
             try {
                 var uiRender: ListItemView? = null
-                if (it is PageNode) {
-                    uiRender = createPageItem(it)
-                } else if (it is SwitchNode) {
-                    uiRender = createSwitchItem(it)
-                } else if (it is ActionNode) {
-                    uiRender = createActionItem(it)
-                } else if (it is PickerNode) {
-                    uiRender = createListItem(it)
-                } else if (it is TextNode) {
-                    uiRender = if (parent.isRootGroup) createTextItem(it) else createTextItemWhite(it)
-                } else if (it is GroupNode) {
-                    val subGroup = createItemGroup(it)
-                    if (it.children.size > 0) {
-                        parent.addView(subGroup)
-                        mapConfigList(subGroup, it.children)
+
+                when(actionInfo) {
+                    is PageNode -> { uiRender = createPageItem(actionInfo) }
+                    is SwitchNode -> { uiRender = createSwitchItem(actionInfo) }
+                    is ActionNode -> { uiRender = createActionItem(actionInfo) }
+                    is PickerNode -> { uiRender = createListItem(actionInfo) }
+                    is TextNode -> {
+                        uiRender = if (parent.isRootGroup) createTextItem(actionInfo) else createTextItemWhite(actionInfo)
+                    }
+                    is GroupNode -> {
+                        val subGroup = createItemGroup(actionInfo)
+                        if (actionInfo.children.isNotEmpty()) {
+                            parent.addView(subGroup)
+                            mapConfigList(subGroup, actionInfo.children)
+                        }
                     }
                 }
 
@@ -144,7 +144,7 @@ class PageLayoutRender(
                     parent.addView(uiRender)
                 }
             } catch (ex: Exception) {
-                Toast.makeText(mContext, it.title + "界面渲染异常" + ex.message, Toast.LENGTH_SHORT).show()
+                Toast.makeText(mContext, actionInfo.title + "界面渲染异常" + ex.message, Toast.LENGTH_SHORT).show()
             }
         }
     }
