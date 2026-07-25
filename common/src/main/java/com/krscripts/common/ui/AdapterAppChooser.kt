@@ -3,6 +3,7 @@ package com.krscripts.common.ui
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.LruCache
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -155,55 +156,38 @@ class AdapterAppChooser(
         }
     }
 
-    override fun getView(position: Int, view: View?, parent: ViewGroup): View {
-        var convertView = view
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
+        val view: View
+        val holder: ViewHolder
+
         if (convertView == null) {
-            convertView = View.inflate(context, if (multiple) {
-                R.layout.app_multiple_chooser_item
-            } else {
-                R.layout.app_single_chooser_item
-            }, null)
+            view = LayoutInflater.from(context).inflate(R.layout.layout_chooser_item, parent, false)
+            holder = ViewHolder(view)
+            view.tag = holder
+        } else {
+            view = convertView
+            holder = view.tag as ViewHolder
         }
-        updateRow(position, convertView!!)
-        return convertView
+
+        holder.checkBox?.visibility = if (multiple) View.VISIBLE else View.GONE
+        holder.radioButton?.visibility = if (multiple) View.GONE else View.VISIBLE
+        holder.imgView?.visibility = View.VISIBLE
+
+        updateRow(position, view, holder)
+        return view
     }
 
-//    fun updateRow(position: Int, listView: OverScrollGridView, AppInfo: AppInfo) {
-//        try {
-//            val visibleFirstPosi = listView.firstVisiblePosition
-//            val visibleLastPosi = listView.lastVisiblePosition
-//
-//            if (position >= visibleFirstPosi && position <= visibleLastPosi) {
-//                filterApps[position] = AppInfo
-//                val view = listView.getChildAt(position - visibleFirstPosi)
-//                updateRow(position, view)
-//            }
-//        } catch (ex: Exception) {
-//        }
-//    }
-
-    fun updateRow(position: Int, convertView: View) {
+    fun updateRow(position: Int, convertView: View, holder: ViewHolder) {
         val item = getItem(position)
 
-        val viewHolder = if (convertView.tag != null) {
-            convertView.tag as ViewHolder
-        } else {
-            ViewHolder().apply {
-                itemTitle = convertView.findViewById(R.id.ItemTitle)
-                itemDesc = convertView.findViewById(R.id.ItemDesc)
-                imgView = convertView.findViewById(R.id.ItemIcon)
-                checkBox = convertView.findViewById(R.id.ItemChecBox)
-            }
-        }
-
         val packageName = item.packageName
-        viewHolder.packageName = packageName
+        holder.packageName = packageName
 
         convertView.setOnClickListener {
             if (multiple || item.selected) {
                 if (multiple) {
                     item.selected = !item.selected
-                    viewHolder.checkBox?.isChecked = item.selected
+                    holder.checkBox?.isChecked = item.selected
                 }
             } else {
                 val current = apps.find { it.selected }
@@ -214,10 +198,11 @@ class AdapterAppChooser(
             selectStateListener?.onSelectChange(getSelectedItems())
         }
 
-        viewHolder.run {
+        holder.run {
             itemTitle?.text = item.appName
             itemDesc?.text = item.packageName
             checkBox?.isChecked = item.selected
+            radioButton?.isChecked = item.selected
 
             val imgView = imgView!!
             imgView.tag = packageName
@@ -245,12 +230,12 @@ class AdapterAppChooser(
         return apps.filter { it.selected }
     }
 
-    inner class ViewHolder {
+    class ViewHolder(view: View) {
         internal var packageName: String? = null
-
-        internal var itemTitle: TextView? = null
-        internal var itemDesc: TextView? = null
-        internal var imgView: ImageView? = null
-        internal var checkBox: CompoundButton? = null
+        internal var itemTitle: TextView? = view.findViewById(R.id.ItemTitle)
+        internal var itemDesc: TextView? = view.findViewById(R.id.ItemDesc)
+        internal var imgView: ImageView? = view.findViewById(R.id.ItemIcon)
+        internal var checkBox: CheckBox? = view.findViewById(R.id.ItemCheckBox)
+        internal var radioButton: RadioButton? = view.findViewById(R.id.ItemRadioButton)
     }
 }
