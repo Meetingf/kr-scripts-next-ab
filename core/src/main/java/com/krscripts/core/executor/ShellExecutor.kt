@@ -62,7 +62,7 @@ class ShellExecutor {
                         }
                     }
                 else null
-            SimpleShellWatcher().setHandler(context, process, shellHandlerBase, onExit)
+            SimpleShellWatcher().setHandler(context!!, process, shellHandlerBase, onExit)
 
             val outputStream = process.outputStream
             val dataOutputStream = DataOutputStream(outputStream)
@@ -85,7 +85,7 @@ class ShellExecutor {
                 dataOutputStream.writeBytes("sleep 0.2;\n")
 
                 ScriptEnvironment.executeShell(
-                    context!!,
+                    context,
                     dataOutputStream,
                     cmd,
                     params,
