@@ -222,7 +222,7 @@ class WebViewInjector(
                 }
             }
 
-            val reader = readStream(process.inputStream, ShellHandlerBase.EVENT_REDE)
+            val reader = readStream(process.inputStream, ShellHandlerBase.EVENT_READ)
             val readerError = readStream(process.errorStream, ShellHandlerBase.EVENT_READ_ERROR)
 
             val waitExit = Thread {

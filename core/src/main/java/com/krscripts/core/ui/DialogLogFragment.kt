@@ -177,21 +177,21 @@ class DialogLogFragment : DialogFragment() {
             when (msg.what) {
                 EVENT_EXIT -> onExit(msg.obj)
                 EVENT_START -> onStart(msg.obj)
-                EVENT_REDE -> onReaderMsg(msg.obj)
+                EVENT_READ -> onReaderMsg(msg.obj)
                 EVENT_READ_ERROR -> onError(msg.obj)
                 EVENT_WRITE -> onWrite(msg.obj)
             }
         }
 
-        override fun onReader(msg: Any) {
+        override fun onReader(msg: Any?) {
             updateLog(msg, basicColor)
         }
 
-        override fun onWrite(msg: Any) {
+        override fun onWrite(msg: Any?) {
             updateLog(msg, scriptColor)
         }
 
-        override fun onError(msg: Any) {
+        override fun onError(msg: Any?) {
             hasError = true
             updateLog(msg, errorColor)
         }

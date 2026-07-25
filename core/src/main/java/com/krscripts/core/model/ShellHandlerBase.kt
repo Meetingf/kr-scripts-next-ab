@@ -1,107 +1,68 @@
-package com.krscripts.core.model;
+package com.krscripts.core.model
 
-import android.graphics.Color;
-import android.os.Handler;
-import android.os.Message;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.style.ForegroundColorSpan;
-
-import java.util.regex.Pattern;
+import android.graphics.Color
+import android.os.Handler
+import android.os.Message
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 
 /**
  * Created by Hello on 2018/04/01.
+ * Refactored by buylan on 2026/07/26
  */
 
-public abstract class ShellHandlerBase extends Handler {
-    /**
-     * 处理启动信息
-     */
-    public static final int EVENT_START = 0;
+abstract class ShellHandlerBase : Handler() {
+    protected abstract fun onProgress(current: Int, total: Int)
 
-    /**
-     * 命令行输出内容
-     */
-    public static final int EVENT_REDE = 2;
+    protected abstract fun onStart(msg: Any?)
 
-    /**
-     * 命令行错误输出
-     */
-    public static final int EVENT_READ_ERROR = 4;
+    abstract fun onStart(forceStop: Runnable?)
 
-    /**
-     * 脚本写入日志
-     */
-    public static final int EVENT_WRITE = 6;
-
-    /**
-     * 处理Exitvalue
-     */
-    public static final int EVENT_EXIT = -2;
-
-    protected abstract void onProgress(int current, int total);
-
-    protected abstract void onStart(Object msg);
-
-    public abstract void onStart(Runnable forceStop);
-
-    protected abstract void onExit(Object msg);
+    protected abstract fun onExit(msg: Any?)
 
     /**
      * 输出格式化内容
      *
      * @param msg
      */
-    protected abstract void updateLog(final SpannableString msg);
+    protected abstract fun updateLog(msg: SpannableString?)
 
-    @Override
-    public void handleMessage(Message msg) {
-        super.handleMessage(msg);
-        switch (msg.what) {
-            case ShellHandlerBase.EVENT_EXIT:
-                onExit(msg.obj);
-                break;
-            case ShellHandlerBase.EVENT_START: {
-                onStart(msg.obj);
-                break;
-            }
-            case ShellHandlerBase.EVENT_REDE:
-                onReaderMsg(msg.obj);
-                break;
-            case ShellHandlerBase.EVENT_READ_ERROR:
-                onError(msg.obj);
-                break;
-            case ShellHandlerBase.EVENT_WRITE: {
-                onWrite(msg.obj);
-                break;
-            }
+    override fun handleMessage(msg: Message) {
+        super.handleMessage(msg)
+        when (msg.what) {
+            EVENT_EXIT -> onExit(msg.obj)
+            EVENT_START -> onStart(msg.obj)
+            EVENT_READ -> onReaderMsg(msg.obj)
+            EVENT_READ_ERROR -> onError(msg.obj)
+            EVENT_WRITE -> onWrite(msg.obj)
         }
     }
 
-    protected void onReaderMsg(Object msg) {
+    protected fun onReaderMsg(msg: Any?) {
         if (msg != null) {
-            String log = msg.toString().trim();
-            if (Pattern.matches("^progress:\\[[\\-0-9\\\\]{1,}/[0-9\\\\]{1,}]$", log)) {
-                String[] values = log.substring("progress:[".length(), log.indexOf("]")).split("/");
-                int start = Integer.parseInt(values[0]);
-                int total = Integer.parseInt(values[1]);
-                onProgress(start, total);
+            val log = msg.toString().trim()
+            val match = PROGRESS_PATTERN.matchEntire(log)
+            if (match != null) {
+                val current = match.groupValues[1].toInt()
+                val total = match.groupValues[2].toInt()
+                onProgress(current, total)
             } else {
-                onReader(msg);
+                onReader(msg)
             }
         }
     }
 
-    protected void onReader(Object msg) {
-        updateLog(msg, "#00cc55");
+    protected open fun onReader(msg: Any?) {
+        updateLog(msg, "#00cc55")
     }
 
-    protected void onWrite(Object msg) {
-        updateLog(msg, "#808080");
+    protected open fun onWrite(msg: Any?) {
+        updateLog(msg, "#808080")
     }
 
-    protected void onError(Object msg) {
-        updateLog(msg, "#ff0000");
+    protected open fun onError(msg: Any?) {
+        updateLog(msg, "#ff0000")
     }
 
     /**
@@ -110,21 +71,32 @@ public abstract class ShellHandlerBase extends Handler {
      * @param msg
      * @param color
      */
-    protected void updateLog(final Object msg, final String color) {
+    protected fun updateLog(msg: Any?, color: String?) {
         if (msg != null) {
-            String msgStr = msg.toString();
-            SpannableString spannableString = new SpannableString(msgStr);
-            spannableString.setSpan(new ForegroundColorSpan(Color.parseColor(color)), 0, msgStr.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            updateLog(spannableString);
+            updateLog(msg, Color.parseColor(color))
         }
     }
 
-    protected void updateLog(final Object msg, final int color) {
+    protected fun updateLog(msg: Any?, color: Int) {
         if (msg != null) {
-            String msgStr = msg.toString();
-            SpannableString spannableString = new SpannableString(msgStr);
-            spannableString.setSpan(new ForegroundColorSpan(color), 0, msgStr.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-            updateLog(spannableString);
+            val msgStr = msg.toString()
+            val spannableString = SpannableString(msgStr)
+            spannableString.setSpan(
+                ForegroundColorSpan(color),
+                0,
+                msgStr.length,
+                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+            updateLog(spannableString)
         }
+    }
+
+    companion object {
+        const val EVENT_START: Int = 0
+        const val EVENT_READ: Int = 2
+        const val EVENT_READ_ERROR: Int = 4
+        const val EVENT_WRITE: Int = 6
+        const val EVENT_EXIT: Int = -2
+        private val PROGRESS_PATTERN = """^progress:\[(-?\d+)/(-?\d+)]$""".toRegex()
     }
 }
