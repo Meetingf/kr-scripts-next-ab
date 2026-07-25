@@ -1,109 +1,65 @@
-package com.krscripts.core.executor;
+package com.krscripts.core.executor
 
-import android.content.Context;
+import android.content.Context
+import com.krscripts.common.shared.FileWrite.getPrivateFilePath
+import com.krscripts.common.shared.FileWrite.writePrivateFile
+import com.krscripts.common.shared.FileWrite.writePrivateShellFile
 
-import com.krscripts.common.shared.FileWrite;
-
-import java.util.HashMap;
 
 /**
  * Created by Hello on 2018/04/03.
+ * Refactored by buylan on 2026/07/26.
  */
 
-public class ExtractAssets {
-    // 用于记录已经提取过的资源，避免重复提取浪费性能
-    private static HashMap<String, String> extractHisotry = new HashMap<String, String>();
+class ExtractAssets(private val context: Context) {
 
-    private Context context;
+    fun extractResource(fileName: String?): String? {
+        val name = fileName?.takeIf { it.isNotEmpty() } ?: return null
+        val relativePath = name.removePrefix(ASSETS_PREFIX)
 
-    public ExtractAssets(Context context) {
-        this.context = context;
+        extractHistory[relativePath]?.let { return it }
+
+        val filePath = if (relativePath.endsWith(".sh")) {
+            writePrivateShellFile(relativePath, relativePath, context)
+        } else {
+            writePrivateFile(context.assets, relativePath, relativePath, context)
+        }
+
+        filePath?.let { extractHistory[relativePath] = it }
+
+        return filePath
     }
 
-    private String extractScript(String fileName) {
-        if (fileName == null || fileName.isEmpty()) {
-            return null;
-        }
+    fun extractResources(dir: String?): String? {
 
-        if (extractHisotry.containsKey(fileName)) {
-            return extractHisotry.get(fileName);
-        }
+        val directory = dir?.takeIf { it.isNotEmpty() } ?: return null
+        val relativePath = directory.removePrefix(ASSETS_PREFIX).trimEnd('/')
 
-        if (fileName.startsWith("file:///android_asset/")) {
-            fileName = fileName.substring("file:///android_asset/".length());
-        }
+        extractHistory[relativePath]?.let { return it }
 
-        String filePath = FileWrite.INSTANCE.writePrivateShellFile(fileName, fileName, context);
-
-        if (filePath != null) {
-            extractHisotry.put(fileName, filePath);
-        }
-
-        return filePath;
-    }
-
-    public String extractResource(String fileName) {
-        if (fileName == null || fileName.isEmpty()) {
-            return null;
-        }
-
-        if (extractHisotry.containsKey(fileName)) {
-            return extractHisotry.get(fileName);
-        }
-
-        if (fileName.endsWith(".sh")) {
-            return extractScript(fileName);
-        }
-        if (fileName.startsWith("file:///android_asset/")) {
-            fileName = fileName.substring("file:///android_asset/".length());
-        }
-        String filePath = FileWrite.INSTANCE.writePrivateFile(context.getAssets(), fileName, fileName, context);
-
-        if (filePath != null) {
-            extractHisotry.put(fileName, filePath);
-        }
-
-        return filePath;
-    }
-
-    public String extractResources(String dir) {
-        if (dir == null || dir.isEmpty()) {
-            return null;
-        }
-
-        if (extractHisotry.containsKey(dir)) {
-            return extractHisotry.get(dir);
-        }
-
-        if (dir.startsWith("file:///android_asset/")) {
-            dir = dir.substring("file:///android_asset/".length());
-        } else if (dir.endsWith("/")) {
-            dir = dir.substring(0, dir.length() - 1);
-        }
-
-        try {
-            String[] files = context.getAssets().list(dir);
-            if (files != null && files.length > 0) {
-                for (String file : files) {
-                    String relativePath = dir + "/" + file;
-                    extractResources(relativePath);
+        return try {
+            val files = context.assets.list(relativePath)
+            if (!files.isNullOrEmpty()) {
+                for (file in files) {
+                    extractResources("$relativePath/$file")
                 }
-                String outputDir = getExtractPath(dir);
-                extractHisotry.put(dir, outputDir);
-                return outputDir;
+                val outputDir = getExtractPath(relativePath)
+                extractHistory[relativePath] = outputDir
+                return outputDir
             } else {
-                return extractResource(dir);
+                return extractResource(relativePath)
             }
-        } catch (Exception ignored) {
+        } catch (_: Exception) {
+            null
         }
-
-        return "";
     }
 
-    public String getExtractPath(String file) {
-        return FileWrite.INSTANCE.getPrivateFilePath(
-                context,
-                (file.startsWith("file:///android_asset/") ? (file.substring("file:///android_asset/".length())) : file)
-        );
+    fun getExtractPath(file: String): String {
+        return getPrivateFilePath(context, file.removePrefix(ASSETS_PREFIX))
+    }
+
+    companion object {
+        private const val ASSETS_PREFIX = "file:///android_asset/"
+        private val extractHistory = HashMap<String, String>()
     }
 }

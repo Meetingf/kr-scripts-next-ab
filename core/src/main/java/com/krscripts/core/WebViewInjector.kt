@@ -1,10 +1,9 @@
-package com.krscripts.core;
+package com.krscripts.core
 
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.webkit.JavascriptInterface
-import android.webkit.ValueCallback
 import android.webkit.WebView
 import android.widget.Toast
 import androidx.annotation.Keep
@@ -23,11 +22,9 @@ import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface
 import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface.Companion.TYPE_FILE
 import com.krscripts.core.util.PermissionUtil
 import org.json.JSONObject
-import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.util.UUID
 
 
