@@ -78,7 +78,7 @@ class DialogAppChooser(
         fun onConfirm(apps: List<AdapterAppChooser.AppInfo>)
     }
 
-    public fun setExcludeApps(apps: Array<String>): DialogAppChooser {
+    fun setExcludeApps(apps: Array<String>): DialogAppChooser {
         this.excludeApps = apps
         if (this.view != null) {
             Log.e("@DialogAppChooser", "Unable to set the exclusion list, The list has been loaded")
@@ -87,9 +87,9 @@ class DialogAppChooser(
         return this
     }
 
-    public fun setAllowAllSelect(allow: Boolean): DialogAppChooser {
+    fun setAllowAllSelect(allow: Boolean): DialogAppChooser {
         this.allowAllSelect = allow
-        view?.findViewById<CompoundButton?>(R.id.select_all)?.visibility = if (allow) View.VISIBLE else View.GONE
+        view?.findViewById<CompoundButton?>(R.id.select_all_block)?.visibility = if (allow) View.VISIBLE else View.GONE
 
         return this
     }
@@ -100,10 +100,6 @@ class DialogAppChooser(
         callback?.onConfirm(apps)
 
         this.dismiss()
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
     }
 
     override fun onDismiss(dialog: DialogInterface) {
