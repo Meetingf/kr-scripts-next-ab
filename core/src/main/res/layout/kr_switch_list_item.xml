@@ -73,8 +73,5 @@
         android:layout_margin="10dp"
         android:padding="5dp"
         android:layout_gravity="center_vertical"
-        android:clickable="false"
-        android:elevation="5dp"
-        android:enabled="false"
-        android:focusable="false" />
+        android:elevation="5dp" />
 </RelativeLayout>

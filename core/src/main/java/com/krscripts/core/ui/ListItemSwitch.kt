@@ -10,16 +10,15 @@ import java.util.Locale.getDefault
 class ListItemSwitch(
     private val context: Context,
     private val config: SwitchNode
-) : ListItemClickable(context, R.layout.kr_switch_list_item, config) {
-    private var switchView = layout.findViewById<MaterialSwitch?>(R.id.kr_switch)
+): ListItemView(context, R.layout.kr_switch_list_item, config) {
 
-    var checked: Boolean
-        get() {
-            return if (switchView != null) switchView!!.isChecked else false
-        }
-        set(value) {
-            switchView?.isChecked = value
-        }
+    var switchView: MaterialSwitch? = layout.findViewById(R.id.kr_switch)
+    private var onCheckedChangeListener: OnCheckedChangeListener? = null
+
+    fun setOnCheckedChangeListener(listener: OnCheckedChangeListener): ListItemSwitch {
+        this.onCheckedChangeListener = listener
+        return this
+    }
 
     override fun updateViewByShell() {
         super.updateViewByShell()
@@ -28,10 +27,19 @@ class ListItemSwitch(
             val shellResult = ScriptEnvironment.executeResultRoot(context, config.getState, config)
             config.checked = shellResult == "1" || shellResult.lowercase(getDefault()) == "true"
         }
-        checked = config.checked
     }
 
     init {
-        checked = config.checked
+        title = config.title
+        desc = config.desc
+        summary = config.summary
+
+        switchView?.setOnCheckedChangeListener { _, isChecked ->
+            onCheckedChangeListener?.onCheckedChanged(this, isChecked)
+        }
+    }
+
+    interface OnCheckedChangeListener {
+        fun onCheckedChanged(item: ListItemSwitch, isChecked: Boolean)
     }
 }

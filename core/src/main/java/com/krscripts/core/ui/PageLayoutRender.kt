@@ -16,10 +16,12 @@ import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.model.SwitchNode
 import com.krscripts.core.model.TextNode
 
-class PageLayoutRender(private val mContext: Context,
-                       private val itemConfigList: ArrayList<NodeInfoBase>,
-                       private val clickListener: OnItemClickListener,
-                       private val rootGroup: ListItemGroup) {
+class PageLayoutRender(
+    private val mContext: Context,
+    private val itemConfigList: ArrayList<NodeInfoBase>,
+    private val clickListener: OnItemClickListener,
+    private val rootGroup: ListItemGroup
+) {
 
     interface OnItemClickListener {
         fun onPageClick(item: PageNode, onCompleted: Runnable)
@@ -44,7 +46,7 @@ class PageLayoutRender(private val mContext: Context,
         return null
     }
 
-    private fun getCommonOnExitRunnable(item: NodeInfoBase, node: ListItemClickable): Runnable {
+    private fun getCommonOnExitRunnable(item: NodeInfoBase, node: ListItemView): Runnable {
         val handler = Handler(Looper.getMainLooper())
         return Runnable {
             handler.post {
@@ -72,12 +74,29 @@ class PageLayoutRender(private val mContext: Context,
             try {
                 val item = findItemByDynamicIndex(key, itemConfigList)
                 if (item == null) {
-                    Log.e("onItemClick", "找不到指定ID的项 index: " + key)
+                    Log.e("onItemClick", "找不到指定ID的项 index: $key")
                     return
                 } else {
                     onItemClick(item, listItemView)
                 }
-            } catch (ex: Exception) {
+            } catch (_: Exception) {
+            }
+        }
+    }
+
+    private val onItemCheckedListener: ListItemSwitch.OnCheckedChangeListener = object : ListItemSwitch.OnCheckedChangeListener {
+        override fun onCheckedChanged(item: ListItemSwitch, isChecked: Boolean) {
+            val key = item.index
+            try {
+                val itemNode = findItemByDynamicIndex(key, itemConfigList)
+                if (itemNode == null) {
+                    Log.e("onItemChecked", "找不到指定ID的项 index: $key")
+                    return
+                } else {
+                    val switchNode = itemNode as SwitchNode
+                    clickListener.onSwitchClick(switchNode, getCommonOnExitRunnable(switchNode, item))
+                }
+            } catch (_: Exception) {
             }
         }
     }
@@ -119,6 +138,9 @@ class PageLayoutRender(private val mContext: Context,
                         uiRender.setOnClickListener(this.onItemClickListener)
                         uiRender.setOnLongClickListener(this.onItemLongClickListener)
                     }
+                    if (uiRender is ListItemSwitch) {
+                        uiRender.setOnCheckedChangeListener(this.onItemCheckedListener)
+                    }
                     parent.addView(uiRender)
                 }
             } catch (ex: Exception) {
@@ -143,7 +165,7 @@ class PageLayoutRender(private val mContext: Context,
         return ListItemPage(mContext, node)
     }
 
-    private fun createSwitchItem(node: SwitchNode): ListItemView {
+    private fun createSwitchItem(node: SwitchNode): ListItemSwitch {
         return ListItemSwitch(mContext, node)
     }
 
