@@ -210,12 +210,12 @@ object ScriptEnvironment {
         params["TEMP_DIR"] = context.cacheDir.absolutePath
 
         val fileOwner = FileOwner(context)
-        val androidUid = fileOwner.getUserId()
+        val androidUid = fileOwner.userId
         params["ANDROID_UID"] = androidUid.toString()
 
         try {
             // @ https://blog.csdn.net/Gaugamela/article/details/78689580
-            params["APP_USER_ID"] = fileOwner.getFileOwner()
+            params["APP_USER_ID"] = fileOwner.fileOwner
         } catch (_: Exception) {
 
         }

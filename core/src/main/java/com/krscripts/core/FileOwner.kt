@@ -1,29 +1,26 @@
 package com.krscripts.core;
 
-import android.content.Context;
-import android.os.Process;
-import android.os.UserManager;
+import android.content.Context
+import android.os.Process
+import android.os.UserManager
 
-public class FileOwner {
-    private Context context;
-    public FileOwner(Context context) {
-        this.context = context;
-    }
+class FileOwner(private val context: Context) {
+    val userId: Int
+        get() {
+            val um = context.getSystemService(Context.USER_SERVICE) as UserManager
+            val userHandle = Process.myUserHandle()
 
-    public int getUserId() {
-        UserManager um = (UserManager) context.getSystemService(Context.USER_SERVICE);
-        android.os.UserHandle userHandle = android.os.Process.myUserHandle();
-
-        int value = 0;
-        try {
-            value = (int) um.getSerialNumberForUser(userHandle);
-        } catch (Exception ignored) {
+            var value = 0
+            try {
+                value = um.getSerialNumberForUser(userHandle).toInt()
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            return value
         }
-        return value;
-    }
 
-    public String getFileOwner() {
-        int androidUid = getUserId();
-        return  "u" + androidUid + "_a" + ((android.os.Process.myUid() % 100000) - Process.FIRST_APPLICATION_UID); // 100000 => UserHandle.PER_USER_RANGE
-    }
+    val fileOwner: String
+        get() {
+            return "u" + this.userId + "_a" + ((Process.myUid() % 100000) - Process.FIRST_APPLICATION_UID) // 100000 => UserHandle.PER_USER_RANGE
+        }
 }
