@@ -50,7 +50,7 @@ class WebViewInjector(
 
         webView.addJavascriptInterface(
             KrWebBridge(context),
-            KrWebBridge::class.simpleName!!
+            "KrWebBridge" //::class.simpleName!!
         )
         webView.setDownloadListener { url, _, contentDisposition, mimetype, contentLength ->
             if (!PermissionUtil.checkManageFile(context)) {
