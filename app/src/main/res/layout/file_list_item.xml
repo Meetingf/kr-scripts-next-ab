@@ -13,7 +13,7 @@
         android:layout_height="48dp"
         android:padding="8dp"
         android:layout_gravity="center_vertical"
-        app:tint="?colorOnSurface" />
+        app:tint="?colorPrimary" />
 
     <LinearLayout
         android:id="@+id/center"
