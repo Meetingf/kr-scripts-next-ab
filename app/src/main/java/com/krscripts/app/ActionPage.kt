@@ -3,7 +3,6 @@ package com.krscripts.app
 import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -19,7 +18,6 @@ import androidx.core.view.WindowInsetsCompat
 import com.krscripts.app.databinding.ActivityActionPageBinding
 import com.krscripts.app.util.chooseFilePath
 import com.krscripts.app.util.handleFileSelectorResult
-import com.krscripts.common.shared.FilePathResolver
 import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.core.R
 import com.krscripts.core.TryOpenActivity
@@ -140,7 +138,7 @@ class ActionPage : AppCompatActivity() {
             }
         }
 
-        override fun addToFavorites(clickableNode: ClickableNode, addToFavoritesHandler: KrScriptActionHandler.AddToFavoritesHandler) {
+        override fun createShortcut(clickableNode: ClickableNode, createShortcutHandler: KrScriptActionHandler.CreateShortcutHandler) {
             val page = clickableNode as? PageNode
                 ?: if (clickableNode is RunnableNode) {
                     currentPageConfig
@@ -159,7 +157,7 @@ class ActionPage : AppCompatActivity() {
 
             intent.putExtra("page", page)
 
-            addToFavoritesHandler.onAddToFavorites(clickableNode, intent)
+            createShortcutHandler.onCreateShortcut(clickableNode, intent)
         }
 
         override fun onSubPageClick(pageNode: PageNode) {

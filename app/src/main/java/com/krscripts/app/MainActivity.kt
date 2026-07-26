@@ -154,7 +154,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
 
-            override fun addToFavorites(clickableNode: ClickableNode, addToFavoritesHandler: KrScriptActionHandler.AddToFavoritesHandler) {
+            override fun createShortcut(clickableNode: ClickableNode, createShortcutHandler: KrScriptActionHandler.CreateShortcutHandler) {
                 val page = clickableNode as? PageNode
                     ?: if (clickableNode is RunnableNode) {
                         pageNode
@@ -173,7 +173,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 intent.putExtra("page", page)
 
-                addToFavoritesHandler.onAddToFavorites(clickableNode, intent)
+                createShortcutHandler.onCreateShortcut(clickableNode, intent)
             }
 
             override fun onSubPageClick(pageNode: PageNode) {

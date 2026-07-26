@@ -139,7 +139,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
 
         var message = ""
         val unlocked = (if (clickableNode.lockShell.isNotEmpty()) {
-            message = ScriptEnvironment.executeResultRoot(context!!, clickableNode.lockShell, clickableNode)
+            message = ScriptEnvironment.executeResultRoot(requireContext(), clickableNode.lockShell, clickableNode)
             message == "unlock" || message == "unlocked" || message == "false" || message == "0"
         } else {
             !clickableNode.locked
@@ -213,8 +213,8 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                     getString(R.string.kr_ushortcut_nsupported)
             )
         } else {
-            krScriptActionHandler?.addToFavorites(clickableNode, object : KrScriptActionHandler.AddToFavoritesHandler {
-                override fun onAddToFavorites(clickableNode: ClickableNode, intent: Intent?) {
+            krScriptActionHandler?.createShortcut(clickableNode, object : KrScriptActionHandler.CreateShortcutHandler {
+                override fun onCreateShortcut(clickableNode: ClickableNode, intent: Intent?) {
                     if (intent != null) {
                         DialogHelper.confirm(activity!!,
                                 getString(R.string.kr_shortcut_create),
