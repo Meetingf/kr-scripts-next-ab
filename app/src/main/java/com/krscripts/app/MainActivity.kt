@@ -3,6 +3,9 @@ package com.krscripts.app
 import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
+import android.graphics.RenderEffect
+import android.graphics.Shader
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -10,6 +13,7 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.view.WindowManager
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -216,9 +220,20 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.option_menu_info -> {
+                // It's an experimental feature
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    window.decorView.setRenderEffect(
+                        RenderEffect.createBlurEffect(100f, 100f, Shader.TileMode.CLAMP)
+                    )
+                }
                 val layoutInflater = LayoutInflater.from(this)
                 val layout = layoutInflater.inflate(R.layout.dialog_about, null)
-                MaterialAlertDialogBuilder(this).setView(layout).show()
+                MaterialAlertDialogBuilder(this).setView(layout)
+                    .setOnDismissListener {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            window.decorView.setRenderEffect(null)
+                        }
+                    }.show()
             }
         }
         return super.onOptionsItemSelected(item)
