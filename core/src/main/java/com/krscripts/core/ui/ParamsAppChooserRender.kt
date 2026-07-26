@@ -10,6 +10,11 @@ import com.krscripts.common.ui.AdapterAppChooser
 import com.krscripts.common.ui.DialogAppChooser
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ParamsAppChooserRender(
     private var actionParamInfo: ActionParamInfo,
@@ -43,36 +48,38 @@ class ParamsAppChooserRender(
         DialogAppChooser(packages, actionParamInfo.multiple, this).show(context.supportFragmentManager, "app-chooser")
     }
 
-    private fun loadPackages(includeMissing: Boolean = false): List<AdapterAppChooser.AppInfo> {
-        val pm = context.packageManager
-        val filter = actionParamInfo.optionsFromShell?.map {
-            it.value
-        }
-
-        val packages = pm.getInstalledPackages(PackageManager.GET_UNINSTALLED_PACKAGES).filter {
-            filter == null || filter.contains(it.packageName)
-        }
-
-        val options = ArrayList(packages.map {
-            AdapterAppChooser.AppInfo().apply {
-                appName = "" + it.applicationInfo!!.loadLabel(pm)
-                packageName = it.packageName
+    private suspend fun loadPackages(includeMissing: Boolean = false): List<AdapterAppChooser.AppInfo> {
+        return withContext(Dispatchers.IO) {
+            val pm = context.packageManager
+            val filter = actionParamInfo.optionsFromShell?.map {
+                it.value
             }
-        })
 
-        // 是否包含丢失的应用程序
-        if (includeMissing && actionParamInfo.optionsFromShell != null) {
-            for (item in actionParamInfo.optionsFromShell!!) {
-                if (options.filter { it.packageName == item.value }.isEmpty()) {
-                    options.add(AdapterAppChooser.AppInfo().apply {
-                        appName = "" + item.title
-                        packageName = "" + item.value
-                    })
+            val packages = pm.getInstalledPackages(PackageManager.GET_UNINSTALLED_PACKAGES).filter {
+                filter == null || filter.contains(it.packageName)
+            }
+
+            val options = ArrayList(packages.map {
+                AdapterAppChooser.AppInfo().apply {
+                    appName = "" + it.applicationInfo!!.loadLabel(pm)
+                    packageName = it.packageName
+                }
+            })
+
+            // 是否包含丢失的应用程序
+            if (includeMissing && actionParamInfo.optionsFromShell != null) {
+                for (item in actionParamInfo.optionsFromShell!!) {
+                    if (options.filter { it.packageName == item.value }.isEmpty()) {
+                        options.add(AdapterAppChooser.AppInfo().apply {
+                            appName = "" + item.title
+                            packageName = "" + item.value
+                        })
+                    }
                 }
             }
-        }
 
-        return options
+            options
+        }
     }
 
     private fun setSelectStatus() {
@@ -101,39 +108,50 @@ class ParamsAppChooserRender(
 
     // 设置界面显示和元素赋值
     private fun setTextView() {
-        packages = ArrayList(loadPackages(actionParamInfo.type == "packages"))
+        val lifecycleScope = CoroutineScope(SupervisorJob())
+        lifecycleScope.launch {
+            packages = ArrayList(loadPackages(actionParamInfo.type == "packages"))
 
-        packages.run {
-            val labels = map { it.appName }.toTypedArray()
-            val values = map { it.packageName }.toTypedArray()
-            if (actionParamInfo.multiple) {
-                ActionParamsLayoutRender.getParamValues(actionParamInfo)?.run {
-                    this.forEach {
-                        val value = it
-                        val app = packages.find { it.packageName == value }
-                        if (app != null) {
-                            app.selected = true
+            packages.run {
+                val labels = map { it.appName }.toTypedArray()
+                val values = map { it.packageName }.toTypedArray()
+                if (actionParamInfo.multiple) {
+                    ActionParamsLayoutRender.getParamValues(actionParamInfo)?.run {
+                        this.forEach {
+                            val value = it
+                            val app = packages.find { it.packageName == value }
+                            if (app != null) {
+                                app.selected = true
+                            }
                         }
                     }
-                }
 
-                onConfirm((packages.filter { it.selected }))
-            } else {
-                // TODO: 这里有过多的数据包装盒解包，需要进行优化
-                val validOptions = ArrayList(packages.map {
-                    SelectItem().apply {
-                        title = it.appName
-                        value = it.packageName
+                    withContext(Dispatchers.Main) {
+                        onConfirm((packages.filter { it.selected }))
                     }
-                }.toList())
-
-                val currentIndex = ActionParamsLayoutRender.getParamOptionsCurrentIndex(actionParamInfo, validOptions)
-                if (currentIndex > -1) {
-                    valueView.text = values[currentIndex]
-                    nameView.text = labels[currentIndex]
                 } else {
-                    valueView.text = ""
-                    nameView.text = ""
+                    // TODO: 这里有过多的数据包装盒解包，需要进行优化
+                    val validOptions = ArrayList(packages.map {
+                        SelectItem().apply {
+                            title = it.appName
+                            value = it.packageName
+                        }
+                    }.toList())
+
+                    val currentIndex = ActionParamsLayoutRender.getParamOptionsCurrentIndex(
+                        actionParamInfo,
+                        validOptions
+                    )
+
+                    withContext(Dispatchers.Main) {
+                        if (currentIndex > -1) {
+                            valueView.text = values[currentIndex]
+                            nameView.text = labels[currentIndex]
+                        } else {
+                            valueView.text = ""
+                            nameView.text = ""
+                        }
+                    }
                 }
             }
         }
