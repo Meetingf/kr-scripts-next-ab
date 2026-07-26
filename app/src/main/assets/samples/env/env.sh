@@ -1,60 +1,59 @@
 #!/system/bin/sh
 
-function _uninstall() {
-    if [[ -f busybox ]]; then
-        node=`ls -li busybox | cut -f1 -d " "`
-        for item in *; do
-            item_node=`ls -li $item | cut -f1 -d " "`
-            if [[ $node = $item_node ]]; then
-                rm -f $item
-                echo '删除' $item 1>&2
-            else
-                echo '跳过' $item
-            fi
-        done
+busybox_uninstall() {
+
+    cd "$TOOLKIT" || exit 1
+
+    if [ ! -f "./busybox" ]; then
+        echo "BusyBox not found." >&2
+        return 1
     fi
+
+    busybox_inode=$(stat -Lc %i "./busybox" 2>/dev/null)
+    if [ -z "$busybox_inode" ]; then
+        echo "Cannot read inode." >&2
+        return 1
+    fi
+
+    for applet in $(./busybox --list 2>/dev/null); do
+        if [ -e "./$applet" ]; then
+            applet_inode=$(stat -Lc %i "./$applet" 2>/dev/null)
+            if [ "$busybox_inode" = "$applet_inode" ]; then
+                rm -f "./$applet"
+                echo "rm: $applet" >&2
+            else
+                echo "skip (inode not match): $applet" >&2
+            fi
+        fi
+    done
+
+    rm -f "./busybox_installed"
+    echo "Done"
 }
 
-function busybox_uninstall() {
-    busybox mount -o rw,remount /system
-    busybox mount -o rw,remount /system/xbin
-
-    cd /system/xbin
-    _uninstall
-
-    cd /system/bin
-    _uninstall
-}
-
-function busybox_version() {
-    echo '当前busybox版本：'
+busybox_version() {
+    echo '当前busybox版本:'
     busybox | grep BusyBox
     echo ''
-    echo '当前目录：'
+    echo '当前目录:'
     pwd
 }
 
-
-function root_state() {
-    if [[ $(id -u 2>&1) == '0' ]] || [[ $($UID) == '0' ]] || [[ $(whoami 2>&1) == 'root' ]] || [[ $(set | grep 'USER_ID=0') == 'USER_ID=0' ]]; then
-        echo '检测结果' 'root'
+root_state() {
+    if [ "$(id -u 2>/dev/null)" -eq 0 ] 2>/dev/null; then
+        echo 'user: Root'
     else
-        echo '检测结果' '非root'
+        echo 'user: Not Root'
     fi
 
-    echo $(id -u 2>&1)
-    echo $($UID)
-    echo $(whoami 2>&1)
-    echo $(set | grep 'USER_ID=0')
-
-
-    echo 'ROOT_PERMISSION 变量只在 PIO环境下才有：'
+    echo "uid: $(id -u 2>&1)"
+    echo "whoami: $(whoami 2>&1)"
+    echo "USER_ID: ${USER_ID:-未定义}"
     echo "ROOT_PERMISSION=${ROOT_PERMISSION}"
 }
 
-function environment() {
-    echo '框架定义'
-    echo ''
+environment() {
+    printf '框架定义\n'
     echo "EXECUTOR_PATH=$EXECUTOR_PATH"
     echo "START_DIR=$START_DIR"
     echo "TEMP_DIR=$TEMP_DIR"
@@ -67,48 +66,33 @@ function environment() {
     echo "APP_USER_ID=$APP_USER_ID"
     echo "ROOT_PERMISSION=$ROOT_PERMISSION"
     echo "TOOLKIT=$TOOLKIT"
-    echo ''
-    echo ''
-    echo ''
-    sleep 1
 
-    echo 'env 命令'
+    printf '\nenv 命令\n'
     env
-    echo ''
-    echo ''
-    sleep 1
 
-    echo 'set 命令\n'
+    printf '\nset 命令\n'
     set
-    echo '\n\n'
-    sleep 1
 
-    echo 'export -p 命令\n'
+    printf '\nexport -p 命令\n'
     export -p
-    echo ''
-    echo ''
-    sleep 1
 }
 
-function config_path() {
-    echo '这是3.9.2新加入的全新变量'
-    echo '它表示的是配置XML存储路径'
-    echo ''
+config_path() {
 
     echo 'PAGE_CONFIG_DIR [配置XML来源目录]'
-    echo $PAGE_CONFIG_DIR
+    echo "$PAGE_CONFIG_DIR"
     echo ''
 
     echo 'PAGE_CONFIG_FILE [配置XML来源路径]'
-    echo $PAGE_CONFIG_FILE
+    echo "$PAGE_CONFIG_FILE"
     echo ''
 
     echo 'PAGE_WORK_DIR [配置XML提取目录]'
-    echo $PAGE_WORK_DIR
+    echo "$PAGE_WORK_DIR"
     echo ''
 
     echo 'PAGE_WORK_FILE [配置XML提取目录]'
-    echo $PAGE_WORK_FILE
+    echo "$PAGE_WORK_FILE"
     echo ''
 }
 
