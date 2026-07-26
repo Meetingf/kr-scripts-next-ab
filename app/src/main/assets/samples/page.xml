@@ -37,14 +37,14 @@
         </page>
 
         <!--支持指定网页地址-->
-        <page link="https://www.baidu.com/">
-            <title>打开百度</title>
+        <page link="https://www.example.com/">
+            <title>打开测试网址</title>
             <desc>使用系统浏览器打开</desc>
         </page>
 
-        <!--支持指定网页地址(用PIO自带的浏览器打开)-->
-        <page html="https://www.baidu.com/">
-            <title>打开百度</title>
+        <!--支持指定网页地址(使用内置浏览器)-->
+        <page html="https://www.example.com/">
+            <title>打开测试网址</title>
             <desc>使用内置浏览器打开，网页将可以调用WebAPI执行脚本，请不要轻易打开不受信任的界面！</desc>
         </page>
     </group>
@@ -108,13 +108,13 @@
     </group>
 
     <group title="隐藏功能">
-        <page activity="com.miui.voiceassist/com.xiaomi.voiceassistant.AiSettings.AiShortcutActivity">
-            <title>打开小爱捷径</title>
+        <page activity="android/com.android.internal.app.PlatLogoActivity">
+            <title>打开 Android 彩蛋</title>
             <desc>当activity设置为未导出的活动，启动失败后会自动尝试用am start-activity命令以root权限重试</desc>
         </page>
         <page activity="am start-activity com.android.settings/com.android.settings.Settings\$HighPowerApplicationsActivity">
             <title>打开电池优化界面</title>
-            <desc>甚至，你可以直接在activity属性里使用am命令，PIO解析到activity的内容为“am ”开头时自动调用shell执行</desc>
+            <desc>甚至，你可以直接在activity属性里使用am命令，当解析到activity的内容为"am"开头时自动调用shell执行</desc>
         </page>
     </group>
 </root>
