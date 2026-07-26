@@ -1,13 +1,12 @@
 package com.krscripts.app
 
-import android.app.Activity
 import android.app.ActivityManager
 import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -43,24 +42,22 @@ import com.krscripts.core.model.RunnableNode
 class ActionPage : AppCompatActivity() {
     private val progressBarDialog = ProgressBarDialog(this)
     private var actionsLoaded = false
-    private var handler = Handler()
+    private var handler = Handler(Looper.getMainLooper())
     private lateinit var currentPageConfig: PageNode
-    private var autoRunItemId = ""
+    private var autoRunItemId: String? = null
 
     private lateinit var binding: ActivityActionPageBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // 如果应用还没启动，就直接打开了actionPage(通常是PIO的快捷方式)，先跳转到启动页面
+        // Jump to splash when is no initialed
         if (!ScriptEnvironment.isInitialed) {
             val initIntent = Intent(this.applicationContext, SplashActivity::class.java)
             initIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
             initIntent.putExtras(this.intent)
             initIntent.putExtra("JumpActionPage", true)
             startActivity(initIntent)
-            // overridePendingTransition(0, 0)
-
             finish()
             return
         }
@@ -79,52 +76,50 @@ class ActionPage : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         setTitle(com.krscripts.app.R.string.app_name)
 
-        // 显示返回按钮
         supportActionBar!!.setHomeButtonEnabled(true)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener {
             finish()
         }
 
-        // 读取intent里的参数
-        val intent = this.intent
-        if (intent.extras != null) {
-            val extras = intent.extras
-            if (extras != null && (extras.containsKey("page") || extras.containsKey("shortcutId"))) {
-                val page = if (extras.containsKey("page")) {
-                    extras.getSerializable("page") as PageNode?
-                } else {
-                    ActionShortcutManager(this@ActionPage).getShortcutTarget("" + extras.getString("shortcutId"))
+        intent?.extras?.let { extras ->
+
+            val page = when {
+                extras.containsKey("page") -> extras.getSerializable("page") as PageNode?
+                extras.containsKey("shortcutId") -> ActionShortcutManager(this).getShortcutTarget(
+                    extras.getString("shortcutId")
+                )
+                else -> null
+            }
+
+            page?.let { page ->
+                autoRunItemId =
+                    if (extras.containsKey("autoRunItemId")) extras.getString("autoRunItemId") else null
+
+                if (page.activity.isNotEmpty()) {
+                    if (TryOpenActivity(this, page.activity).tryOpen()) {
+                        finish()
+                        return
+                    }
                 }
 
-                if (page != null) {
-                    autoRunItemId = if (extras.containsKey("autoRunItemId")) ("" + extras.getString("autoRunItemId")) else ""
-
-                    if (page.activity.isNotEmpty()) {
-                        if (TryOpenActivity(this, page.activity).tryOpen()) {
-                            finish()
-                            return
-                        }
+                if (page.onlineHtmlPage.isNotEmpty()) {
+                    try {
+                        startActivity(Intent(this, ActionPageOnline::class.java).apply {
+                            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            putExtra("config", page.onlineHtmlPage)
+                        })
+                    } catch (_: Exception) {
                     }
-
-                    if (page.onlineHtmlPage.isNotEmpty()) {
-                        try {
-                            startActivity(Intent(this, ActionPageOnline::class.java).apply {
-                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                putExtra("config", page.onlineHtmlPage)
-                            })
-                        } catch (ex: Exception) {
-                        }
-                    }
-
-                    if (page.title.isNotEmpty()) {
-                        title = page.title
-                    }
-                    currentPageConfig = page
-                } else {
-                    Toast.makeText(this, "页面信息无效", Toast.LENGTH_SHORT).show()
-                    finish()
                 }
+
+                if (page.title.isNotEmpty()) {
+                    title = page.title
+                }
+                currentPageConfig = page
+            } ?: {
+                Toast.makeText(this, "页面信息无效", Toast.LENGTH_SHORT).show()
+                finish()
             }
         }
 
@@ -144,13 +139,12 @@ class ActionPage : AppCompatActivity() {
         }
 
         override fun addToFavorites(clickableNode: ClickableNode, addToFavoritesHandler: KrScriptActionHandler.AddToFavoritesHandler) {
-            val page = if (clickableNode is PageNode) {
-                clickableNode
-            } else if (clickableNode is RunnableNode) {
-                currentPageConfig
-            } else {
-                return
-            }
+            val page = clickableNode as? PageNode
+                ?: if (clickableNode is RunnableNode) {
+                    currentPageConfig
+                } else {
+                    return
+                }
 
             val intent = Intent()
 
@@ -167,7 +161,7 @@ class ActionPage : AppCompatActivity() {
         }
 
         override fun onSubPageClick(pageNode: PageNode) {
-            _openPage(pageNode)
+            openPage(pageNode)
         }
 
         override fun openFileChooser(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean {
@@ -176,8 +170,6 @@ class ActionPage : AppCompatActivity() {
     }
 
     private var fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface? = null
-    private val ACTION_FILE_PATH_CHOOSER = 65400
-    private val ACTION_FILE_PATH_CHOOSER_INNER = 65300
 
     private fun chooseFilePath(extension: String) {
         try {
@@ -185,7 +177,7 @@ class ActionPage : AppCompatActivity() {
             intent.putExtra("extension", extension)
             intent.putExtra("mode", ActivityFileSelector.MODE_FILE)
             startActivityForResult(intent, ACTION_FILE_PATH_CHOOSER_INNER)
-        } catch (ex: Exception) {
+        } catch (_: Exception) {
             Toast.makeText(this, "启动内置文件选择器失败！", Toast.LENGTH_SHORT).show()
         }
     }
@@ -195,7 +187,7 @@ class ActionPage : AppCompatActivity() {
             val intent = Intent(this, ActivityFileSelector::class.java)
             intent.putExtra("mode", ActivityFileSelector.MODE_FOLDER)
             startActivityForResult(intent, ACTION_FILE_PATH_CHOOSER_INNER)
-        } catch (ex: Exception) {
+        } catch (_: Exception) {
             Toast.makeText(this, "启动内置文件选择器失败！", Toast.LENGTH_SHORT).show()
         }
     }
@@ -209,7 +201,7 @@ class ActionPage : AppCompatActivity() {
         }
 
         if (menuOptions != null && menu != null) {
-            for (i in 0 until menuOptions!!.size) {
+            for (i in menuOptions!!.indices) {
                 val menuOption = menuOptions!![i]
                 if (menuOption.isFab) {
                     addFab(menuOption)
@@ -312,13 +304,12 @@ class ActionPage : AppCompatActivity() {
                 }
             }
 
-            // TODO:文件类型过滤
             override fun mimeType(): String? {
-                return if (menuOption.mime.isEmpty()) null else menuOption.mime
+                return menuOption.mime.ifEmpty { null }
             }
 
             override fun suffix(): String? {
-                return if (menuOption.suffix.isEmpty()) null else menuOption.suffix
+                return menuOption.suffix.ifEmpty { null }
             }
 
             override fun type(): Int {
@@ -352,8 +343,8 @@ class ActionPage : AppCompatActivity() {
                 }
             }
             this.fileSelectedInterface = fileSelectedInterface
-            true;
-        } catch (ex: java.lang.Exception) {
+            true
+        } catch (_: java.lang.Exception) {
             false
         }
 
@@ -361,7 +352,7 @@ class ActionPage : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == ACTION_FILE_PATH_CHOOSER) {
-            val result = if (data == null || resultCode != Activity.RESULT_OK) null else data.data
+            val result = if (data == null || resultCode != RESULT_OK) null else data.data
             if (fileSelectedInterface != null) {
                 if (result != null) {
                     val absPath = getPath(result)
@@ -372,7 +363,7 @@ class ActionPage : AppCompatActivity() {
             }
             this.fileSelectedInterface = null
         } else if (requestCode == ACTION_FILE_PATH_CHOOSER_INNER) {
-            val absPath = if (data == null || resultCode != Activity.RESULT_OK) null else data.getStringExtra("file")
+            val absPath = if (data == null || resultCode != RESULT_OK) null else data.getStringExtra("file")
             fileSelectedInterface?.onFileSelected(absPath)
             this.fileSelectedInterface = null
         }
@@ -382,7 +373,7 @@ class ActionPage : AppCompatActivity() {
     private fun getPath(uri: Uri): String? {
         return try {
             FilePathResolver().getPath(this, uri)
-        } catch (ex: java.lang.Exception) {
+        } catch (_: java.lang.Exception) {
             null
         }
     }
@@ -489,7 +480,7 @@ class ActionPage : AppCompatActivity() {
         }.start()
     }
 
-    fun _openPage(pageNode: PageNode) {
+    fun openPage(pageNode: PageNode) {
         OpenPageHelper(this).openPage(pageNode)
     }
 
@@ -501,14 +492,19 @@ class ActionPage : AppCompatActivity() {
     private fun setExcludeFromRecents() {
         if (isTaskRoot) {
             try {
-                val service = this.getSystemService(Context.ACTIVITY_SERVICE) as ActivityManager
+                val service = this.getSystemService(ACTIVITY_SERVICE) as ActivityManager
                 for (task in service.appTasks) {
                     if (task.taskInfo!!.id == this.taskId) {
                         task.setExcludeFromRecents(true)
                     }
                 }
-            } catch (ex: Exception) {
+            } catch (_: Exception) {
             }
         }
+    }
+
+    companion object {
+        private const val ACTION_FILE_PATH_CHOOSER = 65400
+        private const val ACTION_FILE_PATH_CHOOSER_INNER = 65300
     }
 }

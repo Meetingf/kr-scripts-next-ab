@@ -79,8 +79,8 @@ class ActionShortcutManager(private var context: Context) {
     }
 
     // 读取快捷方式的页面信息对象
-    fun getShortcutTarget(shortcutId: String): PageNode? {
-        return ObjectStorage<PageNode>(context).load(shortcutId)
+    fun getShortcutTarget(shortcutId: String?): PageNode? {
+        return shortcutId?.let { ObjectStorage<PageNode>(context).load(it) }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
