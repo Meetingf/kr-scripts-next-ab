@@ -19,6 +19,8 @@ class ActivityFileSelector : AppCompatActivity() {
     companion object {
         const val MODE_FILE = 0
         const val MODE_FOLDER = 1
+        const val ACTION_FILE_PATH_CHOOSER = 65400
+        const val ACTION_FILE_PATH_CHOOSER_INNER = 65300
     }
 
     private var adapterFileSelector: AdapterFileSelector? = null

@@ -16,20 +16,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.krscripts.app.databinding.ActivityActionPageBinding
+import com.krscripts.app.util.chooseFilePath
+import com.krscripts.app.util.handleFileSelectorResult
 import com.krscripts.common.shared.FilePathResolver
 import com.krscripts.common.ui.ProgressBarDialog
+import com.krscripts.core.R
 import com.krscripts.core.TryOpenActivity
 import com.krscripts.core.config.IconPathAnalysis
 import com.krscripts.core.config.PageConfigReader
 import com.krscripts.core.config.PageConfigSh
 import com.krscripts.core.executor.ScriptEnvironment
-import com.krscripts.core.shortcut.ActionShortcutManager
-import com.krscripts.core.ui.ActionListFragment
-import com.krscripts.core.ui.DialogLogFragment
-import com.krscripts.core.ui.ParamsFileChooserRender
-import com.krscripts.core.ui.PageMenuLoader
-import com.krscripts.core.R
-import com.krscripts.app.databinding.ActivityActionPageBinding
 import com.krscripts.core.model.AutoRunTask
 import com.krscripts.core.model.ClickableNode
 import com.krscripts.core.model.KrScriptActionHandler
@@ -37,6 +34,11 @@ import com.krscripts.core.model.NodeInfoBase
 import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.RunnableNode
+import com.krscripts.core.shortcut.ActionShortcutManager
+import com.krscripts.core.ui.ActionListFragment
+import com.krscripts.core.ui.DialogLogFragment
+import com.krscripts.core.ui.PageMenuLoader
+import com.krscripts.core.ui.ParamsFileChooserRender
 
 
 class ActionPage : AppCompatActivity() {
@@ -165,32 +167,12 @@ class ActionPage : AppCompatActivity() {
         }
 
         override fun openFileChooser(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean {
+            fileSelectorInterface = fileSelectedInterface
             return chooseFilePath(fileSelectedInterface)
         }
     }
 
-    private var fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface? = null
-
-    private fun chooseFilePath(extension: String) {
-        try {
-            val intent = Intent(this, ActivityFileSelector::class.java)
-            intent.putExtra("extension", extension)
-            intent.putExtra("mode", ActivityFileSelector.MODE_FILE)
-            startActivityForResult(intent, ACTION_FILE_PATH_CHOOSER_INNER)
-        } catch (_: Exception) {
-            Toast.makeText(this, "启动内置文件选择器失败！", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun chooseFolderPath() {
-        try {
-            val intent = Intent(this, ActivityFileSelector::class.java)
-            intent.putExtra("mode", ActivityFileSelector.MODE_FOLDER)
-            startActivityForResult(intent, ACTION_FILE_PATH_CHOOSER_INNER)
-        } catch (_: Exception) {
-            Toast.makeText(this, "启动内置文件选择器失败！", Toast.LENGTH_SHORT).show()
-        }
-    }
+    private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
 
     private var menuOptions:ArrayList<PageMenuOption>? = null
 
@@ -322,60 +304,10 @@ class ActionPage : AppCompatActivity() {
         })
     }
 
-    private fun chooseFilePath(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean {
-        return try {
-            if (fileSelectedInterface.type() == ParamsFileChooserRender.FileSelectedInterface.TYPE_FOLDER) {
-                chooseFolderPath()
-            } else {
-                val suffix = fileSelectedInterface.suffix()
-                if (!suffix.isNullOrEmpty()) {
-                    chooseFilePath(suffix)
-                } else {
-                    val intent = Intent(Intent.ACTION_GET_CONTENT);
-                    val mimeType = fileSelectedInterface.mimeType()
-                    if (mimeType != null) {
-                        intent.type = mimeType
-                    } else {
-                        intent.type = "*/*"
-                    }
-                    intent.addCategory(Intent.CATEGORY_OPENABLE);
-                    startActivityForResult(intent, ACTION_FILE_PATH_CHOOSER);
-                }
-            }
-            this.fileSelectedInterface = fileSelectedInterface
-            true
-        } catch (_: java.lang.Exception) {
-            false
-        }
-
-    }
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == ACTION_FILE_PATH_CHOOSER) {
-            val result = if (data == null || resultCode != RESULT_OK) null else data.data
-            if (fileSelectedInterface != null) {
-                if (result != null) {
-                    val absPath = getPath(result)
-                    fileSelectedInterface?.onFileSelected(absPath)
-                } else {
-                    fileSelectedInterface?.onFileSelected(null)
-                }
-            }
-            this.fileSelectedInterface = null
-        } else if (requestCode == ACTION_FILE_PATH_CHOOSER_INNER) {
-            val absPath = if (data == null || resultCode != RESULT_OK) null else data.getStringExtra("file")
-            fileSelectedInterface?.onFileSelected(absPath)
-            this.fileSelectedInterface = null
-        }
+        handleFileSelectorResult(this, resultCode, requestCode, data, fileSelectorInterface)
+        fileSelectorInterface = null
         super.onActivityResult(requestCode, resultCode, data)
-    }
-
-    private fun getPath(uri: Uri): String? {
-        return try {
-            FilePathResolver().getPath(this, uri)
-        } catch (_: java.lang.Exception) {
-            null
-        }
     }
 
     private fun showDialog(msg: String) {
@@ -503,8 +435,5 @@ class ActionPage : AppCompatActivity() {
         }
     }
 
-    companion object {
-        private const val ACTION_FILE_PATH_CHOOSER = 65400
-        private const val ACTION_FILE_PATH_CHOOSER_INNER = 65300
-    }
+
 }

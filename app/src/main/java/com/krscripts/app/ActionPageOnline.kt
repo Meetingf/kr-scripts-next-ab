@@ -1,24 +1,30 @@
 package com.krscripts.app
 
-import android.app.Activity
 import android.app.DownloadManager
 import android.content.ClipData
 import android.content.ClipboardManager
-import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
-import androidx.appcompat.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.View
-import android.webkit.*
+import android.webkit.JsResult
+import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebView
+import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.krscripts.app.databinding.ActivityActionPageOnlineBinding
+import com.krscripts.app.util.chooseFilePath
+import com.krscripts.app.util.handleFileSelectorResult
 import com.krscripts.common.shared.FilePathResolver
 import com.krscripts.common.ui.DialogHelper
 import com.krscripts.common.ui.ProgressBarDialog
@@ -26,11 +32,11 @@ import com.krscripts.core.R
 import com.krscripts.core.WebViewInjector
 import com.krscripts.core.downloader.Downloader
 import com.krscripts.core.ui.ParamsFileChooserRender
-import com.krscripts.app.databinding.ActivityActionPageOnlineBinding
 import com.krscripts.core.util.PermissionUtil.checkManageFile
 import com.krscripts.core.util.PermissionUtil.showManageFileDialog
-import java.util.*
-import androidx.core.net.toUri
+import java.util.Timer
+import java.util.TimerTask
+import java.util.UUID
 
 class ActionPageOnline : AppCompatActivity() {
     private val progressBarDialog = ProgressBarDialog(this)
@@ -162,12 +168,12 @@ class ActionPageOnline : AppCompatActivity() {
                     if (requestUrl != null && requestUrl.scheme?.startsWith("http") != true) {
                         val intent = Intent(Intent.ACTION_VIEW, requestUrl.toString().toUri())
                         startActivity(intent)
-                        return true;
+                        return true
                     } else {
-                        return super.shouldOverrideUrlLoading(view, request);
+                        return super.shouldOverrideUrlLoading(view, request)
                     }
                 } catch (_: Exception) {
-                    return super.shouldOverrideUrlLoading(view, request);
+                    return super.shouldOverrideUrlLoading(view, request)
                 }
             }
         }
@@ -177,48 +183,18 @@ class ActionPageOnline : AppCompatActivity() {
         WebViewInjector(binding.krOnlineWebview,
                 object : ParamsFileChooserRender.FileChooserInterface {
                     override fun openFileChooser(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean {
+                        fileSelectorInterface = fileSelectedInterface
                         return chooseFilePath(fileSelectedInterface)
                     }
                 }).inject(this, url.startsWith("file:///android_asset"))
     }
 
-    private var fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface? = null
-    private val ACTION_FILE_PATH_CHOOSER = 65400
-    private fun chooseFilePath(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean {
-        try {
-            val intent = Intent(Intent.ACTION_GET_CONTENT);
-            intent.setType("*/*")
-            intent.addCategory(Intent.CATEGORY_OPENABLE);
-            startActivityForResult(intent, ACTION_FILE_PATH_CHOOSER);
-            this.fileSelectedInterface = fileSelectedInterface
-            return true;
-        } catch (_: java.lang.Exception) {
-            return false
-        }
-    }
+    private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == ACTION_FILE_PATH_CHOOSER) {
-            val result = if (data == null || resultCode != Activity.RESULT_OK) null else data.data
-            if (fileSelectedInterface != null) {
-                if (result != null) {
-                    val absPath = getPath(result)
-                    fileSelectedInterface?.onFileSelected(absPath)
-                } else {
-                    fileSelectedInterface?.onFileSelected(null)
-                }
-            }
-            this.fileSelectedInterface = null
-        }
+        handleFileSelectorResult(this, resultCode, requestCode, data, fileSelectorInterface)
+        fileSelectorInterface = null
         super.onActivityResult(requestCode, resultCode, data)
-    }
-
-    private fun getPath(uri: Uri): String? {
-        return try {
-            FilePathResolver().getPath(this, uri)
-        } catch (_: java.lang.Exception) {
-            null
-        }
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {
@@ -249,17 +225,17 @@ class ActionPageOnline : AppCompatActivity() {
     private fun watchDownloadProgress(downloadId: Long, autoClose: Boolean, taskAliasId: String) {
         binding.krDownloadState.visibility = View.VISIBLE
 
-        val downloadManager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        val downloadManager = getSystemService(DOWNLOAD_SERVICE) as DownloadManager
         val query = DownloadManager.Query().setFilterById(downloadId)
 
         binding.krDownloadNameCopy.setOnClickListener {
-            val myClipboard: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val myClipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
             val myClip = ClipData.newPlainText("text", binding.krDownloadName.text.toString())
             myClipboard.setPrimaryClip(myClip)
             Toast.makeText(this@ActionPageOnline, getString(R.string.copy_success), Toast.LENGTH_SHORT).show()
         }
         binding.krDownloadUrlCopy.setOnClickListener {
-            val myClipboard: ClipboardManager = getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val myClipboard: ClipboardManager = getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
             val myClip = ClipData.newPlainText("text", binding.krDownloadUrl.text.toString())
             myClipboard.setPrimaryClip(myClip)
             Toast.makeText(this@ActionPageOnline, getString(R.string.copy_success), Toast.LENGTH_SHORT).show()
@@ -283,11 +259,12 @@ class ActionPageOnline : AppCompatActivity() {
                         try {
                             val nameColumn = cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI)
                             fileName = cursor.getString(nameColumn)
-                            absPath = FilePathResolver().getPath(this@ActionPageOnline, Uri.parse(fileName))
+                            absPath = FilePathResolver().getPath(this@ActionPageOnline,
+                                fileName.toUri())
                             if (!absPath.isNullOrEmpty()) {
                                 fileName = absPath
                             }
-                        } catch (ex: java.lang.Exception) {
+                        } catch (_: java.lang.Exception) {
                         }
                     }
 
