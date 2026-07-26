@@ -30,6 +30,7 @@ import com.krscripts.app.databinding.ActivityActionPageOnlineBinding
 import com.krscripts.core.util.PermissionUtil.checkManageFile
 import com.krscripts.core.util.PermissionUtil.showManageFileDialog
 import java.util.*
+import androidx.core.net.toUri
 
 class ActionPageOnline : AppCompatActivity() {
     private val progressBarDialog = ProgressBarDialog(this)
@@ -52,7 +53,6 @@ class ActionPageOnline : AppCompatActivity() {
         setSupportActionBar(binding.toolbar)
         setTitle(com.krscripts.app.R.string.app_name)
 
-        // 显示返回按钮
         supportActionBar!!.setHomeButtonEnabled(true)
         supportActionBar!!.setDisplayHomeAsUpEnabled(true)
         binding.toolbar.setNavigationOnClickListener {
@@ -63,58 +63,39 @@ class ActionPageOnline : AppCompatActivity() {
     }
 
     private fun loadIntentData() {
-        // 读取intent里的参数
-        val intent = this.intent
-        if (intent.extras != null) {
-            val extras = intent.extras
-            if (extras != null) {
-                if (extras.containsKey("title")) {
-                    title = extras.getString("title")!!
-                }
+        intent.extras?.let { extras ->
+            if (extras.containsKey("title")) {
+                title = extras.getString("title")!!
+            }
 
-                // config、url 都用于设定要打卡的网页
-                /*
+            when {
+                extras.containsKey("config") -> initWebview(extras.getString("config"))
+                extras.containsKey("url") -> initWebview(extras.getString("url"))
+                extras.containsKey("downloadUrl") -> initDownload(
+                    extras.getString("downloadUrl")!!,
+                    extras.getString("taskId"),
+                    extras.getBoolean("autoClose")
+                )
+            }
+        }
+    }
 
-                when {
-                    extras.containsKey("config") -> {
-                        initWebview(extras.getString("config"))
-                        hideWindowTitle() // 作为网页浏览器时，隐藏标题栏
-                    }
-                    extras.containsKey("url") -> {
-                        initWebview(extras.getString("url"))
-                        hideWindowTitle() // 作为网页浏览器时，隐藏标题栏
-                    }
-                    else -> {
-                        setWindowTitleBar()
-                    }
-                }
-                */
-                when {
-                    extras.containsKey("config") -> initWebview(extras.getString("config"))
-                    extras.containsKey("url") -> initWebview(extras.getString("url"))
-                }
+    private fun initDownload(url: String, taskId: String?, autoClose: Boolean) {
+        val downloader = Downloader(this)
 
-                if (extras.containsKey("downloadUrl")) {
-                    val downloader = Downloader(this)
-                    val url = extras.getString("downloadUrl")!!
-                    val taskAliasId = if (extras.containsKey("taskId")) extras.getString("taskId").toString() else UUID.randomUUID().toString()
+        val taskAliasId = taskId ?: UUID.randomUUID().toString()
 
-                    if (!checkManageFile(this)) {
-                        downloader.saveTaskStatus(taskAliasId, 0)
-                        showManageFileDialog(this)
-                    } else {
-                        val downloadId = downloader.download(url, null, null, taskAliasId)
-                        if (downloadId != null) {
-                            binding.krDownloadUrl.text = url
-                            val autoClose = extras.containsKey("autoClose") && extras.getBoolean("autoClose")
-
-                            downloader.saveTaskStatus(taskAliasId, 0)
-                            watchDownloadProgress(downloadId, autoClose, taskAliasId)
-                        } else {
-                            downloader.saveTaskStatus(taskAliasId, -1)
-                        }
-                    }
-                }
+        if (!checkManageFile(this)) {
+            downloader.saveTaskStatus(taskAliasId, 0)
+            showManageFileDialog(this)
+        } else {
+            val downloadId = downloader.download(url, null, null, taskAliasId)
+            if (downloadId != null) {
+                binding.krDownloadUrl.text = url
+                downloader.saveTaskStatus(taskAliasId, 0)
+                watchDownloadProgress(downloadId, autoClose, taskAliasId)
+            } else {
+                downloader.saveTaskStatus(taskAliasId, -1)
             }
         }
     }
@@ -122,30 +103,40 @@ class ActionPageOnline : AppCompatActivity() {
     private fun initWebview(url: String?) {
         binding.krOnlineWebview.visibility = View.VISIBLE
         binding.krOnlineWebview.webChromeClient = object : WebChromeClient() {
-            override fun onJsAlert(view: WebView?, url: String?, message: String?, result: JsResult?): Boolean {
+            override fun onJsAlert(
+                view: WebView?,
+                url: String?,
+                message: String?,
+                result: JsResult?
+            ): Boolean {
                 DialogHelper.animDialog(
                     MaterialAlertDialogBuilder(this@ActionPageOnline)
-                                .setMessage(message)
-                                .setPositiveButton(R.string.btn_confirm, { _, _ -> })
-                                .setOnDismissListener {
-                                    result?.confirm()
-                                }
-                                .create()
+                        .setMessage(message)
+                        .setPositiveButton(R.string.btn_confirm) { _, _ -> }
+                        .setOnDismissListener {
+                            result?.confirm()
+                        }
+                        .create()
                 )?.setCancelable(false)
                 return true // super.onJsAlert(view, url, message, result)
             }
 
-            override fun onJsConfirm(view: WebView?, url: String?, message: String?, result: JsResult?): Boolean {
+            override fun onJsConfirm(
+                view: WebView?,
+                url: String?,
+                message: String?,
+                result: JsResult?
+            ): Boolean {
                 DialogHelper.animDialog(
                     MaterialAlertDialogBuilder(this@ActionPageOnline)
-                                .setMessage(message)
-                                .setPositiveButton(R.string.btn_confirm) { _, _ ->
-                                    result?.confirm()
-                                }
-                                .setNeutralButton(R.string.btn_cancel) { _, _ ->
-                                    result?.cancel()
-                                }
-                                .create()
+                        .setMessage(message)
+                        .setPositiveButton(R.string.btn_confirm) { _, _ ->
+                            result?.confirm()
+                        }
+                        .setNeutralButton(R.string.btn_cancel) { _, _ ->
+                            result?.cancel()
+                        }
+                        .create()
                 )?.setCancelable(false)
                 return true // super.onJsConfirm(view, url, message, result)
             }
@@ -169,13 +160,13 @@ class ActionPageOnline : AppCompatActivity() {
                 try {
                     val requestUrl = request?.url
                     if (requestUrl != null && requestUrl.scheme?.startsWith("http") != true) {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(requestUrl.toString()));
-                        startActivity(intent);
+                        val intent = Intent(Intent.ACTION_VIEW, requestUrl.toString().toUri())
+                        startActivity(intent)
                         return true;
                     } else {
                         return super.shouldOverrideUrlLoading(view, request);
                     }
-                } catch (e: Exception) {
+                } catch (_: Exception) {
                     return super.shouldOverrideUrlLoading(view, request);
                 }
             }
@@ -188,7 +179,7 @@ class ActionPageOnline : AppCompatActivity() {
                     override fun openFileChooser(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean {
                         return chooseFilePath(fileSelectedInterface)
                     }
-                }).inject(this, url?.startsWith("file:///android_asset") == true)
+                }).inject(this, url.startsWith("file:///android_asset"))
     }
 
     private var fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface? = null
