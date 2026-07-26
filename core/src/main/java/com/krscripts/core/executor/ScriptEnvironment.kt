@@ -30,7 +30,7 @@ object ScriptEnvironment {
     private var rooted = false
     private var privateShell: KeepShell? = null
     private var shellTranslation: ShellTranslation? = null
-    private val PLACEHOLDER_REGEX = Regex("""\$\(\{([^}]+)\}\)""")
+    private val PLACEHOLDER_REGEX = Regex("""\{([^}]+)\}""")
 
     private fun init(context: Context): Boolean {
         val configSpf = context.getSharedPreferences("kr-script-config", Context.MODE_PRIVATE)
@@ -205,7 +205,6 @@ object ScriptEnvironment {
         val params = HashMap<String, String>()
 
         params["TOOLKIT"] = TOOLKIT_DIR ?: "null"
-        params["MAGISK_PATH"] = "null"
         params["START_DIR"] = getStartPath(context)
         params["TEMP_DIR"] = context.cacheDir.absolutePath
 
