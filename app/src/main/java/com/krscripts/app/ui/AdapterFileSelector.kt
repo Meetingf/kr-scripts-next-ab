@@ -194,7 +194,7 @@ class AdapterFileSelector private constructor(
     }
 
     private fun confirmSelection(view: View, file: File, title: String) {
-        DialogHelper.confirm(view.context, title, file.absolutePath, Runnable {
+        DialogHelper.openConfirmAlert(view.context, title, file.absolutePath, Runnable {
             if (!file.exists()) {
                 Toast.makeText(view.context, "所选的文件已被删除，请重新选择！", Toast.LENGTH_SHORT).show()
                 return@Runnable

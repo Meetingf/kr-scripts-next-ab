@@ -216,7 +216,7 @@ class BgTaskThread(private var process: Process) : Thread() {
             params?.run {
                 bundle.putSerializable("params", params)
             }
-            DialogHelper.helpInfo(context, context.getString(R.string.kr_bg_task_start), context.getString(
+            DialogHelper.openInfoAlert(context, context.getString(R.string.kr_bg_task_start), context.getString(
                 R.string.kr_bg_task_start_desc))
             // Toast.makeText(applicationContext, applicationContext.getString(R.string.kr_bg_task_start), Toast.LENGTH_SHORT).show()
         }

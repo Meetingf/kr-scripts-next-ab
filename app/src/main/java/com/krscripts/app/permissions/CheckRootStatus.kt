@@ -40,7 +40,8 @@ class CheckRootStatus(var context: Context, private var next: Runnable? = null) 
                     myHandler.post {
                         KeepShellPublic.tryExit()
                         val builder = MaterialAlertDialogBuilder(context)
-                                .setTitle(R.string.error_root)
+                            .setTitle(context.getString(R.string.error_root_title))
+                                .setMessage(R.string.error_root_message)
                                 .setPositiveButton(R.string.btn_retry) { _, _ ->
                                     KeepShellPublic.tryExit()
                                     if (thread != null && thread!!.isAlive && !thread!!.isInterrupted) {
@@ -58,36 +59,11 @@ class CheckRootStatus(var context: Context, private var next: Runnable? = null) 
                                 next?.let { myHandler.post(it) }
                             }
                         }
-                        DialogHelper.animDialog(builder).setCancelable(false)
+                        DialogHelper.animDialog(context, builder).setCancelable(false)
                     }
                 }
             }
             thread!!.start()
-            Thread {
-                Thread.sleep(1000 * 15)
-
-                if (!completed) {
-                    KeepShellPublic.tryExit()
-                    myHandler.post {
-                        DialogHelper.confirm(
-                            context,
-                            context.getString(R.string.error_root),
-                            context.getString(R.string.error_su_timeout),
-                            null,
-                            DialogHelper.DialogButton(context.getString(R.string.btn_retry), {
-                                if (thread != null && thread!!.isAlive && !thread!!.isInterrupted) {
-                                    thread!!.interrupt()
-                                    thread = null
-                                }
-                                forceGetRoot()
-                            }),
-                            DialogHelper.DialogButton(context.getString(R.string.btn_exit), {
-                                exitProcess(0)
-                            })
-                        )
-                    }
-                }
-            }.start()
         }
     }
 

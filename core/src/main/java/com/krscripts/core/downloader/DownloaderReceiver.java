@@ -58,7 +58,7 @@ public class DownloaderReceiver extends BroadcastReceiver {
                     if (path != null && !path.isEmpty()) {
                         new Downloader(context).saveTaskCompleted(downloadId, path);
                         try {
-                            DialogHelper.Companion.helpInfo(context, context.getString(R.string.kr_download_completed), "" + path, null);
+                            DialogHelper.Companion.openInfoAlert(context, context.getString(R.string.kr_download_completed), "" + path, null);
                         } catch (Exception ex) {
                             Toast.makeText(context, context.getString(R.string.kr_download_completed) + "\n" + path, Toast.LENGTH_LONG).show();
                         }

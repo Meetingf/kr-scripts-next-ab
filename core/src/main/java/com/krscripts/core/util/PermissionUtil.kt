@@ -11,6 +11,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.krscripts.common.ui.DialogHelper
 import com.krscripts.core.R
 import kotlin.system.exitProcess
 
@@ -21,8 +22,9 @@ object PermissionUtil {
         manageFileRequester: ActivityResultLauncher<Intent>? = null,
         onSkip: () -> Unit = { }
     ) {
-        MaterialAlertDialogBuilder(context)
-            .setTitle("请授予文件管理权限")
+        val builder = MaterialAlertDialogBuilder(context)
+            .setTitle("权限缺失")
+            .setMessage("请授予文件管理权限")
             .setPositiveButton("授予") { _, _ ->
                 if (Build.VERSION.SDK_INT >= 30) {
                     val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
@@ -49,7 +51,7 @@ object PermissionUtil {
                 onSkip()
             }
             .setCancelable(false)
-            .show()
+        DialogHelper.animDialog(context, builder)
     }
 
     fun checkManageFile(context: Context): Boolean {

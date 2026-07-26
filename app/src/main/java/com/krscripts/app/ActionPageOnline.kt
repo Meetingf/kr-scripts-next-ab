@@ -116,14 +116,15 @@ class ActionPageOnline : AppCompatActivity() {
                 result: JsResult?
             ): Boolean {
                 DialogHelper.animDialog(
+                    this@ActionPageOnline,
                     MaterialAlertDialogBuilder(this@ActionPageOnline)
                         .setMessage(message)
+                        .setCancelable(false)
                         .setPositiveButton(R.string.btn_confirm) { _, _ -> }
                         .setOnDismissListener {
                             result?.confirm()
                         }
-                        .create()
-                )?.setCancelable(false)
+                )
                 return true // super.onJsAlert(view, url, message, result)
             }
 
@@ -134,16 +135,17 @@ class ActionPageOnline : AppCompatActivity() {
                 result: JsResult?
             ): Boolean {
                 DialogHelper.animDialog(
+                    this@ActionPageOnline,
                     MaterialAlertDialogBuilder(this@ActionPageOnline)
                         .setMessage(message)
+                        .setCancelable(false)
                         .setPositiveButton(R.string.btn_confirm) { _, _ ->
                             result?.confirm()
                         }
                         .setNeutralButton(R.string.btn_cancel) { _, _ ->
                             result?.cancel()
                         }
-                        .create()
-                )?.setCancelable(false)
+                )
                 return true // super.onJsConfirm(view, url, message, result)
             }
         }

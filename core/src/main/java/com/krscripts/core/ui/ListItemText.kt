@@ -83,7 +83,7 @@ class ListItemText(private val context: Context,
                         override fun onClick(widget: View) {
                             val result = ScriptEnvironment.executeResultRoot(context, row.onClickScript, config)
                             if (result.trim().isNotEmpty()) {
-                                DialogHelper.helpInfo(context, context.getString(R.string.kr_slice_script_result), result)
+                                DialogHelper.openInfoAlert(context, context.getString(R.string.kr_slice_script_result), result)
                             }
                         }
 

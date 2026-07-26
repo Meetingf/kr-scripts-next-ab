@@ -53,7 +53,7 @@ class Downloader(private var context: Context) {
             DownloaderReceiver.autoRegister(context.applicationContext)
             return downloadId
         } catch (ex: Exception) {
-            DialogHelper.helpInfo(context, context.getString(R.string.kr_download_create_fail), "" + ex.message)
+            DialogHelper.openInfoAlert(context, context.getString(R.string.kr_download_create_fail), "" + ex.message)
             return null
         }
     }

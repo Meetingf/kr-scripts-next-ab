@@ -57,6 +57,7 @@ class WebViewInjector(
                 PermissionUtil.showManageFileDialog(activity)
             } else {
                 DialogHelper.animDialog(
+                    context,
                     MaterialAlertDialogBuilder(context)
                         .setTitle(R.string.kr_download_confirm)
                         .setMessage(url + " (" + contentLength + "Bytes" + ")")

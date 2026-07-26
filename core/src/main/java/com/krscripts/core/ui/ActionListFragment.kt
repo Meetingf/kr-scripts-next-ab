@@ -118,19 +118,19 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
     private fun nodeUnlocked(clickableNode: ClickableNode): Boolean {
         val currentSDK = Build.VERSION.SDK_INT
         if (clickableNode.targetSdkVersion > 0 && currentSDK != clickableNode.targetSdkVersion) {
-            DialogHelper.helpInfo(requireContext(),
+            DialogHelper.openInfoAlert(requireContext(),
                     getString(R.string.kr_sdk_discrepancy),
                     getString(R.string.kr_sdk_discrepancy_message).format(clickableNode.targetSdkVersion)
             )
             return false
         } else if (currentSDK > clickableNode.maxSdkVersion) {
-            DialogHelper.helpInfo(requireContext(),
+            DialogHelper.openInfoAlert(requireContext(),
                     getString(R.string.kr_sdk_overtop),
                     getString(R.string.kr_sdk_message).format(clickableNode.minSdkVersion, clickableNode.maxSdkVersion)
             )
             return false
         } else if (currentSDK < clickableNode.minSdkVersion) {
-            DialogHelper.helpInfo(requireContext(),
+            DialogHelper.openInfoAlert(requireContext(),
                     getString(R.string.kr_sdk_too_low),
                     getString(R.string.kr_sdk_message).format(clickableNode.minSdkVersion, clickableNode.maxSdkVersion)
             )
@@ -159,11 +159,11 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
         if (nodeUnlocked(item)) {
             val toValue = !item.checked
             if (item.confirm) {
-                DialogHelper.warning(requireActivity(), item.title, item.desc) {
+                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.desc) {
                     switchExecute(item, toValue, onCompleted)
                 }
             } else if (item.warning.isNotEmpty()) {
-                DialogHelper.warning(requireActivity(), item.title, item.warning) {
+                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.warning) {
                     switchExecute(item, toValue, onCompleted)
                 }
             } else {
@@ -207,7 +207,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
     // 长按 添加收藏
     override fun onItemLongClick(clickableNode: ClickableNode) {
         if (clickableNode.key.isEmpty()) {
-            DialogHelper.alert(
+            DialogHelper.openConfirmAlert(
                     this.requireActivity(),
                     getString(R.string.kr_shortcut_create_fail),
                     getString(R.string.kr_ushortcut_nsupported)
@@ -216,7 +216,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
             krScriptActionHandler?.createShortcut(clickableNode, object : KrScriptActionHandler.CreateShortcutHandler {
                 override fun onCreateShortcut(clickableNode: ClickableNode, intent: Intent?) {
                     if (intent != null) {
-                        DialogHelper.confirm(activity!!,
+                        DialogHelper.openConfirmAlert(activity!!,
                                 getString(R.string.kr_shortcut_create),
                                 String.format(getString(R.string.kr_shortcut_create_desc), clickableNode.title)
                         ) {
@@ -252,11 +252,11 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
     override fun onPickerClick(item: PickerNode, onCompleted: Runnable) {
         if (nodeUnlocked(item)) {
             if (item.confirm) {
-                DialogHelper.warning(requireActivity(), item.title, item.desc) {
+                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.desc) {
                     pickerExecute(item, onCompleted)
                 }
             } else if (item.warning.isNotEmpty()) {
-                DialogHelper.warning(requireActivity(), item.title, item.warning) {
+                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.warning) {
                     pickerExecute(item, onCompleted)
                 }
             } else {
@@ -331,11 +331,11 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
     override fun onActionClick(item: ActionNode, onCompleted: Runnable) {
         if (nodeUnlocked(item)) {
             if (item.confirm) {
-                DialogHelper.warning(requireActivity(), item.title, item.desc) {
+                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.desc) {
                     actionExecute(item, onCompleted)
                 }
             } else if (item.warning.isNotEmpty() && (item.params == null || item.params?.size == 0)) {
-                DialogHelper.warning(requireActivity(), item.title, item.warning) {
+                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.warning) {
                     actionExecute(item, onCompleted)
                 }
             } else {
@@ -439,10 +439,12 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                                     show()
                                 }
                             } else {
-                                DialogHelper.customDialog(
+                                DialogHelper.showDialog(
                                     requireActivity(),
                                     dialogView,
-                                    onConfirm = { _, _ ->
+                                    title = action.title,
+                                    message = action.desc,
+                                    onConfirm = {
                                         try {
                                             val params = render.readParamsValue(actionParamInfos)
                                             actionExecute(action, script, onExit, params)
@@ -456,12 +458,6 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                                     })
                             }
 
-                            dialogView.findViewById<TextView>(R.id.title).text = action.title
-                            if (action.desc.isEmpty()) {
-                                dialogView.findViewById<TextView>(R.id.desc).visibility = View.GONE
-                            } else {
-                                dialogView.findViewById<TextView>(R.id.desc).text = action.desc
-                            }
                             if (action.warning.isEmpty()) {
                                 dialogView.findViewById<TextView>(R.id.warn).visibility = View.GONE
                             } else {

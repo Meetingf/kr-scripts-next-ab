@@ -107,7 +107,7 @@ class ParamsColorPicker(private val actionParamInfo: ActionParamInfo, private va
         greenBar.setOnSeekBarChangeListener(listener)
         blueBar.setOnSeekBarChangeListener(listener)
 
-        DialogHelper.animDialog(MaterialAlertDialogBuilder(context)
+        DialogHelper.animDialog(context, MaterialAlertDialogBuilder(context)
                 .setTitle(context.getString(R.string.kr_color_picker))
                 .setView(view)
                 .setPositiveButton(context.getString(R.string.btn_confirm)) { _, which ->

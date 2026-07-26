@@ -26,6 +26,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.app.databinding.ActivityMainBinding
 import com.krscripts.app.util.chooseFilePath
 import com.krscripts.app.util.handleFileSelectorResult
+import com.krscripts.common.ui.DialogHelper
 import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.core.config.PageConfigReader
 import com.krscripts.core.config.PageConfigSh
@@ -220,20 +221,9 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.option_menu_info -> {
-                // It's an experimental feature
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    window.decorView.setRenderEffect(
-                        RenderEffect.createBlurEffect(100f, 100f, Shader.TileMode.CLAMP)
-                    )
-                }
                 val layoutInflater = LayoutInflater.from(this)
                 val layout = layoutInflater.inflate(R.layout.dialog_about, null)
-                MaterialAlertDialogBuilder(this).setView(layout)
-                    .setOnDismissListener {
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            window.decorView.setRenderEffect(null)
-                        }
-                    }.show()
+                DialogHelper.animDialog(this, MaterialAlertDialogBuilder(this).setView(layout))
             }
         }
         return super.onOptionsItemSelected(item)
