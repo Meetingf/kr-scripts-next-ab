@@ -16,7 +16,6 @@ import android.view.View
 import android.webkit.*
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -224,10 +223,10 @@ class ActionPageOnline : AppCompatActivity() {
     }
 
     private fun getPath(uri: Uri): String? {
-        try {
-            return FilePathResolver().getPath(this, uri)
-        } catch (ex: java.lang.Exception) {
-            return null
+        return try {
+            FilePathResolver().getPath(this, uri)
+        } catch (_: java.lang.Exception) {
+            null
         }
     }
 
@@ -282,7 +281,7 @@ class ActionPageOnline : AppCompatActivity() {
             override fun run() {
                 val cursor = downloadManager.query(query)
                 var fileName = ""
-                var absPath = ""
+                var absPath: String? = null
                 if (cursor.moveToFirst()) {
                     val downloadBytesIdx = cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_BYTES_DOWNLOADED_SO_FAR)
                     val totalBytesIdx = cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_TOTAL_SIZE_BYTES)
@@ -294,7 +293,7 @@ class ActionPageOnline : AppCompatActivity() {
                             val nameColumn = cursor.getColumnIndexOrThrow(DownloadManager.COLUMN_LOCAL_URI)
                             fileName = cursor.getString(nameColumn)
                             absPath = FilePathResolver().getPath(this@ActionPageOnline, Uri.parse(fileName))
-                            if (!absPath.isEmpty()) {
+                            if (!absPath.isNullOrEmpty()) {
                                 fileName = absPath
                             }
                         } catch (ex: java.lang.Exception) {
@@ -309,21 +308,23 @@ class ActionPageOnline : AppCompatActivity() {
                         downloader.saveTaskStatus(taskAliasId, ratio)
                     }
 
-                    if (ratio >= 100) {
-                        // 保存下载成功后的路径
-                        downloader.saveTaskCompleted(downloadId, absPath)
+                    absPath?.let { path ->
+                        if (ratio >= 100) {
+                            // 保存下载成功后的路径
+                            downloader.saveTaskCompleted(downloadId, path)
 
-                        handler.post {
-                            setTitle(R.string.kr_download_completed)
-                            binding.krDownloadProgress.visibility = View.GONE
-                            stopWatchDownloadProgress()
+                            handler.post {
+                                setTitle(R.string.kr_download_completed)
+                                binding.krDownloadProgress.visibility = View.GONE
+                                stopWatchDownloadProgress()
 
-                            val result = Intent()
-                            result.putExtra("absPath", absPath)
-                            setResult(0, result)
+                                val result = Intent()
+                                result.putExtra("absPath", path)
+                                setResult(0, result)
 
-                            if (autoClose) {
-                                finish()
+                                if (autoClose) {
+                                    finish()
+                                }
                             }
                         }
                     }
