@@ -31,6 +31,7 @@ android {
 
 dependencies {
     implementation(libs.androidx.appcompat)
+    implementation(libs.constraintlayout)
     implementation(libs.material)
     implementation(project(":common"))
 }
