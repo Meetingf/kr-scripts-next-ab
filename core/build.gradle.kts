@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.android.library)
+    alias(libs.plugins.serialization)
 }
 
 android {
@@ -33,5 +34,6 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.constraintlayout)
     implementation(libs.material)
+    implementation(libs.serialization)
     implementation(project(":common"))
 }
