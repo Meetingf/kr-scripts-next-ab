@@ -20,6 +20,7 @@ open class ListItemGroup(
     fun addView(item: ListItemView): ListItemGroup {
         val content = layout.findViewById<ViewGroup>(android.R.id.content)
         content.addView(item.getView())
+        content.clipToOutline = true
 
         children.add(item)
 

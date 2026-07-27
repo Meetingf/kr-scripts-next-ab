@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@id/kr_action_list_item"
+    android:background="?attr/selectableItemBackground"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:paddingVertical="16dp"
@@ -34,7 +36,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintBottom_toTopOf="@+id/kr_desc"
-        app:layout_constraintEnd_toStartOf="@+id/kr_widget"
+        app:layout_constraintEnd_toStartOf="@+id/right_side_barrier"
         app:layout_constraintStart_toEndOf="@+id/kr_icon"
         app:layout_constraintTop_toTopOf="@+id/kr_icon"
         app:layout_constraintVertical_chainStyle="packed" />
@@ -48,7 +50,7 @@
         android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"
         app:layout_constraintBottom_toTopOf="@+id/kr_summary"
-        app:layout_constraintEnd_toStartOf="@+id/kr_widget"
+        app:layout_constraintEnd_toStartOf="@+id/right_side_barrier"
         app:layout_constraintStart_toEndOf="@+id/kr_icon"
         app:layout_constraintTop_toBottomOf="@+id/kr_title" />
 
@@ -62,12 +64,12 @@
         android:layout_marginEnd="8dp"
         android:textColor="?android:colorAccent"
         app:layout_constraintBottom_toBottomOf="@+id/kr_icon"
-        app:layout_constraintEnd_toStartOf="@+id/kr_widget"
+        app:layout_constraintEnd_toStartOf="@+id/right_side_barrier"
         app:layout_constraintStart_toEndOf="@+id/kr_icon"
         app:layout_constraintTop_toBottomOf="@+id/kr_desc" />
 
     <ImageView
-        android:id="@id/kr_widget"
+        android:id="@+id/kr_widget"
         android:layout_width="30dp"
         android:layout_height="30dp"
         android:layout_marginEnd="16dp"
@@ -77,5 +79,23 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?android:colorAccent" />
+
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/kr_switch"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp"
+        android:padding="5dp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.constraintlayout.widget.Barrier
+        android:id="@id/right_side_barrier"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:barrierDirection="start"
+        app:constraint_referenced_ids="kr_switch, kr_widget" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

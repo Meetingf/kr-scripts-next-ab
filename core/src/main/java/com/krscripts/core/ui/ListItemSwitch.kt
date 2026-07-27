@@ -13,7 +13,7 @@ import java.util.Locale.getDefault
 class ListItemSwitch(
     private val context: Context,
     private val config: SwitchNode
-): ListItemView(context, R.layout.kr_switch_list_item, config) {
+): ListItemView(context, R.layout.kr_action_list_item, config) {
 
     private var switchView: MaterialSwitch? = layout.findViewById(R.id.kr_switch)
     private var onCheckedChangeListener: OnCheckedChangeListener? = null
@@ -47,6 +47,9 @@ class ListItemSwitch(
                 onCheckedChangeListener?.onCheckedChanged(this, isChecked)
             }
         }
+
+        switchView?.visibility = View.VISIBLE
+        layout.findViewById<ImageView>(R.id.kr_widget).visibility = View.GONE
 
         if (iconView != null) {
             iconView?.visibility = View.GONE

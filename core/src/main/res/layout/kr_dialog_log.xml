@@ -38,13 +38,11 @@
             android:id="@+id/btn_hide"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="8dp"
-            android:layout_marginStart="8dp"
-            android:background="@null"
             android:contentDescription="@null"
             android:scaleType="centerInside"
             android:src="@drawable/baseline_keyboard_arrow_down_24"
-            app:tint="?colorOnSurface" />
+            app:tint="?colorOnSurface"
+            style="@style/Widget.AppCompat.ActionButton"/>
     </LinearLayout>
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
@@ -52,7 +50,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
-        android:layout_marginTop="8dp"
         android:indeterminate="true"
         android:max="100"
         android:progress="0" />
