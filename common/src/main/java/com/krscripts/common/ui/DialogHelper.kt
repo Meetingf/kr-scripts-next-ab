@@ -59,7 +59,7 @@ class DialogHelper {
                 message = message,
                 cancelable = true,
                 dismissButton = DialogButton(text = "知道了", onClick = onDismiss),
-                confirmButton = null
+                confirmButton = DialogButton(text = "")
             )
 
             return dialog
@@ -78,7 +78,7 @@ class DialogHelper {
                 title = title,
                 message = message,
                 cancelable = true,
-                dismissButton = null,
+                dismissButton = DialogButton(text = ""),
                 confirmButton = DialogButton(text = "确定", onClick = onConfirm)
             )
 
