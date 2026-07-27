@@ -119,7 +119,6 @@ class DialogLogFragment : DialogFragment() {
                 onExit.run()
 
                 if (_binding != null) {
-                    binding.btnHide.visibility = View.GONE
                     binding.btnExit.visibility = View.VISIBLE
                     binding.actionProgress.visibility = View.GONE
                 }
