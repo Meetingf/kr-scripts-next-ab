@@ -42,6 +42,8 @@ class ListItemSwitch(
         desc = config.desc
         summary = config.summary
 
+        switchView?.isChecked = config.checked
+
         switchView?.setOnCheckedChangeListener { _, isChecked ->
             if (!isAdjusting) {
                 onCheckedChangeListener?.onCheckedChanged(this, isChecked)

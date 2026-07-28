@@ -90,18 +90,12 @@ class KrScriptConfig {
             if (configInfo != null) {
                 val shConfig = configInfo!![PAGE_LIST_CONFIG_SH]
                 val pathConfig = configInfo!![PAGE_LIST_CONFIG]
-                if (shConfig != null || pathConfig != null) {
-                    val shList = shConfig?.split(", ") ?: emptyList()
-                    val pathList = pathConfig?.split(", ") ?: emptyList()
-                    val maxLen = max(shList.size, pathList.size)
 
-                    val newNodes = List(maxLen) { i ->
-                        PageNode("").apply {
-                            if (i < shList.size) pageConfigSh = shList[i]
-                            if (i < pathList.size) pageConfigPath = pathList[i]
-                        }
-                    }
-                    pageNodes.addAll(newNodes)
+                shConfig?.split(",")?.forEach { shItem ->
+                    pageNodes.add(PageNode("").apply { pageConfigSh = shItem.trim() })
+                }
+                pathConfig?.split(",")?.forEach { pathItem ->
+                    pageNodes.add(PageNode("").apply { pageConfigPath = pathItem.trim() })
                 }
             }
             return pageNodes
