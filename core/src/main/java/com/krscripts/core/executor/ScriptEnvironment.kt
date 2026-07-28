@@ -287,7 +287,7 @@ object ScriptEnvironment {
         }
 
 
-        return "$environmentPath \"$cachePath\" \"$tag\""
+        return "sh $environmentPath \"$cachePath\" \"$tag\""
     }
 
     val runtime: Process?
