@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<root>
+<config>
     <group title="Page测试">
         <!--
             子页面解析、执行顺序：
@@ -117,4 +117,4 @@
             <desc>甚至，你可以直接在activity属性里使用am命令，当解析到activity的内容为"am"开头时自动调用shell执行</desc>
         </page>
     </group>
-</root>
+</config>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<config>
     <group>
         <action warning="不许点喵">
             <title>测试操作警告</title>
@@ -53,4 +53,4 @@
             </set>
         </action>
     </group>
-</page>
+</config>

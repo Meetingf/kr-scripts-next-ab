@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<group>
+<config>
     <group>
         <picker>
             <title>测试单选界面</title>
@@ -61,4 +61,4 @@
             </set>
         </picker>
     </group>
-</group>
+</config>

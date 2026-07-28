@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<config>
     <group>
         <action>
             <title>现在你来到了子页面的子页面</title>
@@ -10,4 +10,4 @@
             </set>
         </action>
     </group>
-</page>
+</config>

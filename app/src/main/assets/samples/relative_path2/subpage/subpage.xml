@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<config>
     <group>
         <action>
             <title>【配置文件】路径信息</title>
@@ -10,4 +10,4 @@
     <group>
         <page title="子页面的子页面" config="sub2/sub2.xml" />
     </group>
-</page>
+</config>

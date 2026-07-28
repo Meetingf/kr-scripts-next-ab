@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<group>
+<config>
     <resource dir="file:///android_asset/samples/bg_task" />
 
     <group title="后台任务测试">
@@ -29,4 +29,4 @@
             <set>$PAGE_WORK_DIR/scene-little-run.sh</set>
         </action>
     </group>
-</group>
+</config>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<config>
     <group title="相对路径测试">
 
         <action>
@@ -10,4 +10,4 @@
 
         <page title="查看子页面" config-sh="echo $PAGE_WORK_DIR/subpage/subpage.xml" />
     </group>
-</page>
+</config>

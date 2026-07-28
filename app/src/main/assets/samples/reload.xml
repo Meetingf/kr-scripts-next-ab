@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<group>
+<config>
     <text>
         <slices>
             <slice break="true">默认情况下，一个action、picker、switch的脚本执行完后，只会刷新自身的界面显示。</slice>
@@ -68,4 +68,4 @@
             </slices>
         </text>
     </group>
-</group>
+</config>

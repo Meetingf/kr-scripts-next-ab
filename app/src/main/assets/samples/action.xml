@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<group>
+<config>
     <group title="基本参数类型和输入限制">
         <action>
             <title>单选下拉</title>
@@ -179,4 +179,4 @@
             <set>echo '数值为：' $test</set>
         </action>
     </group>
-</group>
+</config>

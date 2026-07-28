@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<config>
     <group title="基础用法">
         <switch>
             <title>测试开关</title>
@@ -34,4 +34,4 @@
                 echo '我就是想显示个错误，咋的' 1>&amp;2</set>
         </switch>
     </group>
-</page>
+</config>

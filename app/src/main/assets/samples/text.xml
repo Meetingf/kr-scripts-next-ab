@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<items>
+<config>
     <text>
         <title>测试文本</title>
         <desc>天地玄黄，宇宙洪荒。日月盈昃，辰宿列张。
@@ -42,4 +42,4 @@
             </slices>
         </text>
     </group>
-</items>
+</config>

@@ -3,7 +3,7 @@ source $START_DIR/samples/thermal/path_config.sh
 # 构成界面
 
 echo '<?xml version="1.0" encoding="UTF-8" ?>'
-echo '<root>'
+echo '<config>'
 
 echo '
 <group>
@@ -67,4 +67,4 @@ echo '
 </group>'
 
 echo '</group>'
-echo '</root>'
+echo '</config>'

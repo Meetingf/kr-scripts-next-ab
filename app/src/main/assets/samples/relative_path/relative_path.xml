@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<config>
     <group title="相对路径测试">
         <action>
             <title>【配置文件】路径信息</title>
@@ -7,4 +7,4 @@
             <set>samples/relative_path/relative_path.sh config_path</set>
         </action>
     </group>
-</page>
+</config>
