@@ -1,8 +1,8 @@
 package com.krscripts.app
 
-import android.app.ActivityManager
 import android.content.ComponentName
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -85,10 +85,15 @@ class ActionPage : AppCompatActivity() {
         intent?.extras?.let { extras ->
 
             val page = when {
-                extras.containsKey("page") -> extras.getSerializable("page") as PageNode?
+                extras.containsKey("page") -> if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) extras.getSerializable(
+                    "page",
+                    PageNode::class.java
+                ) else @Suppress("DEPRECATION") extras.getSerializable("page") as PageNode
+
                 extras.containsKey("shortcutId") -> ActionShortcutManager(this).getShortcutTarget(
                     extras.getString("shortcutId")
                 )
+
                 else -> null
             }
 
@@ -413,25 +418,5 @@ class ActionPage : AppCompatActivity() {
     fun openPage(pageNode: PageNode) {
         OpenPageHelper(this).openPage(pageNode)
     }
-
-    override fun onDestroy() {
-        this.setExcludeFromRecents()
-        super.onDestroy()
-    }
-
-    private fun setExcludeFromRecents() {
-        if (isTaskRoot) {
-            try {
-                val service = this.getSystemService(ACTIVITY_SERVICE) as ActivityManager
-                for (task in service.appTasks) {
-                    if (task.taskInfo!!.id == this.taskId) {
-                        task.setExcludeFromRecents(true)
-                    }
-                }
-            } catch (_: Exception) {
-            }
-        }
-    }
-
 
 }

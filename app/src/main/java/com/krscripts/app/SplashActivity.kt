@@ -61,18 +61,15 @@ class SplashActivity : ComponentActivity() {
     }
 
     private fun checkFileManage(next: Runnable) {
-        Thread {
-            CheckRootStatus.grantPermission(this)
-            if (!checkManageFile(this)) {
-                myHandler.post {
-                    showManageFileDialog(this, manageFileRequester) {
-                        next.run()
-                    }
+        if (!checkManageFile(this)) {
+            myHandler.post {
+                showManageFileDialog(this, manageFileRequester) {
+                    next.run()
                 }
-            } else {
-                next.run()
             }
-        }.start()
+        } else {
+            next.run()
+        }
     }
 
     private var hasRoot = false

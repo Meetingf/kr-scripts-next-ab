@@ -37,6 +37,7 @@ class AdapterAppChooser(
 
     private class ArrayFilter(private var adapter: AdapterAppChooser) : Filter() {
         override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+            @Suppress("UNCHECKED_CAST")
             adapter.filterApps = results!!.values as ArrayList<AppInfo>
             if (results.count > 0) {
                 adapter.notifyDataSetChanged()
@@ -45,27 +46,9 @@ class AdapterAppChooser(
             }
         }
 
-        private fun searchStr(valueText: String, keyword: String): Boolean {
-            // First match against the whole, non-splitted value
-            if (valueText.contains(keyword)) {
-                return true
-            } else {
-                val words = valueText.split(" ".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-                val wordCount = words.size
-
-                // Start at index 0, in case valueText starts with space(s)
-                for (k in 0 until wordCount) {
-                    if (words[k].contains(keyword)) {
-                        return true
-                    }
-                }
-            }
-            return false
-        }
-
         override fun performFiltering(constraint: CharSequence?): FilterResults {
-            val results = Filter.FilterResults()
-            val prefix: String = if (constraint == null) "" else constraint.toString()
+            val results = FilterResults()
+            val prefix: String = constraint?.toString() ?: ""
 
             if (prefix.isEmpty()) {
                 val list: ArrayList<AppInfo>
@@ -93,9 +76,9 @@ class AdapterAppChooser(
                     } else {
                         val labelText = value.appName.lowercase(getDefault())
                         val valueText = value.packageName.lowercase(getDefault())
-                        if (searchStr(labelText, prefixString)) {
+                        if (labelText.contains(prefixString)) {
                             newValues.add(value)
-                        } else if (searchStr(valueText, prefixString)) {
+                        } else if (valueText.contains(prefixString)) {
                             newValues.add(value)
                         }
                     }
@@ -134,25 +117,23 @@ class AdapterAppChooser(
         return position.toLong()
     }
 
-    private fun loadIcon(app: AppInfo): Deferred<Drawable?> {
-        return GlobalScope.async(Dispatchers.IO) {
-            val packageName = app.packageName
-            val icon: Drawable? = iconCaches.get(packageName)
-            if (icon == null && !app.notFound) {
-                try {
-                    val installInfo = context.packageManager.getPackageInfo(packageName, 0)
-                    iconCaches.put(
-                            packageName,
-                            installInfo.applicationInfo!!.loadIcon(context.packageManager)
-                    )
-                } catch (ex: Exception) {
-                    app.notFound = true
-                } finally {
-                }
-                return@async iconCaches.get(packageName)
-            } else {
-                return@async icon
+    private suspend fun loadIcon(app: AppInfo): Drawable? = withContext(Dispatchers.IO) {
+        val packageName = app.packageName
+        val icon: Drawable? = iconCaches.get(packageName)
+        if (icon == null && !app.notFound) {
+            try {
+                val installInfo = context.packageManager.getPackageInfo(packageName, 0)
+                iconCaches.put(
+                    packageName,
+                    installInfo.applicationInfo!!.loadIcon(context.packageManager)
+                )
+            } catch (_: Exception) {
+                app.notFound = true
+            } finally {
             }
+            iconCaches.get(packageName)
+        } else {
+            icon
         }
     }
 
@@ -206,8 +187,8 @@ class AdapterAppChooser(
 
             val imgView = imgView!!
             imgView.tag = packageName
-            GlobalScope.launch(Dispatchers.Main) {
-                val icon = loadIcon(item).await()
+            scope.launch(Dispatchers.Main) {
+                val icon = loadIcon(item)
                 if (icon != null && imgView.tag == packageName) {
                     imgView.setImageDrawable(icon)
                 }
@@ -231,6 +212,7 @@ class AdapterAppChooser(
     }
 
     class ViewHolder(view: View) {
+        internal val scope = MainScope()
         internal var packageName: String? = null
         internal var itemTitle: TextView? = view.findViewById(R.id.ItemTitle)
         internal var itemDesc: TextView? = view.findViewById(R.id.ItemDesc)

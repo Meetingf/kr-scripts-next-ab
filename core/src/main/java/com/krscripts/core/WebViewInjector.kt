@@ -34,7 +34,9 @@ class WebViewInjector(
 ) {
     private val context: Context = webView.context
 
-    @SuppressLint("JavascriptInterface", "SetJavaScriptEnabled")
+
+    @Suppress("DEPRECATION")
+    @SuppressLint("SetJavaScriptEnabled")
     fun inject(activity: Activity, credible: Boolean) {
         val webSettings = webView.getSettings()
         webSettings.javaScriptEnabled = true

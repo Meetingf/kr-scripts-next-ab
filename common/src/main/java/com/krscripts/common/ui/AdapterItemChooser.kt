@@ -8,7 +8,6 @@ import android.widget.*
 import com.krscripts.common.R
 import com.krscripts.common.model.SelectItem
 import java.util.*
-import java.util.Locale.getDefault
 
 class AdapterItemChooser(private val context: Context, private var items: ArrayList<SelectItem>, private val multiple: Boolean) : BaseAdapter(), Filterable {
     interface SelectStateListener {
@@ -22,6 +21,7 @@ class AdapterItemChooser(private val context: Context, private var items: ArrayL
 
     private class ArrayFilter(private var adapter: AdapterItemChooser) : Filter() {
         override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+            @Suppress("UNCHECKED_CAST")
             adapter.filterItems = results!!.values as ArrayList<SelectItem>
             if (results.count > 0) {
                 adapter.notifyDataSetChanged()
@@ -31,7 +31,7 @@ class AdapterItemChooser(private val context: Context, private var items: ArrayL
         }
 
         override fun performFiltering(constraint: CharSequence?): FilterResults {
-            val results = Filter.FilterResults()
+            val results = FilterResults()
             val prefix: String = constraint?.toString() ?: ""
 
             if (prefix.isEmpty()) {
@@ -42,7 +42,7 @@ class AdapterItemChooser(private val context: Context, private var items: ArrayL
                 results.values = list
                 results.count = list.size
             } else {
-                val prefixString = prefix.lowercase(getDefault())
+                val prefixString = prefix.lowercase(Locale.getDefault())
 
                 val values: ArrayList<SelectItem>
                 synchronized(adapter.mLock) {
@@ -58,24 +58,10 @@ class AdapterItemChooser(private val context: Context, private var items: ArrayL
                     if (selected.contains(value)) {
                         newValues.add(value)
                     } else {
-                        val valueText = if (value.title == null) "" else value.title!!.lowercase(
-                            getDefault()
-                        )
+                        val valueText = value.title?.lowercase(Locale.getDefault())
 
-                        // First match against the whole, non-splitted value
-                        if (valueText.contains(prefixString)) {
+                        if (valueText?.contains(prefixString) == true) {
                             newValues.add(value)
-                        } else {
-                            val words = valueText.split(" ".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()
-                            val wordCount = words.size
-
-                            // Start at index 0, in case valueText starts with space(s)
-                            for (k in 0 until wordCount) {
-                                if (words[k].contains(prefixString)) {
-                                    newValues.add(value)
-                                    break
-                                }
-                            }
                         }
                     }
                 }
