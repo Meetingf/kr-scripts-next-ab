@@ -1,11 +1,18 @@
 package com.krscripts.common.ui
 
 import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.toColor
 import com.krscripts.common.R
+import androidx.core.graphics.toColorInt
+import com.google.android.material.color.MaterialColors
 
 open class DialogFullScreen(private val layout: Int) : androidx.fragment.app.DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -15,6 +22,20 @@ open class DialogFullScreen(private val layout: Int) : androidx.fragment.app.Dia
     private lateinit var currentView: View
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return Dialog(requireActivity(), R.style.dialog_full_screen)
+        val dialog = Dialog(requireActivity(), R.style.dialog_full_screen)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            dialog.setOnShowListener {
+                dialog.window?.apply {
+                    val surfaceColor = MaterialColors.getColor(
+                        context,
+                        com.google.android.material.R.attr.colorSurface,
+                        Color.WHITE
+                    )
+                    setBackgroundDrawable(surfaceColor.toDrawable().apply { alpha = 128 })
+                    setBackgroundBlurRadius(40)
+                }
+            }
+        }
+        return dialog
     }
 }
