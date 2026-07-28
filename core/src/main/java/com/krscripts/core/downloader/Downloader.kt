@@ -35,8 +35,6 @@ class Downloader(private var context: Context) {
             request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
             // 允许在计费流量下下载
             request.setAllowedOverMetered(true)
-            // 允许该记录在下载管理界面可见
-            request.setVisibleInDownloadsUi(true)
             // 允许漫游时下载
             request.setAllowedOverRoaming(true)
             // 设置下载文件保存的路径和文件名

@@ -60,7 +60,7 @@ class ParamsAppChooserRender(
                 it.value
             }
 
-            val packages = pm.getInstalledPackages(PackageManager.GET_UNINSTALLED_PACKAGES).filter {
+            val packages = pm.getInstalledPackages(0).filter {
                 filter == null || filter.contains(it.packageName)
             }
 
@@ -74,7 +74,7 @@ class ParamsAppChooserRender(
             // 是否包含丢失的应用程序
             if (includeMissing && actionParamInfo.optionsFromShell != null) {
                 for (item in actionParamInfo.optionsFromShell!!) {
-                    if (options.filter { it.packageName == item.value }.isEmpty()) {
+                    if (options.none { it.packageName == item.value }) {
                         options.add(AdapterAppChooser.AppInfo().apply {
                             appName = "" + item.title
                             packageName = "" + item.value

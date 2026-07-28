@@ -2,6 +2,7 @@ package com.krscripts.core.model
 
 import android.graphics.Color
 import android.os.Handler
+import android.os.Looper
 import android.os.Message
 import android.text.Spannable
 import android.text.SpannableString
@@ -12,7 +13,7 @@ import android.text.style.ForegroundColorSpan
  * Refactored by buylan on 2026/07/26
  */
 
-abstract class ShellHandlerBase : Handler() {
+abstract class ShellHandlerBase : Handler(Looper.getMainLooper()) {
     protected abstract fun onProgress(current: Int, total: Int)
 
     protected abstract fun onStart(msg: Any?)

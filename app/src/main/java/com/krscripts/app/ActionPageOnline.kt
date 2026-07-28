@@ -5,9 +5,9 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.Bitmap
-import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.os.Looper
 import android.view.KeyEvent
 import android.view.View
 import android.webkit.JsResult
@@ -243,7 +243,7 @@ class ActionPageOnline : AppCompatActivity() {
             Toast.makeText(this@ActionPageOnline, getString(R.string.copy_success), Toast.LENGTH_SHORT).show()
         }
 
-        val handler = Handler()
+        val handler = Handler(Looper.getMainLooper())
         val downloader = Downloader(this)
         progressPolling = Timer()
         progressPolling?.schedule(object : TimerTask() {
