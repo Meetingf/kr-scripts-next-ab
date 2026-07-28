@@ -18,15 +18,15 @@
         </action>
 
         <action>
-            <title>场景模式 Little</title>
-            <desc>模拟Scene的场景模式-动态响应功能</desc>
-            <set>$PAGE_WORK_DIR/scene-little-run.sh</set>
+            <title>Activity 监视器</title>
+            <desc>记录当前 Activity</desc>
+            <set>$PAGE_WORK_DIR/activity_monitor.sh</set>
         </action>
 
         <action shell="bg-task">
-            <title>场景模式 Little</title>
-            <desc>模拟Scene的场景模式-动态响应功能，并在后台运行</desc>
-            <set>$PAGE_WORK_DIR/scene-little-run.sh</set>
+            <title>Activity 监视器 (后台)</title>
+            <desc>记录当前 Activity, 并在后台运行</desc>
+            <set>$PAGE_WORK_DIR/activity_monitor.sh</set>
         </action>
     </group>
 </config>

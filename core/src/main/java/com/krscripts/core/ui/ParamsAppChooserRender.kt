@@ -4,6 +4,7 @@ import android.content.pm.PackageManager
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
 import com.krscripts.common.model.SelectItem
 import com.krscripts.common.ui.AdapterAppChooser
@@ -44,6 +45,10 @@ class ParamsAppChooserRender(
     }
 
     private fun openAppChooser() {
+        if (!::packages.isInitialized) {
+            Toast.makeText(context, "应用列表加载中", Toast.LENGTH_SHORT).show()
+            return
+        }
         setSelectStatus()
         DialogAppChooser(packages, actionParamInfo.multiple, this).show(context.supportFragmentManager, "app-chooser")
     }
