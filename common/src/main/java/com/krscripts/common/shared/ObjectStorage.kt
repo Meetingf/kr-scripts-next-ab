@@ -4,7 +4,10 @@ import android.content.Context
 import android.widget.Toast
 import java.io.*
 
-open class ObjectStorage<T : Serializable>(private val context: Context) {
+open class ObjectStorage<T : Serializable>(
+    private val context: Context,
+    private val clazz: Class<T>
+) {
     private val objectStorageDir = "objects/"
     protected fun getSaveDir(configFile: String): String {
         return FileWrite.getPrivateFilePath(context, objectStorageDir + configFile)
@@ -12,65 +15,45 @@ open class ObjectStorage<T : Serializable>(private val context: Context) {
 
     open fun load(configFile: String): T? {
         val file = File(getSaveDir(configFile))
-        if (file.exists()) {
-            var fileInputStream: FileInputStream? = null
-            var objectInputStream: ObjectInputStream? = null
-            try {
-                fileInputStream = FileInputStream(file)
-                objectInputStream = ObjectInputStream(fileInputStream)
-                return objectInputStream.readObject() as T?
-            } catch (_: Exception) {
-            } finally {
-                try {
-                    objectInputStream?.close()
-                    fileInputStream?.close()
-                } catch (_: Exception) {
+        if (!file.exists()) return null
+
+        return try {
+            FileInputStream(file).use { fis ->
+                ObjectInputStream(fis).use { ois ->
+                    val obj = ois.readObject()
+                    if (clazz.isInstance(obj)) {
+                        clazz.cast(obj)
+                    } else {
+                        null
+                    }
                 }
             }
+        } catch (_: Exception) {
+            null
         }
-        return null
     }
 
     open fun save(obj: T?, configFile: String): Boolean {
         val file = File(getSaveDir(configFile))
-        val parentFile = file.parentFile
-        if (parentFile?.exists() == false) {
-            parentFile.mkdirs()
-        }
+        file.parentFile?.takeIf { !it.exists() }?.mkdirs()
+
         if (obj != null) {
-            var fileOutputStream: FileOutputStream? = null
-            var objectOutputStream: ObjectOutputStream? = null
-            try {
-                fileOutputStream = FileOutputStream(file)
-                objectOutputStream = ObjectOutputStream(fileOutputStream)
-                objectOutputStream.writeObject(obj)
-                return true
+            return try {
+                FileOutputStream(file).use { fos ->
+                    ObjectOutputStream(fos).use { oos ->
+                        oos.writeObject(obj)
+                    }
+                }
+                true
             } catch (_: Exception) {
                 Toast.makeText(context, "存储配置失败！", Toast.LENGTH_SHORT).show()
-                return false
-            } finally {
-                try {
-                    objectOutputStream?.close()
-                    fileOutputStream?.close()
-                } catch (_: Exception) {
-                }
+                false
             }
         } else {
             if (file.exists()) {
                 file.delete()
             }
+            return true
         }
-        return true
-    }
-
-    open fun remove(configFile: String) {
-        val file = File(getSaveDir(configFile))
-        if (file.exists()) {
-            file.delete()
-        }
-    }
-
-    open fun exists(configFile: String): Boolean {
-        return File(getSaveDir(configFile)).exists()
     }
 }

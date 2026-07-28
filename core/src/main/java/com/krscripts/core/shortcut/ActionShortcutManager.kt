@@ -74,13 +74,13 @@ class ActionShortcutManager(private var context: Context) {
     // 存储快捷方式的页面信息对象
     private fun saveShortcutTarget(pageNode: PageNode): String {
         val id = System.currentTimeMillis().toString()
-        ObjectStorage<PageNode>(context).save(pageNode, id)
+        ObjectStorage(context, PageNode::class.java).save(pageNode, id)
         return id
     }
 
     // 读取快捷方式的页面信息对象
     fun getShortcutTarget(shortcutId: String?): PageNode? {
-        return shortcutId?.let { ObjectStorage<PageNode>(context).load(it) }
+        return shortcutId?.let { ObjectStorage(context, PageNode::class.java).load(it) }
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
