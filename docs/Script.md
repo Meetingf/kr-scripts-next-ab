@@ -32,20 +32,20 @@
 - 除了你自定义的参数，和 `switch`、`picker` 固定的 `$state`参数
 - PIO还提供了以下 `全局变量`：
 
-| 参数名 | 说明 |
-| - | - |
-| EXECUTOR_PATH | 执行器入口文件所在位置 |
-| START_DIR | 开始执行脚本的起始位置 |
-| TEMP_DIR | 如果你有的脚本要生成临时文件，建议放在这个路径下 |
-| ANDROID_UID | Android系统当前登录用户的ID |
-| ANDROID_SDK | Android系统当前版本号(SDK Version) |
-| SDCARD_PATH | SD卡(本机存储)所在路径 |
-| PACKAGE_NAME | PIO框架应用的包名 |
-| PACKAGE_VERSION_NAME | PIO框架应用的版本名称 |
-| PACKAGE_VERSION_CODE | PIO框架应用的版本号 |
-| TOOLKIT | 自带的命令行工具集安装目录 |
-| APP_USER_ID | 安卓中每个应用都有一个单独的UserID |
-| ROOT_PERMISSION | 是否已经获得ROOT权限，值为true/false |
+| 参数名                  | 说明                          |
+|----------------------|-----------------------------|
+| EXECUTOR_PATH        | 执行器入口文件所在位置                 |
+| START_DIR            | 开始执行脚本的起始位置                 |
+| TEMP_DIR             | 如果你有的脚本要生成临时文件，建议放在这个路径下    |
+| ANDROID_UID          | Android系统当前登录用户的ID          |
+| ANDROID_SDK          | Android系统当前版本号(SDK Version) |
+| SDCARD_PATH          | SD卡(本机存储)所在路径               |
+| PACKAGE_NAME         | PIO框架应用的包名                  |
+| PACKAGE_VERSION_NAME | PIO框架应用的版本名称                |
+| PACKAGE_VERSION_CODE | PIO框架应用的版本号                 |
+| TOOLKIT              | 自带的命令行工具集安装目录               |
+| APP_USER_ID          | 安卓中每个应用都有一个单独的UserID        |
+| ROOT_PERMISSION      | 是否已经获得ROOT权限，值为true/false   |
 
 > 其它说明：<br/>
 
@@ -60,7 +60,7 @@
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<config>
     <!--假设有个名为scripts目录，专门用于存放脚本，
         通过resource[dir]可以令框架一次性将其全部提取-->
     <resource dir="file:///android_asset/scripts" />
@@ -70,5 +70,5 @@
           $START_DIR/scripts/test_script.sh
         </set>
     </action>
-</page>
+</config>
 ```

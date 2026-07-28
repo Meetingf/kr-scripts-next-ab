@@ -4,14 +4,14 @@
 ## 示例
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<config>
     <switch>
         <title>测试开关</title>
         <desc>测试开关功能</desc>
         <get>getprop test.switch.aaa</get>
         <set>setprop test.switch.aaa "$state"</set>
     </switch>
-</page>
+</config>
 ```
 
 ## Switch 属性

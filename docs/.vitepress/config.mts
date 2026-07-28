@@ -16,7 +16,8 @@ export default defineConfig({
       {
         text: 'Introduction',
         items: [
-          { text: 'What is KrScript?', link: '/Intro.md' }
+          { text: 'What is KrScript?', link: '/Intro.md' },
+          { text: 'Migration from Kr-Scripts', link: '/Migration.md' }
         ]
       },
       {

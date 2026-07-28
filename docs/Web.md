@@ -5,7 +5,7 @@
 - 通过类似于下面例子的方式，即可定义一个网络地址作为一个页面在软件里打开
 
 ```xml
-<page title="在线页面测试" html="http://www.baidu.com/" />
+<page title="在线页面测试" html="https://www.example.com/" />
 ```
 
 - 当然，你也可以直接将html文件放入assets中，通过`file:///android_asset/`来访问

@@ -4,14 +4,14 @@
 ## 示例
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<config>
     <page title="原生专属"
         desc="越接近AOSP越适用的选项"
         config="file:///android_asset/config_xml/for_aosp.xml" />
     <page title="Flyme专属"
         desc="用于Meizu Flyme系统的选项"
         html="https://www.lanzous.com/b838135" />
-</page>
+</config>
 ```
 
 ## 属性

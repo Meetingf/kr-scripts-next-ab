@@ -6,7 +6,7 @@
 ## 示例
 ```xml
 <?xml version="1.0" encoding="UTF-8" ?>
-<page>
+<config>
     <group title="分组标题">
         <switch>
             <!-- ... 此处省略 switch 的详细定义 -->
@@ -15,7 +15,7 @@
             <!-- ... 此处省略 switch 的详细定义 -->
         </switch>
     </group>
-</page>
+</config>
 ```
 
 ---
