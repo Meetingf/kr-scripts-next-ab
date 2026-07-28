@@ -57,6 +57,7 @@ class DialogHelper {
                 null,
                 title = title,
                 message = message,
+                themeId = 0,
                 cancelable = true,
                 dismissButton = DialogButton(text = "知道了", onClick = onDismiss),
                 confirmButton = DialogButton(text = "")
@@ -77,6 +78,7 @@ class DialogHelper {
                 null,
                 title = title,
                 message = message,
+                themeId = 0,
                 cancelable = true,
                 dismissButton = DialogButton(text = ""),
                 confirmButton = DialogButton(text = "确定", onClick = onConfirm)
@@ -91,11 +93,12 @@ class DialogHelper {
             cancelable: Boolean = true,
             title: String,
             message: String,
+            themeId: Int = R.style.CustomDialogThemeOverlay,
             confirmButton: DialogButton? = null,
             dismissButton: DialogButton? = null,
             onConfirm: Runnable? = null
         ): Dialog {
-            val dialog = MaterialAlertDialogBuilder(context, R.style.CustomDialogThemeOverlay)
+            val dialog = MaterialAlertDialogBuilder(context, themeId)
                 .setTitle(title)
                 .setView(view)
                 .setCancelable(cancelable)
