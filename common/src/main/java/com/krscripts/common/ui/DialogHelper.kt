@@ -80,7 +80,7 @@ class DialogHelper {
                 message = message,
                 themeId = 0,
                 cancelable = true,
-                dismissButton = DialogButton(text = ""),
+                dismissButton = DialogButton(text = "取消"),
                 confirmButton = DialogButton(text = "确定", onClick = onConfirm)
             )
 
