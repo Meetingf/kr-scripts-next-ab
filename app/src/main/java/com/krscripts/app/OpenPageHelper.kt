@@ -8,33 +8,31 @@ import com.krscripts.core.model.PageNode
 class OpenPageHelper(private var activity: Activity) {
     fun openPage(pageNode: PageNode) {
         try {
-            var intent: Intent? = null
-            if (!pageNode.onlineHtmlPage.isEmpty()) {
-                intent = Intent(activity, ActionPageOnline::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                intent.putExtra("config", pageNode.onlineHtmlPage)
-            }
-
-            if (!pageNode.pageConfigSh.isEmpty()) {
-                if (intent == null) {
-                    intent = Intent(activity, ActionPage::class.java)
+            val intent = when {
+                pageNode.onlineHtmlPage.isNotEmpty() -> {
+                    Intent(activity, ActionPageOnline::class.java)
+                        .putExtra("config", pageNode.onlineHtmlPage)
                 }
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
 
-            if (!pageNode.pageConfigPath.isEmpty()) {
-                if (intent == null) {
-                    intent = Intent(activity, ActionPage::class.java)
+                pageNode.pageConfigSh.isNotEmpty() -> {
+                    Intent(activity, ActionPage::class.java)
                 }
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+
+                pageNode.pageConfigPath.isNotEmpty() -> {
+                    Intent(activity, ActionPage::class.java)
+                }
+
+                else -> null
             }
 
-            intent?.run {
-                intent.putExtra("page", pageNode)
-                activity.startActivity(intent)
+            intent?.apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                putExtra("page", pageNode)
             }
-        } catch (ex: Exception) {
-            Toast.makeText(activity, ex.message, Toast.LENGTH_SHORT).show()
+
+            activity.startActivity(intent)
+        } catch (e: Exception) {
+            Toast.makeText(activity, e.message, Toast.LENGTH_SHORT).show()
         }
     }
 }
