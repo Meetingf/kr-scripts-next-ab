@@ -38,6 +38,7 @@ if [[ -d "$output_dir" ]]; then
     done
 fi
 
+echo '</group>'
 
 echo '
 <group title="读取、写入">
@@ -66,5 +67,4 @@ echo '
     </action>
 </group>'
 
-echo '</group>'
 echo '</config>'
