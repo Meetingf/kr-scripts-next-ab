@@ -4,8 +4,6 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -15,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.krscripts.app.databinding.ActivityActionPageBinding
 import com.krscripts.app.util.chooseFilePath
 import com.krscripts.app.util.handleFileSelectorResult
@@ -37,15 +36,18 @@ import com.krscripts.core.ui.ActionListFragment
 import com.krscripts.core.ui.DialogLogFragment
 import com.krscripts.core.ui.PageMenuLoader
 import com.krscripts.core.ui.ParamsFileChooserRender
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class ActionPage : AppCompatActivity() {
     private val progressBarDialog = ProgressBarDialog(this)
     private var actionsLoaded = false
-    private var handler = Handler(Looper.getMainLooper())
     private lateinit var currentPageConfig: PageNode
     private var autoRunItemId: String? = null
-
+    private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
+    private var menuOptions:ArrayList<PageMenuOption>? = null
     private lateinit var binding: ActivityActionPageBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -166,7 +168,7 @@ class ActionPage : AppCompatActivity() {
         }
 
         override fun onSubPageClick(pageNode: PageNode) {
-            openPage(pageNode)
+            OpenPageHelper(this@ActionPage).openPage(pageNode)
         }
 
         override fun openFileChooser(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean {
@@ -174,10 +176,6 @@ class ActionPage : AppCompatActivity() {
             return chooseFilePath(fileSelectedInterface)
         }
     }
-
-    private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
-
-    private var menuOptions:ArrayList<PageMenuOption>? = null
 
     // 右上角菜单的创建
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -278,7 +276,7 @@ class ActionPage : AppCompatActivity() {
         chooseFilePath(object: ParamsFileChooserRender.FileSelectedInterface{
             override fun onFileSelected(path: String?) {
                 if (path != null) {
-                    handler.post {
+                    lifecycleScope.launch {
                         menuItemExecute(menuOption, HashMap<String, String>().apply{
                             put("state", menuOption.key)
                             put("menu_id", menuOption.key)
@@ -313,16 +311,12 @@ class ActionPage : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
     }
 
-    private fun showDialog(msg: String) {
-        handler.post {
-            progressBarDialog.showDialog(msg)
-        }
+    private suspend fun showDialog(msg: String) = withContext(Dispatchers.Main) {
+        progressBarDialog.showDialog(msg)
     }
 
-    private fun hideDialog() {
-        handler.post {
-            progressBarDialog.hideDialog()
-        }
+    private suspend fun hideDialog() = withContext(Dispatchers.Main) {
+        progressBarDialog.hideDialog()
     }
 
     override fun onResume() {
@@ -336,7 +330,7 @@ class ActionPage : AppCompatActivity() {
     private fun loadPageConfig() {
         val activity = this
 
-        Thread {
+        lifecycleScope.launch(Dispatchers.IO) {
             currentPageConfig.run {
                 if (beforeRead.isNotEmpty()) {
                     showDialog(getString(R.string.kr_page_before_load))
@@ -369,7 +363,7 @@ class ActionPage : AppCompatActivity() {
                         ScriptEnvironment.executeResultRoot(activity, loadSuccess, this)
                     }
 
-                    handler.post {
+                    withContext(Dispatchers.Main) {
                         val autoRunTask = if (actionsLoaded) null else object : AutoRunTask {
                             override val key = autoRunItemId
                             override fun onCompleted(result: Boolean?) {
@@ -401,7 +395,7 @@ class ActionPage : AppCompatActivity() {
                         hideDialog()
                     }
 
-                    handler.post {
+                    withContext(Dispatchers.Main) {
                         Toast.makeText(
                             this@ActionPage,
                             getString(R.string.kr_page_load_fail),
@@ -412,11 +406,6 @@ class ActionPage : AppCompatActivity() {
                     finish()
                 }
             }
-        }.start()
+        }
     }
-
-    fun openPage(pageNode: PageNode) {
-        OpenPageHelper(this).openPage(pageNode)
-    }
-
 }

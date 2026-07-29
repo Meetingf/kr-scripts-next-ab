@@ -1,27 +1,19 @@
 package com.krscripts.app
 
-import android.Manifest
 import android.content.ComponentName
 import android.content.Intent
-import android.graphics.RenderEffect
-import android.graphics.Shader
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
-import android.view.WindowManager
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.PermissionChecker
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.app.databinding.ActivityMainBinding
 import com.krscripts.app.util.chooseFilePath
@@ -38,15 +30,16 @@ import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.ui.ActionListFragment
 import com.krscripts.core.ui.ParamsFileChooserRender
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MainActivity : AppCompatActivity() {
     private val progressBarDialog = ProgressBarDialog(this)
-    private var handler = Handler(Looper.getMainLooper())
     private var krScriptConfig = KrScriptConfig()
     lateinit var binding: ActivityMainBinding
     private var currentPageNode: PageNode? = null
-
-    private fun checkPermission(permission: String): Boolean = PermissionChecker.checkSelfPermission(this, permission) == PermissionChecker.PERMISSION_GRANTED
+    private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,58 +56,56 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(binding.toolbar)
 
-        krScriptConfig = KrScriptConfig()
+        lifecycleScope.launch {
+            progressBarDialog.showDialog(getString(R.string.please_wait))
 
-        progressBarDialog.showDialog(getString(R.string.please_wait))
-        Thread {
+            krScriptConfig = KrScriptConfig()
             val pageConfigs = krScriptConfig.pageListConfig
-            handler.post {
-                progressBarDialog.hideDialog()
+            buildNavgationMenu(pageConfigs)
 
-                val menu = binding.bottomNavView.menu
-                menu.clear()
+            progressBarDialog.hideDialog()
+        }
+    }
 
-                var firstTabFragment: Fragment? = null
+    private suspend fun buildNavgationMenu(pageConfigs: MutableList<PageNode?>) = withContext(Dispatchers.Main) {
+        val menu = binding.bottomNavView.menu
+        menu.clear()
 
-                pageConfigs.forEachIndexed { index, page ->
+        var firstTabFragment: Fragment? = null
 
-                    page ?: return@forEachIndexed
+        pageConfigs.forEachIndexed { index, page ->
 
-                    getItems(page)?.let { pageItems ->
+            page ?: return@forEachIndexed
 
-                        val tabFragment = createTab(pageItems, page)
+            getItems(page)?.let { pageItems ->
 
-                        if (index == 0) {
-                            firstTabFragment = tabFragment
-                        }
+                val tabFragment = createTab(pageItems, page)
 
-                        val menuName =
-                            pageItems.last().title.takeIf { it.isNotEmpty() && pageItems.last() is NavNode }
-                                ?: page.pageConfigPath.substringAfterLast('/')
+                if (index == 0) {
+                    firstTabFragment = tabFragment
+                }
 
-                        menu.add(menuName).apply {
-                            icon = ContextCompat.getDrawable(
-                                this@MainActivity,
-                                R.drawable.baseline_bookmark_24
-                            )!!
-                            setOnMenuItemClickListener {
-                                currentPageNode = page
-                                updateTab(tabFragment)
-                                return@setOnMenuItemClickListener false
-                            }
-                        }
+                val menuName =
+                    pageItems.lastOrNull()?.title?.takeIf { it.isNotEmpty() && pageItems.last() is NavNode }
+                        ?: page.pageConfigPath.substringAfterLast('/')
+
+                menu.add(menuName).apply {
+                    icon = ContextCompat.getDrawable(
+                        this@MainActivity,
+                        R.drawable.baseline_bookmark_24
+                    )!!
+                    setOnMenuItemClickListener {
+                        currentPageNode = page
+                        updateTab(tabFragment)
+                        false
                     }
                 }
-
-                firstTabFragment?.let {
-                    currentPageNode = pageConfigs[0]
-                    updateTab(it)
-                }
             }
-        }.start()
+        }
 
-        if (!(checkPermission(Manifest.permission.READ_EXTERNAL_STORAGE) && checkPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE))) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE), 111)
+        firstTabFragment?.let {
+            currentPageNode = pageConfigs[0]
+            updateTab(it)
         }
     }
 
@@ -144,7 +135,7 @@ class MainActivity : AppCompatActivity() {
         Thread {
             val pageItems = getItems(pageNode)
             pageItems?.let { items ->
-                handler.post {
+                lifecycleScope.launch {
                     val newTab = createTab(items, pageNode)
                     updateTab(newTab)
                 }
@@ -194,8 +185,6 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
-
-    private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         handleFileSelectorResult(this, resultCode, requestCode, data, fileSelectorInterface)

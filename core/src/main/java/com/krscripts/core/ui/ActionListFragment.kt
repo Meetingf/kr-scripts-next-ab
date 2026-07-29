@@ -1,11 +1,8 @@
 package com.krscripts.core.ui
 
-import android.app.AlertDialog
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,21 +10,21 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.net.toUri
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import com.krscripts.common.model.SelectItem
 import com.krscripts.common.ui.DialogHelper
 import com.krscripts.common.ui.DialogItemChooser
 import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.core.BgTaskThread
 import com.krscripts.core.HiddenTaskThread
+import com.krscripts.core.R
 import com.krscripts.core.TryOpenActivity
 import com.krscripts.core.config.IconPathAnalysis
 import com.krscripts.core.executor.ScriptEnvironment
-import com.krscripts.core.shortcut.ActionShortcutManager
-import androidx.core.net.toUri
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import androidx.fragment.app.Fragment
-import com.krscripts.core.R
 import com.krscripts.core.model.ActionNode
 import com.krscripts.core.model.ActionParamInfo
 import com.krscripts.core.model.AutoRunTask
@@ -39,6 +36,10 @@ import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.PickerNode
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.model.SwitchNode
+import com.krscripts.core.shortcut.ActionShortcutManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
     companion object {
@@ -271,10 +272,9 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
         paramInfo.optionsSh = item.optionsSh
         paramInfo.separator = item.separator
 
-        val handler = Handler(Looper.getMainLooper())
-
         progressBarDialog.showDialog(getString(R.string.kr_param_options_load))
-        Thread {
+
+        lifecycleScope.launch(Dispatchers.IO) {
             // 获取当前值
             if (item.getState != null) {
                 paramInfo.valueFromShell = executeScriptGetResult(item.getState!!, item)
@@ -288,7 +288,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                 null
             })
 
-            handler.post {
+            withContext(Dispatchers.IO) {
                 progressBarDialog.hideDialog()
 
                 if (optionsSorted != null) {
@@ -354,37 +354,30 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
             val actionParamInfos = action.params!!
             if (actionParamInfos.isNotEmpty()) {
                 val layoutInflater = LayoutInflater.from(this.requireContext())
-                val linearLayout = layoutInflater.inflate(R.layout.kr_params_list, null) as LinearLayout
+                val linearLayout =
+                    layoutInflater.inflate(R.layout.kr_params_list, null) as LinearLayout
 
-                val handler = Handler(Looper.getMainLooper())
                 progressBarDialog.showDialog(this.requireContext().getString(R.string.onloading))
-                Thread {
+                lifecycleScope.launch(Dispatchers.IO) {
                     for (actionParamInfo in actionParamInfos) {
-                        handler.post {
-                            progressBarDialog.showDialog(
-                                this.requireContext()
-                                    .getString(R.string.kr_param_load) + if (!actionParamInfo.label.isNullOrEmpty()) actionParamInfo.label else actionParamInfo.name
-                            )
+                        withContext(Dispatchers.Main) {
+                            progressBarDialog.showDialog(requireContext().getString(R.string.kr_param_load) + if (!actionParamInfo.label.isNullOrEmpty()) actionParamInfo.label else actionParamInfo.name)
                         }
                         if (actionParamInfo.valueShell != null) {
                             actionParamInfo.valueFromShell =
                                 executeScriptGetResult(actionParamInfo.valueShell!!, action)
                         }
-                        handler.post {
-                            progressBarDialog.showDialog(
-                                this.requireContext()
-                                    .getString(R.string.kr_param_options_load) + if (!actionParamInfo.label.isNullOrEmpty()) actionParamInfo.label else actionParamInfo.name
-                            )
+                        withContext(Dispatchers.Main) {
+                            progressBarDialog.showDialog(requireContext().getString(R.string.kr_param_options_load) + if (!actionParamInfo.label.isNullOrEmpty()) actionParamInfo.label else actionParamInfo.name)
                         }
                         actionParamInfo.optionsFromShell =
                             getParamOptions(actionParamInfo, action) // 获取参数的可用选项
                     }
-                    handler.post {
+
+                    withContext(Dispatchers.Main) {
                         progressBarDialog.showDialog(
-                            this.requireContext().getString(R.string.kr_params_render)
+                            requireContext().getString(R.string.kr_params_render)
                         )
-                    }
-                    handler.post {
                         val render = ActionParamsLayoutRender(linearLayout, requireActivity())
                         render.renderList(
                             actionParamInfos,
@@ -411,11 +404,10 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                                 actionExecute(action, script, onExit, params)
                             } catch (ex: Exception) {
                                 Toast.makeText(
-                                    this.requireContext(),
-                                    "" + ex.message,
+                                    context,
+                                    ex.message,
                                     Toast.LENGTH_LONG
-                                )
-                                    .show()
+                                ).show()
                             }
                         }
 
@@ -436,7 +428,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                                     actionExecute(action, script, onExit, params)
                                 } catch (ex: Exception) {
                                     Toast.makeText(
-                                        this.requireContext(),
+                                        context,
                                         ex.message,
                                         Toast.LENGTH_LONG
                                     ).show()
