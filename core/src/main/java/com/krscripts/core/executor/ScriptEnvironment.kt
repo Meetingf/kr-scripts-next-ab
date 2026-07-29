@@ -287,7 +287,7 @@ object ScriptEnvironment {
         }
 
 
-        return "sh $environmentPath \"$cachePath\" \"$tag\""
+        return "${if (rooted) "" else "sh "}$environmentPath \"$cachePath\" \"$tag\""
     }
 
     val runtime: Process?
