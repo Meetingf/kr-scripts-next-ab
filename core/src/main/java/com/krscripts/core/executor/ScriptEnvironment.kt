@@ -172,7 +172,7 @@ object ScriptEnvironment {
             }
             appendLine()
             appendLine()
-            append("$environmentPath \"$path\"")
+            append("${if (rooted) "" else "sh " }$environmentPath \"$path\"")
         }
 
         val cmdResult = privateShell!!.doCmdSync(script)
