@@ -133,5 +133,51 @@ class DialogHelper {
 
             return dialog
         }
+
+        fun showFullScreenDialog(
+            context: Context,
+            view: View?,
+            cancelable: Boolean = true,
+            title: String,
+            message: String,
+            themeId: Int = R.style.dialog_full_screen,
+            confirmButton: DialogButton? = null,
+            dismissButton: DialogButton? = null,
+            onConfirm: Runnable? = null
+        ): Dialog {
+            val dialog = AlertDialog.Builder(context, themeId)
+                .setTitle(title)
+                .setView(view)
+                .setCancelable(cancelable)
+                .setNegativeButton(dismissButton?.text ?: "取消") { dialog, _ ->
+                    dismissButton?.onClick?.run()
+                    if (dismissButton?.dismiss != false) dialog.dismiss()
+                }
+                .setPositiveButton(confirmButton?.text ?: "确定") { dialog, _ ->
+                    confirmButton?.onClick?.run()
+                    onConfirm?.run()
+                    if (confirmButton?.dismiss != false) dialog.dismiss()
+                }
+                .setOnDismissListener {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        (context as? Activity)?.window?.decorView?.setRenderEffect(null)
+                    }
+                }
+                .create()
+
+            dialog.setCanceledOnTouchOutside(cancelable)
+
+            dialog.show()
+
+            if (context is Activity) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    context.window.decorView.setRenderEffect(
+                        RenderEffect.createBlurEffect(48f, 48f, Shader.TileMode.CLAMP)
+                    )
+                }
+            }
+
+            return dialog
+        }
     }
 }

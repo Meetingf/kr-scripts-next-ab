@@ -430,38 +430,50 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                             center.removeAllViews()
                             center.addView(linearLayout)
 
-                            if (isLongList) {
-                                val builder = AlertDialog.Builder(
-                                    this.context,
-                                    com.krscripts.common.R.style.dialog_full_screen
-                                )
-                                builder.setView(dialogView).create().apply {
-                                    show()
+                            val onConfirm = {
+                                try {
+                                    val params = render.readParamsValue(actionParamInfos)
+                                    actionExecute(action, script, onExit, params)
+                                } catch (ex: Exception) {
+                                    Toast.makeText(
+                                        this.requireContext(),
+                                        ex.message,
+                                        Toast.LENGTH_LONG
+                                    ).show()
                                 }
-                            } else {
-                                DialogHelper.showDialog(
-                                    requireActivity(),
-                                    dialogView,
-                                    title = action.title,
-                                    message = action.desc,
-                                    onConfirm = {
-                                        try {
-                                            val params = render.readParamsValue(actionParamInfos)
-                                            actionExecute(action, script, onExit, params)
-                                        } catch (ex: Exception) {
-                                            Toast.makeText(
-                                                this.requireContext(),
-                                                ex.message,
-                                                Toast.LENGTH_LONG
-                                            ).show()
-                                        }
-                                    })
                             }
 
-                            if (action.warning.isEmpty()) {
-                                dialogView.findViewById<TextView>(R.id.warn).visibility = View.GONE
+                            if (isLongList) {
+                                DialogHelper.showFullScreenDialog(
+                                    context = requireActivity(),
+                                    view = dialogView,
+                                    title = action.title,
+                                    message = action.desc,
+                                    onConfirm = onConfirm
+                                )
                             } else {
-                                dialogView.findViewById<TextView>(R.id.warn).text = action.warning
+                                DialogHelper.showDialog(
+                                    context = requireActivity(),
+                                    view = dialogView,
+                                    title = action.title,
+                                    message = action.desc,
+                                    onConfirm = onConfirm
+                                )
+                            }
+
+                            val warn = dialogView.findViewById<TextView>(R.id.warn)
+                            val desc = dialogView.findViewById<TextView>(R.id.desc)
+
+                            if (action.warning.isEmpty()) {
+                                warn.visibility = View.GONE
+                            } else {
+                                warn.text = action.warning
+                            }
+
+                            if (action.desc.isEmpty()) {
+                                desc.visibility = View.GONE
+                            } else {
+                                desc.text = action.desc
                             }
                         }
                     }
