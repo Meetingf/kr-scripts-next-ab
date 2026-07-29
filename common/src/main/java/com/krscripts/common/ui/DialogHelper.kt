@@ -3,12 +3,15 @@ package com.krscripts.common.ui
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
+import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
 import android.util.TypedValue
 import android.view.*
 import androidx.appcompat.app.AlertDialog
+import androidx.core.graphics.drawable.toDrawable
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.common.R
 
@@ -158,24 +161,11 @@ class DialogHelper {
                     onConfirm?.run()
                     if (confirmButton?.dismiss != false) dialog.dismiss()
                 }
-                .setOnDismissListener {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        (context as? Activity)?.window?.decorView?.setRenderEffect(null)
-                    }
-                }
                 .create()
 
             dialog.setCanceledOnTouchOutside(cancelable)
 
             dialog.show()
-
-            if (context is Activity) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    context.window.decorView.setRenderEffect(
-                        RenderEffect.createBlurEffect(48f, 48f, Shader.TileMode.CLAMP)
-                    )
-                }
-            }
 
             return dialog
         }

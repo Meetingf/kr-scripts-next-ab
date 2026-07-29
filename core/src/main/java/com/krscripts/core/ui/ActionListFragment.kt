@@ -448,7 +448,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                                     context = requireActivity(),
                                     view = dialogView,
                                     title = action.title,
-                                    message = action.desc,
+                                    message = "",
                                     onConfirm = onConfirm
                                 )
                             } else {
@@ -456,7 +456,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                                     context = requireActivity(),
                                     view = dialogView,
                                     title = action.title,
-                                    message = action.desc,
+                                    message = "",
                                     onConfirm = onConfirm
                                 )
                             }
