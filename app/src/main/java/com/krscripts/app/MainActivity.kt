@@ -44,6 +44,7 @@ class MainActivity : AppCompatActivity() {
     private var handler = Handler(Looper.getMainLooper())
     private var krScriptConfig = KrScriptConfig()
     lateinit var binding: ActivityMainBinding
+    private var currentPageNode: PageNode? = null
 
     private fun checkPermission(permission: String): Boolean = PermissionChecker.checkSelfPermission(this, permission) == PermissionChecker.PERMISSION_GRANTED
 
@@ -97,6 +98,7 @@ class MainActivity : AppCompatActivity() {
                                 R.drawable.baseline_bookmark_24
                             )!!
                             setOnMenuItemClickListener {
+                                currentPageNode = page
                                 updateTab(tabFragment)
                                 return@setOnMenuItemClickListener false
                             }
@@ -104,7 +106,10 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
-                firstTabFragment?.let { updateTab(it) }
+                firstTabFragment?.let {
+                    currentPageNode = pageConfigs[0]
+                    updateTab(it)
+                }
             }
         }.start()
 
@@ -135,15 +140,13 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun reloadTab() {
+        val pageNode = currentPageNode ?: return
         Thread {
-            val pageConfigs = krScriptConfig.pageListConfig
-            pageConfigs.forEach { page ->
-                val pageItems = getItems(page!!)
-
-                pageItems?.run {
-                    handler.post {
-                        createTab(this, page)
-                    }
+            val pageItems = getItems(pageNode)
+            pageItems?.let { items ->
+                handler.post {
+                    val newTab = createTab(items, pageNode)
+                    updateTab(newTab)
                 }
             }
         }.start()
