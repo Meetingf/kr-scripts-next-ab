@@ -122,7 +122,7 @@ class WebViewInjector(
                         params[key] = paramsObject.getString(key)
                     }
                 }
-                process = ShellExecutor.getSuperUserRuntime()
+                process = ShellExecutor.superUserRuntime
             } catch (ex: Exception) {
                 Toast.makeText(context, ex.message, Toast.LENGTH_SHORT).show()
             }

@@ -136,7 +136,7 @@ class SplashActivity : ComponentActivity() {
 
         override fun run() {
             try {
-                val process = if (CheckRootStatus.lastCheckResult) ShellExecutor.getSuperUserRuntime() else ShellExecutor.getRuntime()
+                val process = if (CheckRootStatus.lastCheckResult) ShellExecutor.superUserRuntime else ShellExecutor.runtime
                 if (process != null) {
                     val outputStream = DataOutputStream(process.outputStream)
 

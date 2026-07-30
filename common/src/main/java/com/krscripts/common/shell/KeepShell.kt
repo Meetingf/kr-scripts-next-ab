@@ -67,7 +67,7 @@ class KeepShell(private var rootMode: Boolean = true) {
                 mLock.lockInterruptibly()
                 enterLockTime = System.currentTimeMillis()
                 p =
-                    if (rootMode) ShellExecutor.getSuperUserRuntime() else ShellExecutor.getRuntime()
+                    if (rootMode) ShellExecutor.superUserRuntime else ShellExecutor.runtime
                 out = p!!.outputStream
                 reader = p!!.inputStream.bufferedReader()
                 if (rootMode) {
