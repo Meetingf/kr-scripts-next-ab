@@ -1,6 +1,5 @@
-- kr-script.conf            基础配置信息       （固定配置文件路径不可更改）    *必要
-- kr-script/executor.sh     脚本执行包装器     （由 kr-script.conf 指定）   *必要
-- kr-script/toolkit         放置可执行二进制文件（由 kr-script.conf 指定）   *必要
-- samples                   存放示例的 UI 布局文件和 Shell 文件
-- kr-script-online          未实装的示例
-- kr-script-online-conf     未实装示例的配置文件
+- kr-script.conf                基础配置信息       （可在 Arsc -> string 修改名称）    *必要
+- kr-script/executor.sh         脚本执行包装器     （由 kr-script.conf 指定）   *必要
+- kr-script/before_start.sh     启动时运行的脚本     （由 kr-script.conf 指定）
+- kr-script/toolkit             放置可执行二进制文件   （由 kr-script.conf 指定）
+- samples                       存放示例的 UI 布局文件和 Shell 文件
