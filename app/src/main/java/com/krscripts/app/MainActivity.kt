@@ -123,7 +123,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun updateTab(fragment: Fragment) {
-        supportFragmentManager.beginTransaction().replace(R.id.nav_host_fragment, fragment).commitAllowingStateLoss()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.nav_host_fragment, fragment)
+            .commit()
     }
 
     private fun createTab(items: ArrayList<NodeInfoBase>, pageNode: PageNode): Fragment {
