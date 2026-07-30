@@ -4,7 +4,6 @@ import android.content.Context
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.model.PageNode
 import java.nio.charset.Charset
-import kotlin.math.max
 
 
 class KrScriptConfig {
@@ -55,34 +54,19 @@ class KrScriptConfig {
 
             }
 
-            ScriptEnvironment.init(context, this.executorCore!!, this.toolkitDir)
+            ScriptEnvironment.init(context, this.executorCore, this.toolkitDir)
         }
         return this
     }
 
-    private val executorCore: String?
-        get() {
-            if (configInfo != null && configInfo!!.containsKey(EXECUTOR_CORE)) {
-                return configInfo!![EXECUTOR_CORE]
-            }
-            return EXECUTOR_CORE_DEFAULT
-        }
+    private val executorCore: String
+        get() = configInfo?.get(EXECUTOR_CORE) ?: EXECUTOR_CORE_DEFAULT
 
-    private val toolkitDir: String?
-        get() {
-            if (configInfo != null && configInfo!!.containsKey(TOOLKIT_DIR)) {
-                return configInfo!![TOOLKIT_DIR]
-            }
-            return TOOLKIT_DIR_DEFAULT
-        }
+    private val toolkitDir: String
+        get() = configInfo?.get(TOOLKIT_DIR) ?: TOOLKIT_DIR_DEFAULT
 
-    val beforeStartSh: String?
-        get() {
-            if (configInfo != null && configInfo!!.containsKey(BEFORE_START_SH)) {
-                return configInfo!![BEFORE_START_SH]
-            }
-            return BEFORE_START_SH_DEFAULT
-        }
+    val beforeStartSh: String
+        get() = configInfo?.get(BEFORE_START_SH) ?: BEFORE_START_SH_DEFAULT
 
     val pageListConfig: MutableList<PageNode?>
         get() {
