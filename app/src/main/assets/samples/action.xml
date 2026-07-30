@@ -66,7 +66,7 @@
             <title>滑块输入</title>
             <param name="input_seekbar" max="10" min="1" title="数字" type="seekbar" value="6" />
             <set>
-                echo '滑块数值为：' $input_int_seekbar
+                echo '滑块数值为：' $input_seekbar
             </set>
         </action>
 

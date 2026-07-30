@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
-import android.widget.SeekBar
 import android.widget.TextView
 import com.google.android.material.slider.RangeSlider
 import com.krscripts.core.R
@@ -53,7 +52,7 @@ class ParamsSeekBar(private var actionParamInfo: ActionParamInfo, private var co
     private fun getInitialValue(min: Float, max: Float): Float {
         val raw = actionParamInfo.valueFromShell ?: actionParamInfo.value
         val intValue = raw?.toIntOrNull() ?: return min
-        return intValue.toFloat().coerceIn(min, max) - actionParamInfo.min
+        return intValue.toFloat().coerceIn(min, max)
     }
 
     private fun formatValue(value: Float): String {

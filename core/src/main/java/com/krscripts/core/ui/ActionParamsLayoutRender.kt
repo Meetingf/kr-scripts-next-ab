@@ -9,6 +9,7 @@ import com.google.android.material.materialswitch.MaterialSwitch
 import com.krscripts.common.model.SelectItem
 import com.krscripts.core.model.ActionParamInfo
 import androidx.core.graphics.toColorInt
+import com.google.android.material.slider.RangeSlider
 import com.krscripts.core.R
 import java.lang.NumberFormatException
 
@@ -238,9 +239,9 @@ class ActionParamsLayoutRender(private var linearLayout: LinearLayout, activity:
                     actionParamInfo.value = if (view.isChecked) "1" else "0"
                 }
 
-                is SeekBar -> {
-                    val text = (view.progress + actionParamInfo.min).toString()
-                    actionParamInfo.value = text
+                is RangeSlider -> {
+                    val value = view.values.firstOrNull()?.toInt() ?: break
+                    actionParamInfo.value = value.toString()
                 }
 
                 is TextView -> {
