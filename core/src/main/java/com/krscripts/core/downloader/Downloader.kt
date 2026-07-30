@@ -48,7 +48,16 @@ class Downloader(private var context: Context) {
             }
             Toast.makeText(context, context.getString(R.string.kr_download_create_success), Toast.LENGTH_SHORT).show()
             // 注册下载完成事件监听
-            DownloaderReceiver.autoRegister(context.applicationContext)
+            DownloaderReceiver.autoRegister(
+                context.applicationContext,
+                onReceived = { path ->
+                    DialogHelper.openInfoAlert(
+                        context,
+                        context.getString(R.string.kr_download_completed),
+                        path,
+                        null
+                    )
+                })
             return downloadId
         } catch (ex: Exception) {
             DialogHelper.openInfoAlert(context, context.getString(R.string.kr_download_create_fail), "" + ex.message)
