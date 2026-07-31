@@ -14,8 +14,8 @@ import androidx.core.view.WindowInsetsCompat
 import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.app.databinding.ActivityFileSelectorBinding
 import com.krscripts.app.ui.AdapterFileSelector
-import com.krscripts.core.util.PermissionUtil.checkManageFile
-import com.krscripts.core.util.PermissionUtil.showManageFileDialog
+import com.krscripts.core.util.PermissionUtil.checkAccessFiles
+import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
 import java.io.File
 
 class ActivityFileSelector : AppCompatActivity() {
@@ -99,7 +99,7 @@ class ActivityFileSelector : AppCompatActivity() {
     }
 
     private fun loadData() {
-        if (checkManageFile(this)) {
+        if (checkAccessFiles(this)) {
             val sdcard = File(Environment.getExternalStorageDirectory().absolutePath)
             if (sdcard.exists() && sdcard.isDirectory) {
                 val list = sdcard.listFiles()
@@ -123,7 +123,7 @@ class ActivityFileSelector : AppCompatActivity() {
                 binding.fileSelectorList.adapter = adapterFileSelector
             }
         } else {
-            showManageFileDialog(this, manageFileRequester) {
+            requestAccessFilesDialog(this, manageFileRequester) {
                 this.finish()
             }
         }

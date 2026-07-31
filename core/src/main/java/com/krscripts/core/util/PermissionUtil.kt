@@ -17,7 +17,7 @@ import kotlin.system.exitProcess
 
 object PermissionUtil {
 
-    fun showManageFileDialog(
+    fun requestAccessFilesDialog(
         context: Activity,
         manageFileRequester: ActivityResultLauncher<Intent>? = null,
         onSkip: () -> Unit = { }
@@ -45,7 +45,7 @@ object PermissionUtil {
                 }
             }
             .setNegativeButton(R.string.btn_exit) { _, _ ->
-                exitProcess(0)
+                context.finishAffinity()
             }
             .setNeutralButton(R.string.btn_skip) { _, _ ->
                 onSkip()
@@ -54,7 +54,7 @@ object PermissionUtil {
         DialogHelper.animDialog(context, builder)
     }
 
-    fun checkManageFile(context: Context): Boolean {
+    fun checkAccessFiles(context: Context): Boolean {
         return if (Build.VERSION.SDK_INT >= 30) {
             Environment.isExternalStorageManager()
         } else {

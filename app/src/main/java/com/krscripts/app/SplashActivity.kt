@@ -1,30 +1,39 @@
 package com.krscripts.app
 
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
-import android.view.View
 import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import com.krscripts.common.shell.ShellExecutor
-import com.krscripts.core.executor.ScriptEnvironment
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.app.databinding.ActivitySplashBinding
-import com.krscripts.app.permissions.CheckRootStatus
-import com.krscripts.core.util.PermissionUtil.checkManageFile
-import com.krscripts.core.util.PermissionUtil.showManageFileDialog
-import java.io.BufferedReader
+import com.krscripts.common.shell.KeepShellPublic
+import com.krscripts.common.shell.ShellExecutor
+import com.krscripts.common.ui.DialogHelper
+import com.krscripts.core.executor.ScriptEnvironment
+import com.krscripts.core.util.PermissionUtil.checkAccessFiles
+import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import java.io.DataOutputStream
+import java.io.IOException
+import kotlin.coroutines.resume
 
 @SuppressLint("CustomSplashScreen")
 class SplashActivity : ComponentActivity() {
 
     lateinit var binding: ActivitySplashBinding
-
+    private var logs = ArrayList<String>()
+    private var isRoot: Boolean? = null
     private val manageFileRequester = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         checkFileManage { startToFinish() }
     }
@@ -46,127 +55,173 @@ class SplashActivity : ComponentActivity() {
         checkPermissions()
     }
 
-    /**
-     * 开始检查必需权限
-     */
     private fun checkPermissions() {
-        binding.startLogo.visibility = View.VISIBLE
-        checkRoot {
-            binding.startStateText.text = getString(R.string.pio_permission_checking)
-            hasRoot = true
-            checkFileManage {
-                startToFinish()
-            }
-        }
-    }
-
-    private fun checkFileManage(next: Runnable) {
-        if (!checkManageFile(this)) {
-            myHandler.post {
-                showManageFileDialog(this, manageFileRequester) {
-                    next.run()
+        binding.startStateText.text = getString(R.string.pio_permission_checking)
+        lifecycleScope.launch {
+            checkRoot {
+                withContext(Dispatchers.Main) {
+                    checkFileManage {
+                        startToFinish()
+                    }
                 }
             }
-        } else {
-            next.run()
         }
     }
 
-    private var hasRoot = false
-    private var myHandler = Handler(Looper.getMainLooper())
-
-    private fun checkRoot(next: Runnable) {
-        CheckRootStatus(this, next).forceGetRoot()
+    private fun checkFileManage(next: () -> Unit) {
+        if (!checkAccessFiles(this)) {
+            requestAccessFilesDialog(this@SplashActivity, manageFileRequester) {
+                next()
+            }
+        } else {
+            next()
+        }
     }
 
-    /**
-     * 启动完成
-     */
-    private fun startToFinish() {
-        binding.startStateText.text = getString(R.string.pop_started)
+    private suspend fun checkRoot(next: suspend () -> Unit) {
+        withContext(Dispatchers.IO) {
+            while (true) {
+                isRoot = KeepShellPublic.checkRoot()
+                if (isRoot == true) {
+                    next()
+                    return@withContext
+                } else {
+                    val shouldRetry = suspendCancellableCoroutine { continuation ->
+                        lifecycleScope.launch {
+                            val dialog = requestRoot(
+                                this@SplashActivity,
+                                onRetry = {
+                                    continuation.resume(true)
+                                },
+                                onSkip = {
+                                    continuation.resume(false)
+                                }
+                            )
+                            continuation.invokeOnCancellation {
+                                dialog.dismiss()
+                            }
+                        }
+                    }
 
+                    if (!shouldRetry) {
+                        next()
+                        return@withContext
+                    }
+                }
+            }
+        }
+    }
+
+    private fun startToFinish() {
         val config = KrScriptConfig().init(this)
-        if (config.beforeStartSh!!.isNotEmpty()) {
-            BeforeStartThread(this, config, UpdateLogViewHandler(binding.startStateText) {
-                gotoHome()
-            }).start()
-        } else {
+        lifecycleScope.launch {
+            if (config.beforeStartSh.isNotEmpty()) {
+                runBeforeStart(this@SplashActivity, config) { log ->
+                    onLogOutput(binding.startStateText, log)
+                }
+            } else {
+                binding.startStateText.text = getString(R.string.pop_started)
+            }
             gotoHome()
         }
+
     }
 
     private fun gotoHome() {
-        if (this.intent != null && this.intent.hasExtra("JumpActionPage") && this.intent.getBooleanExtra("JumpActionPage", false)) {
-            val actionPage = Intent(this.applicationContext, ActionPage::class.java)
-            actionPage.putExtras(this.intent)
+        if (intent.getBooleanExtra("JumpActionPage", false)) {
+            val actionPage = Intent(applicationContext, ActionPage::class.java)
+            actionPage.putExtras(intent)
             startActivity(actionPage)
         } else {
-            val home = Intent(this.applicationContext, MainActivity::class.java)
+            val home = Intent(applicationContext, MainActivity::class.java)
             startActivity(home)
         }
         finish()
     }
 
-    private class UpdateLogViewHandler(private var logView: TextView, private val onExit: Runnable) {
-        private val handler = Handler(Looper.getMainLooper())
-        private var notificationMessageRows = ArrayList<String>()
-        private var someIgnored = false
-
-        fun onLogOutput(log: String) {
-            handler.post {
-                synchronized(notificationMessageRows) {
-                    if (notificationMessageRows.size > 6) {
-                        notificationMessageRows.remove(notificationMessageRows.first())
-                        someIgnored = true
-                    }
-                    notificationMessageRows.add(log)
-                    logView.text =
-                        notificationMessageRows.joinToString("\n", if (someIgnored) "……\n" else "").trim()
+    suspend fun onLogOutput(
+        logView: TextView,
+        log: String
+    ) {
+        withContext(Dispatchers.Main) {
+            synchronized(logs) {
+                val ignore = logs.size > 6
+                if (ignore) {
+                    logs.removeFirstOrNull()
                 }
+                logs.add(log)
+                logView.text = logs.joinToString("\n", if (ignore) "……\n" else "").trim()
             }
-        }
-
-        fun onExit() {
-            handler.post { onExit.run() }
         }
     }
 
-    private class BeforeStartThread(private var context: Context, private val config: KrScriptConfig, private var updateLogViewHandler: UpdateLogViewHandler) : Thread() {
-        val params: HashMap<String, String> = config.variables
-
-        override fun run() {
+    private suspend fun runBeforeStart(
+        context: Context,
+        config: KrScriptConfig,
+        onLog: suspend (String) -> Unit
+    ) {
+        withContext(Dispatchers.IO) {
+            var process: Process? = null
             try {
-                val process = if (CheckRootStatus.lastCheckResult) ShellExecutor.superUserRuntime else ShellExecutor.runtime
-                if (process != null) {
-                    val outputStream = DataOutputStream(process.outputStream)
+                process = if (isRoot == true) ShellExecutor.superUserRuntime else ShellExecutor.runtime
 
-                    ScriptEnvironment.executeShell(context, outputStream, config.beforeStartSh, params, null, "pio-splash")
-
-                    StreamReadThread(process.inputStream.bufferedReader(), updateLogViewHandler).start()
-                    StreamReadThread(process.errorStream.bufferedReader(), updateLogViewHandler).start()
-
-                    process.waitFor()
-                    updateLogViewHandler.onExit()
-                } else {
-                    updateLogViewHandler.onExit()
+                DataOutputStream(process.outputStream).use { outputStream ->
+                    ScriptEnvironment.executeShell(
+                        context,
+                        outputStream,
+                        config.beforeStartSh,
+                        config.variables,
+                        null,
+                        "splash"
+                    )
                 }
-            } catch (_: Exception) {
-                updateLogViewHandler.onExit()
+
+                coroutineScope {
+                    launch(Dispatchers.IO) {
+                        process.inputStream.bufferedReader().useLines { lines ->
+                            lines.forEach { onLog(it) }
+                        }
+                    }
+                    launch(Dispatchers.IO) {
+                        process.errorStream.bufferedReader().useLines { lines ->
+                            lines.forEach { onLog(it) }
+                        }
+                    }
+                    withContext(Dispatchers.IO) {
+                        process.waitFor()
+                    }
+                }
+            } catch (e: IOException) {
+                onLog(e.localizedMessage ?: "beforeStart failed")
+            } finally {
+                process?.destroy()
             }
         }
     }
 
-    private class StreamReadThread(private var reader: BufferedReader, private var updateLogViewHandler: UpdateLogViewHandler) : Thread() {
-        override fun run() {
-            var line: String?
-            while (true) {
-                line = reader.readLine()
-                if (line == null) {
-                    break
-                } else {
-                    updateLogViewHandler.onLogOutput(line)
-                }
+    private fun requestRoot(
+        context: Context,
+        onRetry: () -> Unit,
+        onSkip: () -> Unit
+    ): Dialog {
+        val builder = MaterialAlertDialogBuilder(context)
+            .setTitle(context.getString(R.string.error_root_title))
+            .setCancelable(false)
+            .setMessage(R.string.error_root_message)
+            .setPositiveButton(R.string.btn_retry) { dialog, _ ->
+                dialog.dismiss()
+                onRetry()
+            }
+            .setNegativeButton(R.string.btn_exit) { dialog, _ ->
+                dialog.dismiss()
+                (context as? Activity)?.finishAffinity()
+            }
+        if (!context.resources.getBoolean(R.bool.force_root)) {
+            builder.setNeutralButton(com.krscripts.core.R.string.btn_skip) { dialog, _ ->
+                dialog.dismiss()
+                onSkip()
             }
         }
+        return DialogHelper.animDialog(context, builder)
     }
 }

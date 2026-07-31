@@ -32,8 +32,8 @@ import com.krscripts.core.R
 import com.krscripts.core.WebViewInjector
 import com.krscripts.core.downloader.Downloader
 import com.krscripts.core.ui.ParamsFileChooserRender
-import com.krscripts.core.util.PermissionUtil.checkManageFile
-import com.krscripts.core.util.PermissionUtil.showManageFileDialog
+import com.krscripts.core.util.PermissionUtil.checkAccessFiles
+import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
 import java.util.Timer
 import java.util.TimerTask
 import java.util.UUID
@@ -91,9 +91,9 @@ class ActionPageOnline : AppCompatActivity() {
 
         val taskAliasId = taskId ?: UUID.randomUUID().toString()
 
-        if (!checkManageFile(this)) {
+        if (!checkAccessFiles(this)) {
             downloader.saveTaskStatus(taskAliasId, 0)
-            showManageFileDialog(this)
+            requestAccessFilesDialog(this)
         } else {
             val downloadId = downloader.download(url, null, null, taskAliasId)
             if (downloadId != null) {

@@ -55,8 +55,8 @@ class WebViewInjector(
             "KrWebBridge" //::class.simpleName!!
         )
         webView.setDownloadListener { url, _, contentDisposition, mimetype, contentLength ->
-            if (!PermissionUtil.checkManageFile(context)) {
-                PermissionUtil.showManageFileDialog(activity)
+            if (!PermissionUtil.checkAccessFiles(context)) {
+                PermissionUtil.requestAccessFilesDialog(activity)
             } else {
                 DialogHelper.animDialog(
                     context,
