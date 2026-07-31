@@ -6,7 +6,7 @@ import kotlinx.coroutines.runBlocking
 import java.io.BufferedReader
 import java.io.OutputStream
 import java.nio.charset.Charset
-import java.util.*
+import java.util.Locale
 import java.util.concurrent.locks.ReentrantLock
 
 
@@ -17,11 +17,8 @@ class KeepShell(private var rootMode: Boolean = true) {
     private var p: Process? = null
     private var out: OutputStream? = null
     private var reader: BufferedReader? = null
-    private var currentIsIdle = true // 是否处于闲置状态
-    val isIdle: Boolean
-        get() {
-            return currentIsIdle
-        }
+    var isIdle = true
+        private set
 
     //尝试退出命令行程序
     fun tryExit() {
@@ -37,7 +34,7 @@ class KeepShell(private var rootMode: Boolean = true) {
         out = null
         reader = null
         p = null
-        currentIsIdle = true
+        isIdle = true
     }
 
     private val mLock = ReentrantLock()
@@ -117,7 +114,7 @@ class KeepShell(private var rootMode: Boolean = true) {
 
         try {
             mLock.lockInterruptibly()
-            currentIsIdle = false
+            isIdle = false
 
             val result = runBlocking(Dispatchers.IO) {
 
@@ -157,7 +154,7 @@ class KeepShell(private var rootMode: Boolean = true) {
             enterLockTime = 0L
             mLock.unlock()
 
-            currentIsIdle = true
+            isIdle = true
         }
     }
 
@@ -166,13 +163,13 @@ class KeepShell(private var rootMode: Boolean = true) {
         private const val TAG_START = "|SH>>|"
         private const val TAG_END = "|<<SH|"
         private val checkRootState = $$"""
-            if [[ $(id -u 2>&1) == '0' ]] || [[ $UID == '0' ]] || [[ $(whoami 2>&1) == 'root' ]] || [[ $(set | grep 'USER_ID=0') == 'USER_ID=0' ]]; then
-                echo 'success'
+            if [ "$(id -u)" = "0" ] || [ "$UID" = "0" ] || [ "$(whoami)" = "root" ] || [ "$(set | grep 'USER_ID=0')" == "USER_ID=0" ]; then
+                echo "success"
             else
                 if [[ -d /cache ]]; then
                     echo 1 > /cache/vtools_root
                     if [[ -f /cache/vtools_root ]] && [[ $(cat /cache/vtools_root) == '1' ]]; then
-                        echo 'success'
+                        echo "success"
                         rm -rf /cache/vtools_root
                         return
                     fi
