@@ -68,9 +68,9 @@ class KrScriptConfig {
     val beforeStartSh: String
         get() = configInfo?.get(BEFORE_START_SH) ?: BEFORE_START_SH_DEFAULT
 
-    val pageListConfig: MutableList<PageNode?>
+    val pageListConfig: MutableList<PageNode>
         get() {
-            val pageNodes: MutableList<PageNode?> = ArrayList()
+            val pageNodes: MutableList<PageNode> = ArrayList()
             if (configInfo != null) {
                 val shConfig = configInfo!![PAGE_LIST_CONFIG_SH]
                 val pathConfig = configInfo!![PAGE_LIST_CONFIG]

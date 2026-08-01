@@ -3,6 +3,7 @@ package com.krscripts.app
 import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
+import android.util.SparseArray
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
@@ -13,7 +14,10 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.app.databinding.ActivityMainBinding
 import com.krscripts.app.util.chooseFilePath
@@ -33,12 +37,12 @@ import com.krscripts.core.ui.ParamsFileChooserRender
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.core.view.get
 
 class MainActivity : AppCompatActivity() {
     private val progressBarDialog = ProgressBarDialog(this)
     private var krScriptConfig = KrScriptConfig()
     lateinit var binding: ActivityMainBinding
-    private var currentPageNode: PageNode? = null
     private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,23 +71,20 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun buildNavgationMenu(pageConfigs: MutableList<PageNode?>) = withContext(Dispatchers.Main) {
+    private suspend fun buildNavgationMenu(pageConfigs: List<PageNode>) = withContext(Dispatchers.Main) {
+
+        binding.viewPager.apply {
+            adapter = PageFragmentAdapter(this@MainActivity, pageConfigs)
+            offscreenPageLimit = 1
+            isUserInputEnabled = false
+        }
+
         val menu = binding.bottomNavView.menu
         menu.clear()
 
-        var firstTabFragment: Fragment? = null
-
         pageConfigs.forEachIndexed { index, page ->
 
-            page ?: return@forEachIndexed
-
             getItems(page)?.let { pageItems ->
-
-                val tabFragment = createTab(pageItems, page)
-
-                if (index == 0) {
-                    firstTabFragment = tabFragment
-                }
 
                 val menuName =
                     pageItems.lastOrNull()?.title?.takeIf { it.isNotEmpty() && pageItems.last() is NavNode }
@@ -95,18 +96,18 @@ class MainActivity : AppCompatActivity() {
                         R.drawable.baseline_bookmark_24
                     )!!
                     setOnMenuItemClickListener {
-                        currentPageNode = page
-                        updateTab(tabFragment)
+                        binding.viewPager.setCurrentItem(index, false)
                         false
                     }
                 }
             }
         }
 
-        firstTabFragment?.let {
-            currentPageNode = pageConfigs[0]
-            updateTab(it)
-        }
+        binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
+            override fun onPageSelected(position: Int) {
+                binding.bottomNavView.menu[position].isChecked = true
+            }
+        })
     }
 
     private fun getItems(pageNode: PageNode): ArrayList<NodeInfoBase>? {
@@ -122,36 +123,26 @@ class MainActivity : AppCompatActivity() {
         return items
     }
 
-    private fun updateTab(fragment: Fragment) {
-        supportFragmentManager.beginTransaction()
-            .replace(R.id.nav_host_fragment, fragment)
-            .commit()
-    }
-
-    private fun createTab(items: ArrayList<NodeInfoBase>, pageNode: PageNode): Fragment {
-        return ActionListFragment.create(items, getKrScriptActionHandler(pageNode), null, false)
-    }
-
-    private fun reloadTab() {
-        val pageNode = currentPageNode ?: return
-        Thread {
-            val pageItems = getItems(pageNode)
-            pageItems?.let { items ->
-                lifecycleScope.launch {
-                    val newTab = createTab(items, pageNode)
-                    updateTab(newTab)
+    private fun reloadTab(pageNode: PageNode, index: Int) {
+        lifecycleScope.launch(Dispatchers.IO) {
+            val items = getItems(pageNode)
+            withContext(Dispatchers.Main) {
+                items?.let { newItems ->
+                    val tag = "f$index"
+                    val fragment = supportFragmentManager.findFragmentByTag(tag) as? ActionListFragment
+                    fragment?.update(newItems, getKrScriptActionHandler(pageNode, index))
                 }
             }
-        }.start()
+        }
     }
 
-    private fun getKrScriptActionHandler(pageNode: PageNode): KrScriptActionHandler {
+    private fun getKrScriptActionHandler(pageNode: PageNode, index: Int): KrScriptActionHandler {
         return object : KrScriptActionHandler {
             override fun onActionCompleted(runnableNode: RunnableNode) {
                 if (runnableNode.autoFinish ) {
                     finishAndRemoveTask()
                 } else if (runnableNode.reloadPage) {
-                    reloadTab()
+                    reloadTab(pageNode, index)
                 }
             }
 
@@ -221,5 +212,19 @@ class MainActivity : AppCompatActivity() {
             }
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    inner class PageFragmentAdapter(
+        activity: FragmentActivity,
+        private val pages: List<PageNode>
+    ) : FragmentStateAdapter(activity) {
+
+        override fun getItemCount() = pages.size
+
+        override fun createFragment(position: Int): Fragment {
+            val page = pages[position]
+            val items = getItems(page) ?: arrayListOf()
+            return ActionListFragment.create(items, getKrScriptActionHandler(page, position), null, false)
+        }
     }
 }

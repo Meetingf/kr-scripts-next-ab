@@ -63,6 +63,27 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
     private var autoRunTask: AutoRunTask? = null
     private var fitNavigationBar = true
 
+    fun update(
+        newItems: ArrayList<NodeInfoBase>?,
+        newHandler: KrScriptActionHandler? = null,
+        newAutoRunTask: AutoRunTask? = null
+    ) {
+        if (newItems.isNullOrEmpty()) return
+
+        actionInfos = newItems
+        krScriptActionHandler = newHandler ?: this.krScriptActionHandler
+        autoRunTask = newAutoRunTask ?: this.autoRunTask
+
+        val scrollView = view?.findViewById<ScrollView>(R.id.kr_content) ?: return
+
+        scrollView.removeAllViews()
+        rootGroup = ListItemGroup(requireContext(), true, GroupNode(""))
+        PageLayoutRender(requireContext(), newItems, this, rootGroup)
+        scrollView.addView(rootGroup.getView())
+
+        triggerAction(autoRunTask)
+    }
+
     private fun setListData(
         actionInfos: ArrayList<NodeInfoBase>?,
         krScriptActionHandler: KrScriptActionHandler? = null,
