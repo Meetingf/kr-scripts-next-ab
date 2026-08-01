@@ -361,7 +361,7 @@ class ActionPage : AppCompatActivity() {
                     ScriptEnvironment.executeResultRoot(activity, afterRead, this)
                 }
 
-                if (!items.isNullOrEmpty()) {
+                if (items != null) {
                     if (loadSuccess.isNotEmpty()) {
                         showDialog(getString(R.string.kr_page_load_success))
                         ScriptEnvironment.executeResultRoot(activity, loadSuccess, this)
