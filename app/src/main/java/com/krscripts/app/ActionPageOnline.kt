@@ -11,9 +11,11 @@ import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
 import android.view.View
+import android.webkit.CookieManager
 import android.webkit.JsResult
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
+import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
@@ -28,7 +30,6 @@ import com.krscripts.app.util.chooseFilePath
 import com.krscripts.app.util.handleFileSelectorResult
 import com.krscripts.common.shared.FilePathResolver
 import com.krscripts.common.ui.DialogHelper
-import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.core.R
 import com.krscripts.core.WebViewInjector
 import com.krscripts.core.downloader.Downloader
@@ -40,7 +41,6 @@ import java.util.TimerTask
 import java.util.UUID
 
 class ActionPageOnline : AppCompatActivity() {
-    private val progressBarDialog = ProgressBarDialog(this)
 
     private lateinit var binding: ActivityActionPageOnlineBinding
 
@@ -89,6 +89,7 @@ class ActionPageOnline : AppCompatActivity() {
                 )
             }
         }
+        intent.dataString.takeIf { !it.isNullOrEmpty() }?.let { initWebview(it) }
     }
 
     private fun initDownload(url: String, taskId: String?, autoClose: Boolean) {
@@ -113,6 +114,16 @@ class ActionPageOnline : AppCompatActivity() {
 
     private fun initWebview(url: String?) {
         binding.krOnlineWebview.visibility = View.VISIBLE
+
+        binding.krOnlineWebview.settings.apply {
+            cacheMode = WebSettings.LOAD_DEFAULT
+            domStorageEnabled = true
+        }
+
+        val cookieManager: CookieManager = CookieManager.getInstance()
+        cookieManager.setAcceptCookie(true)
+        cookieManager.setAcceptThirdPartyCookies(binding.krOnlineWebview, true)
+
         binding.krOnlineWebview.webChromeClient = object : WebChromeClient() {
             override fun onJsAlert(
                 view: WebView?,
@@ -130,7 +141,7 @@ class ActionPageOnline : AppCompatActivity() {
                             result?.confirm()
                         }
                 )
-                return true // super.onJsAlert(view, url, message, result)
+                return true
             }
 
             override fun onJsConfirm(
@@ -151,14 +162,19 @@ class ActionPageOnline : AppCompatActivity() {
                             result?.cancel()
                         }
                 )
-                return true // super.onJsConfirm(view, url, message, result)
+                return true
+            }
+
+            override fun onProgressChanged(view: WebView?, newProgress: Int) {
+                super.onProgressChanged(view, newProgress)
+                binding.progressBar.progress = newProgress
             }
         }
 
         binding.krOnlineWebview.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 super.onPageFinished(view, url)
-                progressBarDialog.hideDialog()
+                binding.progressBar.visibility = View.GONE
                 view?.run {
                     setTitle(this.title)
                 }
@@ -166,7 +182,7 @@ class ActionPageOnline : AppCompatActivity() {
 
             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                 super.onPageStarted(view, url, favicon)
-                progressBarDialog.showDialog(getString(com.krscripts.app.R.string.please_wait))
+                binding.progressBar.visibility = View.VISIBLE
             }
 
             override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
@@ -185,15 +201,19 @@ class ActionPageOnline : AppCompatActivity() {
             }
         }
 
-        binding.krOnlineWebview.loadUrl(url!!)
+        url?.let {
+            binding.krOnlineWebview.loadUrl(it)
 
-        WebViewInjector(binding.krOnlineWebview,
+            WebViewInjector(
+                binding.krOnlineWebview,
                 object : ParamsFileChooserRender.FileChooserInterface {
                     override fun openFileChooser(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean {
                         fileSelectorInterface = fileSelectedInterface
                         return chooseFilePath(fileSelectedInterface)
                     }
-                }).inject(this, url.startsWith("file:///android_asset"))
+                }
+            ).inject(this, it.startsWith("file:///android_asset"))
+        }
     }
 
     private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
