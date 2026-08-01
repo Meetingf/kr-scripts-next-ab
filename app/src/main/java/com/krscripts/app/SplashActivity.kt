@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.app.databinding.ActivitySplashBinding
@@ -98,7 +99,7 @@ class SplashActivity : ComponentActivity() {
                                 }
                             )
                             continuation.invokeOnCancellation {
-                                dialog.dismiss()
+                                dialog?.dismiss()
                             }
                         }
                     }
@@ -203,7 +204,14 @@ class SplashActivity : ComponentActivity() {
         context: Context,
         onRetry: () -> Unit,
         onSkip: () -> Unit
-    ): Dialog {
+    ): Dialog? {
+        val prefs = context.getSharedPreferences("app_settings", MODE_PRIVATE)
+        val hasSkipped = prefs.getBoolean("skip_root", false)
+        if (hasSkipped) {
+            onSkip()
+            return null
+        }
+
         val builder = MaterialAlertDialogBuilder(context)
             .setTitle(context.getString(R.string.error_root_title))
             .setCancelable(false)
@@ -219,6 +227,7 @@ class SplashActivity : ComponentActivity() {
         if (!context.resources.getBoolean(R.bool.force_root)) {
             builder.setNeutralButton(com.krscripts.core.R.string.btn_skip) { dialog, _ ->
                 dialog.dismiss()
+                prefs.edit { putBoolean("skip_root", true) }
                 onSkip()
             }
         }
