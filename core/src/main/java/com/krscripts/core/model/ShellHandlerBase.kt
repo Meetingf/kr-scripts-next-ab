@@ -4,9 +4,9 @@ import android.graphics.Color
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.text.Spannable
-import android.text.SpannableString
-import android.text.style.ForegroundColorSpan
+import android.text.Spanned
+import androidx.core.text.buildSpannedString
+import androidx.core.text.color
 
 /**
  * Created by Hello on 2018/04/01.
@@ -27,7 +27,7 @@ abstract class ShellHandlerBase : Handler(Looper.getMainLooper()) {
      *
      * @param msg
      */
-    protected abstract fun updateLog(msg: SpannableString?)
+    protected abstract fun updateLog(msg: Spanned?)
 
     override fun handleMessage(msg: Message) {
         super.handleMessage(msg)
@@ -81,14 +81,10 @@ abstract class ShellHandlerBase : Handler(Looper.getMainLooper()) {
     protected fun updateLog(msg: Any?, color: Int) {
         if (msg != null) {
             val msgStr = msg.toString()
-            val spannableString = SpannableString(msgStr)
-            spannableString.setSpan(
-                ForegroundColorSpan(color),
-                0,
-                msgStr.length,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-            updateLog(spannableString)
+            val spannedString = buildSpannedString {
+                color(color) { append(msgStr) }
+            }
+            updateLog(spannedString)
         }
     }
 

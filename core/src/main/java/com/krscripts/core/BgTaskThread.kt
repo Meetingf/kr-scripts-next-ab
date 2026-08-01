@@ -10,7 +10,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
-import android.text.SpannableString
+import android.text.Spanned
 import androidx.core.app.NotificationCompat
 import com.krscripts.common.ui.DialogHelper
 import com.krscripts.core.executor.ShellExecutor
@@ -124,7 +124,7 @@ class BgTaskThread(private var process: Process) : Thread() {
             notificationManager.notify(notificationID, notification) // 发送通知
         }
 
-        override fun updateLog(msg: SpannableString?) {
+        override fun updateLog(msg: Spanned?) {
         }
 
         override fun onReader(msg: Any?) {

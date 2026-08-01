@@ -7,8 +7,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Bundle
 import android.os.Message
-import android.text.SpannableString
-import android.util.TypedValue
+import android.text.Spanned
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +16,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import com.google.android.material.color.MaterialColors
 import com.krscripts.core.R
 import com.krscripts.core.databinding.KrDialogLogBinding
 import com.krscripts.core.executor.ShellExecutor
@@ -155,20 +155,14 @@ class DialogLogFragment : DialogFragment() {
     class MyShellHandler(
         private var actionEventHandler: IActionEventHandler,
         private var logView: TextView,
-        private var shellProgress: ProgressBar) : ShellHandlerBase() {
+        private var shellProgress: ProgressBar
+    ) : ShellHandlerBase() {
 
         private val context: Context = logView.context
-
-        private fun getThemeColor(attrRes: Int): Int {
-            val typedValue = TypedValue()
-            context.theme.resolveAttribute(attrRes, typedValue, true)
-            return typedValue.data
-        }
-
-        private val errorColor = getThemeColor(androidx.appcompat.R.attr.colorError)
-        private val basicColor = getThemeColor(androidx.appcompat.R.attr.colorAccent)
-        private val scriptColor = getThemeColor(androidx.appcompat.R.attr.colorAccent)
-        private val endColor = getThemeColor(androidx.appcompat.R.attr.colorPrimary)
+        private val errorColor = MaterialColors.getColor(logView, androidx.appcompat.R.attr.colorError)
+        private val basicColor = MaterialColors.getColor(logView,androidx.appcompat.R.attr.colorAccent)
+        private val scriptColor = MaterialColors.getColor(logView,androidx.appcompat.R.attr.colorAccent)
+        private val endColor = MaterialColors.getColor(logView,androidx.appcompat.R.attr.colorPrimary)
 
         private var hasError = false // 执行过程是否出现错误
 
@@ -227,7 +221,7 @@ class DialogLogFragment : DialogFragment() {
             }
         }
 
-        override fun updateLog(msg: SpannableString?) {
+        override fun updateLog(msg: Spanned?) {
             if (msg == null) return
             logView.post {
                 logView.append(msg)

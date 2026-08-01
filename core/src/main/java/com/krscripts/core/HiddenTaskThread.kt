@@ -1,7 +1,7 @@
 package com.krscripts.core
 
 import android.content.Context
-import android.text.SpannableString
+import android.text.Spanned
 import android.widget.Toast
 import com.krscripts.core.executor.ShellExecutor
 import com.krscripts.core.model.RunnableNode
@@ -31,7 +31,7 @@ object HiddenTaskThread {
             }
         }
 
-        override fun updateLog(msg: SpannableString?) {}
+        override fun updateLog(msg: Spanned?) {}
         override fun onReader(msg: Any?) {}
         override fun onWrite(msg: Any?) {}
         override fun onProgress(current: Int, total: Int) {}
