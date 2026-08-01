@@ -12,7 +12,7 @@
     <string name="about_title">关于</string>
     <string name="appliction_desc">演示应用</string>
     <string name="appliction_name">Kr Scripts Next</string>
-    <string name="appliction_author">作者：嘟嘟ski, buylan</string>
+    <string name="appliction_author">作者：嘟嘟ski, buylan\n   贡献者：MT启明星</string>
     <string name="engine_version_name">基于[Kr-Script-Next 0.1.0]创作</string>
     <string name="copy_success">复制成功</string>
     <string name="btn_retry">重试</string>
