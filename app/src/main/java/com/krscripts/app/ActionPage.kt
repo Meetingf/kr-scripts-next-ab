@@ -277,7 +277,7 @@ class ActionPage : AppCompatActivity() {
     }
 
     private fun menuItemChooseFile(menuOption: PageMenuOption) {
-        chooseFilePath(object: ParamsFileChooserRender.FileSelectedInterface{
+        fileSelectorInterface = object: ParamsFileChooserRender.FileSelectedInterface{
             override fun onFileSelected(path: String?) {
                 if (path != null) {
                     lifecycleScope.launch {
@@ -306,7 +306,8 @@ class ActionPage : AppCompatActivity() {
                     else -> ParamsFileChooserRender.FileSelectedInterface.TYPE_FILE
                 }
             }
-        })
+        }
+        fileSelectorInterface?.let { chooseFilePath(it) }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
