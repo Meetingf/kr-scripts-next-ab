@@ -22,6 +22,24 @@
         <page config="samples/reload.xml" title="节点刷新" />
         <page config="samples/bg_task/bg_task.xml" title="后台任务" />
         <page config="samples/limit.xml" title="功能限制" />
+        <action title="控制进度条">
+            <script>
+                echo progress:[0/100]
+                echo 第一步
+                sleep 1
+                echo progress:[13/100]
+                echo 第二步
+                sleep 1
+                echo progress:[66/100]
+                echo 第三步
+                sleep 1
+                echo progress:[85/100]
+                echo 最后一步
+                sleep 1
+                echo 好了
+                echo progress:[100/100]
+            </script>
+        </action>
     </group>
 
     <group title="Web引擎">
