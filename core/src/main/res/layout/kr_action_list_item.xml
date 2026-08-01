@@ -62,7 +62,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"
-        android:textColor="?android:colorAccent"
+        android:textColor="?colorAccent"
         app:layout_constraintBottom_toBottomOf="@+id/kr_icon"
         app:layout_constraintEnd_toStartOf="@+id/right_side_barrier"
         app:layout_constraintStart_toEndOf="@+id/kr_icon"
@@ -78,7 +78,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="?android:colorAccent" />
+        app:tint="?colorAccent" />
 
     <com.google.android.material.materialswitch.MaterialSwitch
         android:id="@+id/kr_switch"
