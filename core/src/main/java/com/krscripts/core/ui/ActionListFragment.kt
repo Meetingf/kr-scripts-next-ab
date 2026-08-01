@@ -117,8 +117,8 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
 
             if (fitNavigationBar) {
                 ViewCompat.setOnApplyWindowInsetsListener(rootView as View) { v, insets ->
-                    val systemBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-                    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+                    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+                    v.setPadding(0, 0, 0, systemBars.bottom)
                     insets
                 }
             }
