@@ -6,7 +6,7 @@ import android.os.Looper
 import android.widget.Toast
 import com.krscripts.core.R
 import com.krscripts.core.executor.ScriptEnvironment
-import com.krscripts.core.model.NodeInfoBase
+import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.PageNode
 import java.io.ByteArrayInputStream
 
@@ -25,21 +25,21 @@ class PageConfigSh(private var activity: Activity, private var pageConfigSh: Str
         }
     }
 
-    fun execute(): ArrayList<NodeInfoBase>? {
-        var items: ArrayList<NodeInfoBase>? = null
+    fun execute(): ConfigNode? {
+        var config: ConfigNode? = null
 
         val result = ScriptEnvironment.executeResultRoot(activity, pageConfigSh, parentConfig).trim()
         if (result.endsWith(".xml")) {
-            items = PageConfigReader(activity, result, parentConfig?.pageConfigDir).readConfigXml()
-            if (items == null) {
+            config = PageConfigReader(activity, result, parentConfig?.pageConfigDir).readConfigXml()
+            if (config == null) {
                 noReadPermission()
             }
         } else if (result.startsWith("<?xml") && result.endsWith(">")) {
             val inputStream = ByteArrayInputStream(result.toByteArray())
-            items = PageConfigReader(activity, inputStream).readConfigXml()
+            config = PageConfigReader(activity, inputStream).readConfigXml()
         } else if (result.isNotEmpty()) {
             pageConfigShError(result)
         }
-        return items
+        return config
     }
 }

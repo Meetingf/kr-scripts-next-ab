@@ -27,8 +27,8 @@ import com.krscripts.core.config.PageConfigSh
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.model.AutoRunTask
 import com.krscripts.core.model.ClickableNode
+import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.KrScriptActionHandler
-import com.krscripts.core.model.NodeInfoBase
 import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.RunnableNode
@@ -42,13 +42,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-class ActionPage : AppCompatActivity() {
+open class ActionPage : AppCompatActivity() {
     private val progressBarDialog = ProgressBarDialog(this)
     private var actionsLoaded = false
-    private lateinit var currentPageConfig: PageNode
+    private lateinit var pageConfigCompat: PageNode
     private var autoRunItemId: String? = null
     private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
-    private var menuOptions:ArrayList<PageMenuOption>? = null
+    private var menuOptions = ArrayList<PageMenuOption>()
+    private var config: ConfigNode? = null
     private lateinit var binding: ActivityActionPageBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -134,14 +135,14 @@ class ActionPage : AppCompatActivity() {
                 if (page.title.isNotEmpty()) {
                     title = page.title
                 }
-                currentPageConfig = page
+                pageConfigCompat = page
             } ?: {
                 Toast.makeText(this, "页面信息无效", Toast.LENGTH_SHORT).show()
                 finish()
             }
         }
 
-        if (currentPageConfig.pageConfigPath.isEmpty() && currentPageConfig.pageConfigSh.isEmpty()) {
+        if (pageConfigCompat.pageConfigPath.isEmpty() && pageConfigCompat.pageConfigSh.isEmpty()) {
             setResult(2)
             finish()
         }
@@ -159,7 +160,7 @@ class ActionPage : AppCompatActivity() {
         override fun createShortcut(clickableNode: ClickableNode, createShortcutHandler: KrScriptActionHandler.CreateShortcutHandler) {
             val page = clickableNode as? PageNode
                 ?: if (clickableNode is RunnableNode) {
-                    currentPageConfig
+                    pageConfigCompat
                 } else {
                     return
                 }
@@ -190,13 +191,15 @@ class ActionPage : AppCompatActivity() {
 
     // 右上角菜单的创建
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        if (menuOptions == null) {
-            menuOptions = PageMenuLoader(applicationContext, currentPageConfig).load()
+        menu?.clear()
+
+        PageMenuLoader(applicationContext, pageConfigCompat).load()?.let {
+            menuOptions.addAll(it)
         }
 
-        if (menuOptions != null && menu != null) {
-            for (i in menuOptions!!.indices) {
-                val menuOption = menuOptions!![i]
+        if (menu != null) {
+            for (i in menuOptions.indices) {
+                val menuOption = menuOptions[i]
                 if (menuOption.isFab) {
                     addFab(menuOption)
                 } else {
@@ -232,11 +235,8 @@ class ActionPage : AppCompatActivity() {
 
     // 右上角菜单的点击操作
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (menuOptions == null) {
-            return false
-        }
 
-        onMenuItemClick(menuOptions!![item.itemId])
+        onMenuItemClick(menuOptions[item.itemId])
 
         return true
     }
@@ -276,7 +276,7 @@ class ActionPage : AppCompatActivity() {
             menuOption,
             { },
             onDismiss,
-            currentPageConfig.pageHandlerSh,
+            pageConfigCompat.pageHandlerSh,
             params
         )
         dialog.show(supportFragmentManager, "")
@@ -343,21 +343,20 @@ class ActionPage : AppCompatActivity() {
         val activity = this
 
         lifecycleScope.launch(Dispatchers.IO) {
-            currentPageConfig.run {
+            pageConfigCompat.run {
                 if (beforeRead.isNotEmpty()) {
                     showDialog(getString(R.string.kr_page_before_load))
                     ScriptEnvironment.executeResultRoot(activity, beforeRead, this)
                 }
 
                 showDialog(getString(R.string.kr_page_loading))
-                var items: ArrayList<NodeInfoBase>? = null
 
                 if (pageConfigSh.isNotEmpty()) {
-                    items = PageConfigSh(this@ActionPage, pageConfigSh, this).execute()
+                    config = PageConfigSh(this@ActionPage, pageConfigSh, this).execute()
                 }
 
-                if (items == null && pageConfigPath.isNotEmpty()) {
-                    items = PageConfigReader(
+                if (config == null && pageConfigPath.isNotEmpty()) {
+                    config = PageConfigReader(
                         applicationContext,
                         pageConfigPath,
                         pageConfigDir
@@ -369,7 +368,7 @@ class ActionPage : AppCompatActivity() {
                     ScriptEnvironment.executeResultRoot(activity, afterRead, this)
                 }
 
-                if (items != null) {
+                config?.let { config ->
                     if (loadSuccess.isNotEmpty()) {
                         showDialog(getString(R.string.kr_page_load_success))
                         ScriptEnvironment.executeResultRoot(activity, loadSuccess, this)
@@ -389,8 +388,14 @@ class ActionPage : AppCompatActivity() {
                             }
                         }
 
+                        config.pageMenuOptions.let {
+                            menuOptions.clear()
+                            menuOptions.addAll(it)
+                            invalidateOptionsMenu()
+                        }
+
                         val fragment = ActionListFragment.create(
-                            items,
+                            config.content,
                             actionShortClickHandler,
                             autoRunTask
                         )
@@ -400,23 +405,21 @@ class ActionPage : AppCompatActivity() {
                         hideDialog()
                         actionsLoaded = true
                     }
-                } else {
-                    if (loadFail.isNotEmpty()) {
+                } ?: if (loadFail.isNotEmpty()) {
                         showDialog(getString(R.string.kr_page_load_fail))
                         ScriptEnvironment.executeResultRoot(activity, loadFail, this)
                         hideDialog()
+                    } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@ActionPage,
+                                getString(R.string.kr_page_load_fail),
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        hideDialog()
+                        finish()
                     }
-
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(
-                            this@ActionPage,
-                            getString(R.string.kr_page_load_fail),
-                            Toast.LENGTH_SHORT
-                        ).show()
-                    }
-                    hideDialog()
-                    finish()
-                }
             }
         }
     }

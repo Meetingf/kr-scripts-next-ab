@@ -15,6 +15,7 @@ import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.model.ActionNode
 import com.krscripts.core.model.ActionParamInfo
 import com.krscripts.core.model.ClickableNode
+import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.GroupNode
 import com.krscripts.core.model.NavNode
 import com.krscripts.core.model.NodeInfoBase
@@ -50,14 +51,14 @@ class PageConfigReader {
         this.pageConfigStream = pageConfigStream
     }
 
-    fun readConfigXml(): ArrayList<NodeInfoBase>? {
+    fun readConfigXml(): ConfigNode? {
         if (pageConfigStream != null) {
             return readConfigXml(pageConfigStream!!)
         }
         try {
             val pathAnalysis = PathAnalysis(context, parentDir)
             pathAnalysis.parsePath(pageConfig).run {
-                val fileInputStream = this ?: return ArrayList()
+                val fileInputStream = this ?: return ConfigNode()
                 pageConfigAbsPath = pathAnalysis.getCurrentAbsPath()
                 return readConfigXml(fileInputStream)
             }
@@ -73,15 +74,16 @@ class PageConfigReader {
         data class Switch(val node: SwitchNode) : MainNode()
         data class Picker(val node: PickerNode) : MainNode()
         data class Text(val node: TextNode) : MainNode()
+        data class Options(val node: ArrayList<PageMenuOption>) : MainNode()
     }
 
-    private fun readConfigXml(fileInputStream: InputStream): ArrayList<NodeInfoBase>? {
+    private fun readConfigXml(fileInputStream: InputStream): ConfigNode? {
         try {
             val parser = Xml.newPullParser()
             parser.setInput(fileInputStream, "utf-8")
             var type = parser.eventType
 
-            val mainList = ArrayList<NodeInfoBase>()
+            val config = ConfigNode()
             var currentGroup: GroupNode? = null
             var currentNav: NavNode? = null
             var current: MainNode? = null
@@ -90,7 +92,7 @@ class PageConfigReader {
                 when {
                     currentGroup != null -> currentGroup!!.children.add(node)
                     currentNav != null -> currentNav!!.children.add(node)
-                    else -> mainList.add(node)
+                    else -> config.content.add(node)
                 }
             }
             while (type != XmlPullParser.END_DOCUMENT) {
@@ -133,12 +135,16 @@ class PageConfigReader {
                                 current = (mainNode(TextNode(pageConfigAbsPath), parser) as TextNode?)
                                     ?.let { MainNode.Text(it) }
                             }
+                            name == "menu" -> {
+                                current = MainNode.Options(ArrayList())
+                            }
                             else -> when (val c = current) {
                                 is MainNode.Page -> tagStartInPage(c.node, parser)
                                 is MainNode.Action -> tagStartInAction(c.node, parser)
                                 is MainNode.Switch -> tagStartInSwitch(c.node, parser)
                                 is MainNode.Picker -> tagStartInPicker(c.node, parser)
                                 is MainNode.Text -> tagStartInText(c.node, parser)
+                                is MainNode.Options -> tagStartInOptions(c, parser, config)
                                 null -> if (name == "resource") resourceNode(parser)
                             }
                         }
@@ -146,11 +152,11 @@ class PageConfigReader {
                     XmlPullParser.END_TAG -> {
                         when (parser.name) {
                             "nav" -> {
-                                currentNav?.let { mainList.add(it) }
+                                currentNav?.let { config.content.add(it) }
                                 currentNav = null
                             }
                             "group" -> {
-                                currentGroup?.let { if (it.supported) mainList.add(it) }
+                                currentGroup?.let { if (it.supported) config.content.add(it) }
                                 currentGroup = null
                             }
                             "page" -> (current as? MainNode.Page)?.let {
@@ -177,13 +183,17 @@ class PageConfigReader {
                                 addFinishedNode(it.node)
                                 current = null
                             }
+                            "menu" -> (current as? MainNode.Options)?.let { opts ->
+                                config.pageMenuOptions.addAll(opts.node)
+                                current = null
+                            }
                         }
                     }
                 }
                 type = parser.next()
             }
 
-            return mainList
+            return config
         } catch (ex: Exception) {
             reportParseFailure(ex)
         }
@@ -234,6 +244,22 @@ class PageConfigReader {
 
     private var actionParamInfos: ArrayList<ActionParamInfo>? = null
     private var actionParamInfo: ActionParamInfo? = null
+
+    private fun tagStartInOptions(
+        options: MainNode.Options,
+        parser: XmlPullParser,
+        configNode: ConfigNode
+    ) {
+        when (parser.name) {
+            "option", "menu" -> {
+                val option = readOptionConfig(parser)
+                option?.let { options.node.add(it) }
+            }
+            "handler" -> {
+                configNode.pageHandlerSh = parser.nextText().trim()
+            }
+        }
+    }
 
     private fun tagStartInAction(action: ActionNode, parser: XmlPullParser) {
         when (parser.name) {
@@ -319,25 +345,34 @@ class PageConfigReader {
             "handler-sh", "handler", "set", "getstate", "script" -> node.pageHandlerSh = parser.nextText()
             "lock", "lock-state" -> node.lockShell = parser.nextText()
             "option", "page-option", "menu", "menu-item" -> {
-                val option = runnableNode(PageMenuOption(pageConfigAbsPath), parser) as PageMenuOption?
-                if (option != null) {
-                    parser.attr("type")?.let { option.type = it }
-                    parser.attr("style")?.let { option.isFab = it == "fab" }
-                    parser.attrAny("suffix")?.let {
-                        val suffix = lower(it)
-                        if (option.mime.isEmpty()) option.mime = Suffix2Mime().toMime(suffix)
-                        option.suffix = suffix
-                    }
-                    parser.attr("mime")?.let { option.mime = it.lowercase(getDefault()) }
-
-                    option.title = parser.nextText()
-                    if (option.key.isEmpty()) option.key = option.title
-
+                val option = readOptionConfig(parser)
+                option?.let {
                     if (node.pageMenuOptions == null) node.pageMenuOptions = ArrayList()
                     node.pageMenuOptions?.add(option)
                 }
             }
         }
+    }
+
+    private fun readOptionConfig(
+        parser: XmlPullParser
+    ): PageMenuOption? {
+        val option = runnableNode(PageMenuOption(pageConfigAbsPath), parser) as PageMenuOption?
+        if (option != null) {
+            parser.attr("type")?.let { option.type = it }
+            parser.attr("style")?.let { option.isFab = it == "fab" }
+            parser.attrAny("suffix")?.let {
+                val suffix = lower(it)
+                if (option.mime.isEmpty()) option.mime = Suffix2Mime().toMime(suffix)
+                option.suffix = suffix
+            }
+            parser.attr("mime")?.let { option.mime = it.lowercase(getDefault()) }
+
+            option.title = parser.nextText()
+            if (option.key.isEmpty()) option.key = option.title
+            return option
+        }
+        return null
     }
 
     @Suppress("unused")

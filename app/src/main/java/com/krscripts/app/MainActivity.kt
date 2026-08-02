@@ -29,9 +29,10 @@ import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.core.config.PageConfigReader
 import com.krscripts.core.config.PageConfigSh
 import com.krscripts.core.model.ClickableNode
+import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.KrScriptActionHandler
 import com.krscripts.core.model.NavNode
-import com.krscripts.core.model.NodeInfoBase
+import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.ui.ActionListFragment
@@ -44,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private val progressBarDialog = ProgressBarDialog(this)
     private var krScriptConfig = KrScriptConfig()
     lateinit var binding: ActivityMainBinding
+    private var menuOptions = ArrayList<PageMenuOption>()
     private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,10 +91,15 @@ class MainActivity : AppCompatActivity() {
 
         pageConfigs.forEachIndexed { index, page ->
 
-            getItems(page)?.let { pageItems ->
+            getConfig(page)?.let { config ->
+
+                config.pageMenuOptions.let {
+                    menuOptions.addAll(it)
+                    invalidateOptionsMenu()
+                }
 
                 val menuName =
-                    pageItems.lastOrNull()?.title?.takeIf { it.isNotEmpty() && pageItems.last() is NavNode }
+                    config.content.lastOrNull()?.title?.takeIf { it.isNotEmpty() && config.content.last() is NavNode }
                         ?: page.pageConfigPath.substringAfterLast('/')
 
                 menu.add(menuName).apply {
@@ -115,27 +122,27 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    private fun getItems(pageNode: PageNode): ArrayList<NodeInfoBase>? {
-        var items: ArrayList<NodeInfoBase>? = null
+    private fun getConfig(pageNode: PageNode): ConfigNode? {
+        var config: ConfigNode? = null
 
         if (pageNode.pageConfigSh.isNotEmpty()) {
-            items = PageConfigSh(this, pageNode.pageConfigSh, null).execute()
+            config = PageConfigSh(this, pageNode.pageConfigSh, null).execute()
         }
-        if (items == null && pageNode.pageConfigPath.isNotEmpty()) {
-            items = PageConfigReader(this.applicationContext, pageNode.pageConfigPath, null).readConfigXml()
+        if (config == null && pageNode.pageConfigPath.isNotEmpty()) {
+            config = PageConfigReader(this.applicationContext, pageNode.pageConfigPath, null).readConfigXml()
         }
 
-        return items
+        return config
     }
 
     private fun reloadTab(pageNode: PageNode, index: Int) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val items = getItems(pageNode)
+            val items = getConfig(pageNode)
             withContext(Dispatchers.Main) {
                 items?.let { newItems ->
                     val tag = "f$index"
                     val fragment = supportFragmentManager.findFragmentByTag(tag) as? ActionListFragment
-                    fragment?.update(newItems, getKrScriptActionHandler(pageNode, index))
+                    fragment?.update(newItems.content, getKrScriptActionHandler(pageNode, index))
                 }
             }
         }
@@ -201,10 +208,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
+
+        menu.clear()
         menuInflater.inflate(R.menu.main, menu)
+
+        for (i in menuOptions.indices) {
+            val menuOption = menuOptions[i]
+            if (menuOption.isFab) {
+//                addFab(menuOption)
+            } else {
+                menu.add(-1, i, i, menuOption.title)
+            }
+        }
+
         menu.findItem(R.id.option_menu_info)?.icon?.setTint(
             getThemeColor(com.google.android.material.R.attr.colorOnSurface)
         )
+
         return true
     }
 
@@ -229,6 +249,9 @@ class MainActivity : AppCompatActivity() {
 
                 DialogHelper.animDialog(this, MaterialAlertDialogBuilder(this).setView(layout).setTitle(getString(R.string.title_about)))
             }
+            else -> {
+
+            }
         }
         return super.onOptionsItemSelected(item)
     }
@@ -242,8 +265,8 @@ class MainActivity : AppCompatActivity() {
 
         override fun createFragment(position: Int): Fragment {
             val page = pages[position]
-            val items = getItems(page) ?: arrayListOf()
-            return ActionListFragment.create(items, getKrScriptActionHandler(page, position), null, false)
+            val items = getConfig(page) ?: ConfigNode()
+            return ActionListFragment.create(items.content, getKrScriptActionHandler(page, position), null, false)
         }
     }
 }
