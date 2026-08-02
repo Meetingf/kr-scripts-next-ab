@@ -1,66 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:fitsSystemWindows="true">
+    android:fitsSystemWindows="true"
+    android:paddingBottom="8dp">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <TextView
+        android:id="@+id/title"
+        style="@style/TextAppearance.Material3.TitleMedium"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="20dp">
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="8dp"
+        android:padding="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/desc"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.5" />
 
-        <LinearLayout
-            android:id="@+id/top_bar"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/title"
-                style="@style/TextAppearance.Material3.TitleMedium"
-                android:padding="0dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+    <TextView
+        android:id="@+id/desc"
+        style="@style/TextAppearance.Material3.BodySmall"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_marginBottom="8dp"
+        android:padding="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/action_progress"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/title"
+        app:layout_constraintVertical_bias="0.5" />
 
-            <TextView
-                android:id="@+id/desc"
-                style="@style/TextAppearance.Material3.BodySmall"
-                android:padding="0dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
-        </LinearLayout>
-
-        <ImageButton
-            android:id="@+id/btn_hide"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null"
-            android:scaleType="centerInside"
-            android:src="@drawable/baseline_keyboard_arrow_down_24"
-            app:tint="?colorOnSurface"
-            style="@style/Widget.AppCompat.ActionButton"/>
-    </LinearLayout>
+    <ImageButton
+        android:id="@+id/btn_hide"
+        style="@style/Widget.AppCompat.ActionButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="@null"
+        android:scaleType="centerInside"
+        android:src="@drawable/baseline_keyboard_arrow_down_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?colorOnSurface" />
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/action_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
+        android:layout_marginTop="8dp"
         android:indeterminate="true"
         android:max="100"
-        android:progress="0" />
+        android:progress="0"
+        app:layout_constraintTop_toBottomOf="@+id/btn_hide" />
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
         android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="14dp"
-        android:background="@drawable/krscript_item_bg">
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/krscript_item_bg"
+        app:layout_constraintBottom_toTopOf="@+id/btn_copy"
+        app:layout_constraintTop_toBottomOf="@+id/action_progress">
 
         <TextView
             android:id="@+id/shell_output"
@@ -73,24 +79,23 @@
             android:textSize="12sp" />
     </ScrollView>
 
-    <LinearLayout
-        android:id="@+id/bottom_actions"
-        android:layout_width="match_parent"
+    <Button
+        android:id="@+id/btn_copy"
+        style="@style/Widget.Material3.Button.TextButton.Dialog"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="end"
-        android:orientation="horizontal"
-        android:paddingHorizontal="16dp">
+        android:text="@string/btn_copy_output"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btn_exit" />
 
-        <Button
-            android:id="@+id/btn_copy"
-            style="@style/dialogLargeBtn"
-            android:text="@string/btn_copy_output" />
+    <Button
+        android:id="@+id/btn_exit"
+        style="@style/Widget.Material3.Button.TextButton.Dialog"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:text="@string/btn_exit"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-        <Button
-            android:id="@+id/btn_exit"
-            style="@style/dialogLargeBtn"
-            android:text="@string/btn_exit" />
-    </LinearLayout>
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
