@@ -8,6 +8,7 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -212,7 +213,21 @@ class MainActivity : AppCompatActivity() {
             R.id.option_menu_info -> {
                 val layoutInflater = LayoutInflater.from(this)
                 val layout = layoutInflater.inflate(R.layout.dialog_about, null)
-                DialogHelper.animDialog(this, MaterialAlertDialogBuilder(this).setView(layout))
+
+                val appVersion = try {
+                    packageManager.getPackageInfo(packageName, 0).versionName
+                } catch (_: Exception) {
+                    ".null"
+                }
+
+                val tvAppVersion = layout.findViewById<TextView>(R.id.tv_app_version)
+                tvAppVersion.text = getString(R.string.app_version, appVersion)
+
+                val frameworkVersion = BuildConfig.FRAMEWORK_VERSION
+                val tvFrameworkInfo = layout.findViewById<TextView>(R.id.tv_framework_info)
+                tvFrameworkInfo.text = getString(R.string.framework_info, frameworkVersion)
+
+                DialogHelper.animDialog(this, MaterialAlertDialogBuilder(this).setView(layout).setTitle(getString(R.string.title_about)))
             }
         }
         return super.onOptionsItemSelected(item)

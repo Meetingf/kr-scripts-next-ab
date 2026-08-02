@@ -1,19 +1,9 @@
 <resources>
-    <!--重要内容，谨慎修改-->
     <string name="kr_script_config">kr-script.conf</string>
-
-    <!--是否强制获取ROOT-->
-    <bool name="force_root">false</bool>
 
     <string name="app_name">Kr Scripts</string>
     <string name="btn_exit">退出</string>
     <string name="please_wait">请稍等</string>
-    <string name="author_name">placeholder</string>
-    <string name="about_title">关于</string>
-    <string name="appliction_desc">演示应用</string>
-    <string name="appliction_name">Kr Scripts Next</string>
-    <string name="appliction_author">作者：嘟嘟ski, buylan\n   贡献者：MT启明星</string>
-    <string name="engine_version_name">基于[Kr-Script-Next 0.1.0]创作</string>
     <string name="copy_success">复制成功</string>
     <string name="btn_retry">重试</string>
     <string name="pio_starting">初始化</string>
@@ -22,8 +12,13 @@
     <string name="pio_permission_checking">检查并获取必需权限…</string>
     <string name="error_root_title">权限警告</string>
     <string name="error_root_message">未能获得ROOT授权，如果你的手机已经ROOT，请在管理器中为本应用授权</string>
-    <string name="error_su_timeout">等待ROOT授权超时，请检查授权管理器是否在后台运行！</string>
     <string name="title_activity_file_selector">请选择文件</string>
     <string name="title_activity_folder_selector">请长按选择目录</string>
     <string name="resource_reference_desc">通过输出带有指向资源地址的字符串引用资源</string>
+
+    <string name="framework_author">作者: 嘟嘟ski, buylan\n贡献者: MT启明星</string>
+    <string name="framework_info">框架: Kr Script Next v%1$s</string>
+    <string name="app_version">v%1$s</string>
+    <string name="app_author"><![CDATA[应用作者: <名称>]]></string>
+    <string name="title_about">关于</string>
 </resources>
