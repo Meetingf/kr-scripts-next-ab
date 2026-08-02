@@ -2,19 +2,33 @@
 <nav title="主页">
 
     <menu>
-        <option type="default" id="a" auto-off="true">自定义 1</option>
-        <option type="default" id="b">自定义 2</option>
-        <option type="refresh">刷新界面</option>
-        <option type="finish">关闭页面</option>
-        <option type="file">选择文件</option>
+        <option type="default" id="1" auto-off="true" shell="hidden">关机</option>
+        <option type="default" id="2" auto-off="true" shell="hidden">软重启</option>
+        <option type="default" id="3" auto-off="true" shell="hidden">重启到 Recovery</option>
+        <option type="default" id="4" auto-off="true" shell="hidden">重启到 Bootloader</option>
+        <option type="default" id="5" auto-off="true" shell="hidden">重启到 Download</option>
+        <option type="default" id="6" auto-off="true" shell="hidden">重启到 EDL</option>
         <handler>
-            echo '此脚本的作用是处理菜单点击事件'
-            echo '执行时PIO会告诉你哪个菜单项被点击，就像Picker的 set 一样'
-            echo ''
-            echo '点击的菜单项' $menu_id
-            echo ''
-            echo '选择的文件' $file
-            echo ''
+            case "$menu_id" in
+            1)
+            shutdown now
+            ;;
+            2)
+            setprop ctl.restart zygote
+            ;;
+            3)
+            reboot recovery
+            ;;
+            4)
+            reboot bootloader
+            ;;
+            5)
+            reboot download
+            ;;
+            6)
+            reboot edl
+            ;;
+            esac
         </handler>
     </menu>
 

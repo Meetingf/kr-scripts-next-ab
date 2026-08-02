@@ -360,6 +360,7 @@ class PageConfigReader {
         val option = runnableNode(PageMenuOption(pageConfigAbsPath), parser) as PageMenuOption?
         if (option != null) {
             parser.attr("type")?.let { option.type = it }
+            parser.attr("shell")?.let { option.shell = it }
             parser.attr("style")?.let { option.isFab = it == "fab" }
             parser.attrAny("suffix")?.let {
                 val suffix = lower(it)

@@ -5,12 +5,8 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
-import android.view.MenuItem
-import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -18,10 +14,8 @@ import androidx.lifecycle.lifecycleScope
 import com.krscripts.app.databinding.ActivityActionPageBinding
 import com.krscripts.app.util.chooseFilePath
 import com.krscripts.app.util.handleFileSelectorResult
-import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.core.R
 import com.krscripts.core.TryOpenActivity
-import com.krscripts.core.config.IconPathAnalysis
 import com.krscripts.core.config.PageConfigReader
 import com.krscripts.core.config.PageConfigSh
 import com.krscripts.core.executor.ScriptEnvironment
@@ -29,12 +23,10 @@ import com.krscripts.core.model.AutoRunTask
 import com.krscripts.core.model.ClickableNode
 import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.KrScriptActionHandler
-import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.shortcut.ActionShortcutManager
 import com.krscripts.core.ui.ActionListFragment
-import com.krscripts.core.ui.DialogLogFragment
 import com.krscripts.core.ui.PageMenuLoader
 import com.krscripts.core.ui.ParamsFileChooserRender
 import kotlinx.coroutines.Dispatchers
@@ -42,14 +34,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 
-open class ActionPage : AppCompatActivity() {
-    private val progressBarDialog = ProgressBarDialog(this)
+open class ActionPage : KrActivity() {
+
     private var actionsLoaded = false
     private lateinit var pageConfigCompat: PageNode
     private var autoRunItemId: String? = null
-    private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
-    private var menuOptions = ArrayList<PageMenuOption>()
-    private var config: ConfigNode? = null
     private lateinit var binding: ActivityActionPageBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -201,7 +190,7 @@ open class ActionPage : AppCompatActivity() {
             for (i in menuOptions.indices) {
                 val menuOption = menuOptions[i]
                 if (menuOption.isFab) {
-                    addFab(menuOption)
+                    addFab(menuOption, binding.actionPageFab)
                 } else {
                     menu.add(-1, i, i, menuOption.title)
                 }
@@ -209,112 +198,6 @@ open class ActionPage : AppCompatActivity() {
         }
 
         return true // super.onCreateOptionsMenu(menu)
-    }
-
-    private fun addFab(menuOption: PageMenuOption) {
-        binding.actionPageFab.run {
-            visibility = View.VISIBLE
-            setOnClickListener {
-                onMenuItemClick(menuOption)
-            }
-
-            if (menuOption.type == "file" && menuOption.iconPath.isEmpty()) {
-                setImageDrawable(ContextCompat.getDrawable(context, R.drawable.baseline_folder_24))
-            } else if (menuOption.iconPath.isNotEmpty()) {
-                val icon = IconPathAnalysis().loadLogo(context, menuOption, false)
-                if (icon != null) {
-                    setImageDrawable(icon)
-                } else {
-                    setImageDrawable(ContextCompat.getDrawable(context, R.drawable.baseline_menu_24))
-                }
-            } else {
-                setImageDrawable(ContextCompat.getDrawable(context, R.drawable.baseline_menu_24))
-            }
-        }
-    }
-
-    // 右上角菜单的点击操作
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-
-        onMenuItemClick(menuOptions[item.itemId])
-
-        return true
-    }
-
-    private fun onMenuItemClick(menuOption: PageMenuOption) {
-        when(menuOption.type) {
-            "refresh", "reload" -> {
-                recreate()
-            }
-            "exit", "finish", "close" -> {
-                finish()
-            }
-            "file" -> {
-                menuItemChooseFile(menuOption)
-            }
-            else -> {
-                menuItemExecute(menuOption, HashMap<String, String>().apply{
-                    put("state", menuOption.key)
-                    put("menu_id", menuOption.key)
-                })
-            }
-        }
-    }
-
-    private fun menuItemExecute(menuOption: PageMenuOption, params: HashMap<String, String>) {
-        val onDismiss = Runnable {
-            if (menuOption.autoFinish) {
-                finish()
-            } else if (menuOption.reloadPage) {
-                recreate()
-            } else if (menuOption.updateBlocks != null) {
-                // TODO rootGroup.triggerUpdateByKey(item.updateBlocks!!)
-            }
-        }
-
-        val dialog = DialogLogFragment.create(
-            menuOption,
-            { },
-            onDismiss,
-            pageConfigCompat.pageHandlerSh,
-            params
-        )
-        dialog.show(supportFragmentManager, "")
-        dialog.isCancelable = false
-    }
-
-    private fun menuItemChooseFile(menuOption: PageMenuOption) {
-        fileSelectorInterface = object: ParamsFileChooserRender.FileSelectedInterface{
-            override fun onFileSelected(path: String?) {
-                if (path != null) {
-                    lifecycleScope.launch {
-                        menuItemExecute(menuOption, HashMap<String, String>().apply{
-                            put("state", menuOption.key)
-                            put("menu_id", menuOption.key)
-                            put("file", path)
-                            put("folder", path)
-                        })
-                    }
-                }
-            }
-
-            override fun mimeType(): String? {
-                return menuOption.mime.ifEmpty { null }
-            }
-
-            override fun suffix(): String? {
-                return menuOption.suffix.ifEmpty { null }
-            }
-
-            override fun type(): Int {
-                return when(menuOption.type) {
-                    "folder" -> ParamsFileChooserRender.FileSelectedInterface.TYPE_FOLDER
-                    "file" -> ParamsFileChooserRender.FileSelectedInterface.TYPE_FILE
-                    else -> ParamsFileChooserRender.FileSelectedInterface.TYPE_FILE
-                }
-            }
-        }
-        fileSelectorInterface?.let { chooseFilePath(it) }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -350,6 +233,8 @@ open class ActionPage : AppCompatActivity() {
                 }
 
                 showDialog(getString(R.string.kr_page_loading))
+
+                var config: ConfigNode? = null
 
                 if (pageConfigSh.isNotEmpty()) {
                     config = PageConfigSh(this@ActionPage, pageConfigSh, this).execute()
@@ -392,6 +277,12 @@ open class ActionPage : AppCompatActivity() {
                             menuOptions.clear()
                             menuOptions.addAll(it)
                             invalidateOptionsMenu()
+                        }
+
+                        menuHandler = if (config.pageHandlerSh.isEmpty()) {
+                            pageConfigCompat.pageHandlerSh
+                        } else {
+                            (if (pageConfigCompat.pageHandlerSh.isNotEmpty()) "echo 已忽略引用处handler" else "") + config.pageHandlerSh
                         }
 
                         val fragment = ActionListFragment.create(

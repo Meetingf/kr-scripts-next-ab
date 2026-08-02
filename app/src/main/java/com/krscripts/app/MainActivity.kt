@@ -10,7 +10,6 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -25,14 +24,12 @@ import com.krscripts.app.databinding.ActivityMainBinding
 import com.krscripts.app.util.chooseFilePath
 import com.krscripts.app.util.handleFileSelectorResult
 import com.krscripts.common.ui.DialogHelper
-import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.core.config.PageConfigReader
 import com.krscripts.core.config.PageConfigSh
 import com.krscripts.core.model.ClickableNode
 import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.KrScriptActionHandler
 import com.krscripts.core.model.NavNode
-import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.ui.ActionListFragment
@@ -41,12 +38,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-class MainActivity : AppCompatActivity() {
-    private val progressBarDialog = ProgressBarDialog(this)
+class MainActivity : KrActivity() {
+
     private var krScriptConfig = KrScriptConfig()
     lateinit var binding: ActivityMainBinding
-    private var menuOptions = ArrayList<PageMenuOption>()
-    private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,6 +87,10 @@ class MainActivity : AppCompatActivity() {
         pageConfigs.forEachIndexed { index, page ->
 
             getConfig(page)?.let { config ->
+
+                config.pageHandlerSh.takeIf { it.isNotEmpty() }?.let {
+                    menuHandler = it
+                }
 
                 config.pageMenuOptions.let {
                     menuOptions.addAll(it)
@@ -215,7 +214,7 @@ class MainActivity : AppCompatActivity() {
         for (i in menuOptions.indices) {
             val menuOption = menuOptions[i]
             if (menuOption.isFab) {
-//                addFab(menuOption)
+                addFab(menuOption, binding.fab)
             } else {
                 menu.add(-1, i, i, menuOption.title)
             }
@@ -250,10 +249,10 @@ class MainActivity : AppCompatActivity() {
                 DialogHelper.animDialog(this, MaterialAlertDialogBuilder(this).setView(layout).setTitle(getString(R.string.title_about)))
             }
             else -> {
-
+                onMenuItemClick(menuOptions[item.itemId])
             }
         }
-        return super.onOptionsItemSelected(item)
+        return true
     }
 
     inner class PageFragmentAdapter(
