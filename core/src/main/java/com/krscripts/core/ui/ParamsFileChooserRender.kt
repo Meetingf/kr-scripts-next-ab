@@ -1,6 +1,7 @@
 package com.krscripts.core.ui
 
 import android.content.Context
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
@@ -21,7 +22,8 @@ class ParamsFileChooserRender(private var actionParamInfo: ActionParamInfo, priv
                 get() = 1
         }
 
-        fun onFileSelected(path: String?)
+        fun onFileSelected(path: String?) { }
+        fun onFileSelected(path: Uri?) { }
         fun mimeType():String?
         fun suffix():String?
         fun type(): Int

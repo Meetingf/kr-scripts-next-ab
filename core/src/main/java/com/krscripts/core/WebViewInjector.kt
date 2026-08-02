@@ -1,6 +1,5 @@
 package com.krscripts.core
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.webkit.JavascriptInterface
@@ -17,9 +16,6 @@ import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.executor.ScriptEnvironment.executeResultRoot
 import com.krscripts.core.model.NodeInfoBase
 import com.krscripts.core.model.ShellHandlerBase
-import com.krscripts.core.ui.ParamsFileChooserRender.FileChooserInterface
-import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface
-import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface.Companion.TYPE_FILE
 import com.krscripts.core.util.PermissionUtil
 import org.json.JSONObject
 import java.io.DataOutputStream
@@ -29,26 +25,11 @@ import java.util.UUID
 
 
 class WebViewInjector(
-    private val webView: WebView,
-    private val fileChooser: FileChooserInterface?
+    private val webView: WebView
 ) {
     private val context: Context = webView.context
 
-
-    @Suppress("DEPRECATION")
-    @SuppressLint("SetJavaScriptEnabled")
-    fun inject(activity: Activity, credible: Boolean) {
-        val webSettings = webView.getSettings()
-        webSettings.javaScriptEnabled = true
-
-        if (credible) {
-            webSettings.allowFileAccess = true
-            webSettings.allowUniversalAccessFromFileURLs = true
-            webSettings.allowFileAccessFromFileURLs = true
-        }
-
-        webSettings.allowContentAccess = true
-        webSettings.useWideViewPort = true
+    fun inject(activity: Activity) {
 
         webView.addJavascriptInterface(
             KrWebBridge(context),
@@ -156,43 +137,6 @@ class WebViewInjector(
         @JavascriptInterface
         fun extractAssets(assets: String?): String? {
             return ExtractAssets(context).extractResource(assets)
-        }
-
-        @JavascriptInterface
-        fun fileChooser(callbackFunction: String?): Boolean {
-            if (fileChooser != null) {
-                return fileChooser.openFileChooser(object : FileSelectedInterface {
-                    override fun type(): Int {
-                        return TYPE_FILE
-                    }
-
-                    override fun suffix(): String? {
-                        return null
-                    }
-
-                    override fun mimeType(): String {
-                        return "*/*"
-                    }
-
-                    override fun onFileSelected(path: String?) {
-                        try {
-                            val message = JSONObject()
-                            if (path.isNullOrEmpty()) {
-                                message.put("absPath", null)
-                            } else {
-                                message.put("absPath", path)
-                            }
-                            webView.post {
-                                webView.evaluateJavascript(
-                                    "$callbackFunction($message)"
-                                ) { }
-                            }
-                        } catch (ex: Exception) {
-                        }
-                    }
-                })
-            }
-            return false
         }
 
         fun setHandler(process: Process, callbackFunction: String?, onExit: Runnable?) {

@@ -11,6 +11,7 @@ import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -122,6 +123,12 @@ class ActionPage : AppCompatActivity() {
                         })
                     } catch (_: Exception) {
                     }
+                }
+
+                if (page.link.isNotEmpty()) {
+                    val intent = Intent(Intent.ACTION_VIEW, page.link.toUri())
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    this.startActivity(intent)
                 }
 
                 if (page.title.isNotEmpty()) {

@@ -1,10 +1,12 @@
 package com.krscripts.app
 
+import android.annotation.SuppressLint
 import android.app.DownloadManager
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Intent
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -13,6 +15,7 @@ import android.view.KeyEvent
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.JsResult
+import android.webkit.ValueCallback
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
@@ -34,6 +37,8 @@ import com.krscripts.core.R
 import com.krscripts.core.WebViewInjector
 import com.krscripts.core.downloader.Downloader
 import com.krscripts.core.ui.ParamsFileChooserRender
+import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface
+import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface.Companion.TYPE_FILE
 import com.krscripts.core.util.PermissionUtil.checkAccessFiles
 import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
 import java.util.Timer
@@ -43,6 +48,13 @@ import java.util.UUID
 class ActionPageOnline : AppCompatActivity() {
 
     private lateinit var binding: ActivityActionPageOnlineBinding
+    private var fileSelectorInterface: FileSelectedInterface? = null
+    private var fileChooser = object : ParamsFileChooserRender.FileChooserInterface {
+        override fun openFileChooser(fileSelectedInterface: FileSelectedInterface): Boolean {
+            fileSelectorInterface = fileSelectedInterface
+            return chooseFilePath(fileSelectedInterface)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -112,12 +124,26 @@ class ActionPageOnline : AppCompatActivity() {
         }
     }
 
+    @Suppress("DEPRECATION")
+    @SuppressLint("SetJavaScriptEnabled")
     private fun initWebview(url: String?) {
+        val credible = url?.startsWith("file:///android_asset")
         binding.krOnlineWebview.visibility = View.VISIBLE
-
         binding.krOnlineWebview.settings.apply {
             cacheMode = WebSettings.LOAD_DEFAULT
             domStorageEnabled = true
+            javaScriptEnabled = true
+            mediaPlaybackRequiresUserGesture = false
+            mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+
+            if (credible == true) {
+                allowFileAccess = true
+                allowUniversalAccessFromFileURLs = true
+                allowFileAccessFromFileURLs = true
+            }
+
+            allowContentAccess = true
+            useWideViewPort = true
         }
 
         val cookieManager: CookieManager = CookieManager.getInstance()
@@ -125,6 +151,27 @@ class ActionPageOnline : AppCompatActivity() {
         cookieManager.setAcceptThirdPartyCookies(binding.krOnlineWebview, true)
 
         binding.krOnlineWebview.webChromeClient = object : WebChromeClient() {
+
+            override fun onShowFileChooser(
+                webView: WebView?,
+                filePathCallback: ValueCallback<Array<Uri>>?,
+                fileChooserParams: FileChooserParams?
+            ): Boolean {
+                return fileChooser.openFileChooser(object : FileSelectedInterface {
+                    override fun type(): Int = TYPE_FILE
+                    override fun suffix(): String? = null
+                    override fun mimeType(): String = "*/*"
+
+                    override fun onFileSelected(path: Uri?) {
+                        if (path == null) {
+                            filePathCallback?.onReceiveValue(null)
+                            return
+                        }
+                        filePathCallback?.onReceiveValue(arrayOf(path))
+                    }
+                })
+            }
+
             override fun onJsAlert(
                 view: WebView?,
                 url: String?,
@@ -203,23 +250,12 @@ class ActionPageOnline : AppCompatActivity() {
 
         url?.let {
             binding.krOnlineWebview.loadUrl(it)
-
-            WebViewInjector(
-                binding.krOnlineWebview,
-                object : ParamsFileChooserRender.FileChooserInterface {
-                    override fun openFileChooser(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean {
-                        fileSelectorInterface = fileSelectedInterface
-                        return chooseFilePath(fileSelectedInterface)
-                    }
-                }
-            ).inject(this, it.startsWith("file:///android_asset"))
+            WebViewInjector(binding.krOnlineWebview).inject(this)
         }
     }
 
-    private var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        handleFileSelectorResult(this, resultCode, requestCode, data, fileSelectorInterface)
+        handleFileSelectorResult(this, resultCode, requestCode, data, fileSelectorInterface, true)
         fileSelectorInterface = null
         super.onActivityResult(requestCode, resultCode, data)
     }

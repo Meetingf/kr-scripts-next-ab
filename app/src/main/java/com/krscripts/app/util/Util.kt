@@ -53,13 +53,18 @@ fun handleFileSelectorResult(
     resultCode: Int,
     requestCode: Int,
     data: Intent?,
-    fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface?
+    fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface?,
+    useUri: Boolean = false
 ) {
     if (resultCode != Activity.RESULT_OK) return
 
     if (requestCode == ActivityFileSelector.ACTION_FILE_PATH_CHOOSER) {
-        val path = getPath(context, data?.data)
-        fileSelectorInterface?.onFileSelected(path)
+        if (useUri) {
+            fileSelectorInterface?.onFileSelected(data?.data)
+        } else {
+            val path = getPath(context, data?.data)
+            fileSelectorInterface?.onFileSelected(path)
+        }
     } else if (requestCode == ActivityFileSelector.ACTION_FILE_PATH_CHOOSER_INNER) {
         val result = data?.getStringExtra("file")
         fileSelectorInterface?.onFileSelected(result)

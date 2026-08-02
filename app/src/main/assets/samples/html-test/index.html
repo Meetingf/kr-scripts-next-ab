@@ -5,46 +5,44 @@
     <meta content="IE=edge" http-equiv="X-UA-Compatible">
     <meta content="width=device-width,initial-scale=1.0" name="viewport">
     <title>KrScript</title>
-    <script>
-        window.fileChooserCallback = function(result) {
-            if (result.absPath) {
-                alert('选中文件：' + result.absPath)
-            } else {
-                alert('文件已丢失')
-            }
-        }
-
-        function chooseFile() {
-            KrWebBridge.fileChooser('window.fileChooserCallback')
-        }
-
-        function runScript() {
-            const result = KrWebBridge.executeShell('echo "喵喵喵"')
-            alert(result)
-        }
-
-        // 异步回调函数（函数名作为字符串传给 KrWebBridge.executeShellAsync）
-        function onAsyncResult(result) {
-            const outputDiv = document.getElementById('asyncOutput');
-            outputDiv.textContent += result.message;
-        }
-
-        function runAsyncScript() {
-            const outputDiv = document.getElementById('asyncOutput');
-            outputDiv.textContent = '开始执行...\n';
-            KrWebBridge.executeShellAsync(
-                'for i in 1 2 3; do echo "异步输出 $i"; sleep 1; done',
-                'onAsyncResult',
-                null
-            );
-        }
-    </script>
 </head>
 <body>
-<button onclick="chooseFile()" type="button">文件选择</button>
+<button onclick="document.getElementById('fileInput').click()" type="button">文件选择</button>
+<input type="file" id="fileInput" accept="*/*" style="display:none;">
 <button onclick="runScript()" type="button">执行命令</button>
 <pre id="asyncOutput" style="text-align:left; margin:20px; padding:10px; background:#f5f5f5; border-radius:4px; white-space:pre-wrap;"></pre>
 <button onclick="runAsyncScript()">异步执行命令</button>
+<script>
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            alert('选中文件：' + file.name)
+        } else {
+            alert('文件已丢失')
+        }
+    });
+
+    function runScript() {
+        const result = KrWebBridge.executeShell('echo "喵喵喵"')
+        alert(result)
+    }
+
+    // 异步回调函数（函数名作为字符串传给 KrWebBridge.executeShellAsync）
+    function onAsyncResult(result) {
+        const outputDiv = document.getElementById('asyncOutput');
+        outputDiv.textContent += result.message;
+    }
+
+    function runAsyncScript() {
+        const outputDiv = document.getElementById('asyncOutput');
+        outputDiv.textContent = '开始执行...\n';
+        KrWebBridge.executeShellAsync(
+            'for i in 1 2 3; do echo "异步输出 $i"; sleep 1; done',
+            'onAsyncResult',
+            null
+        );
+    }
+</script>
 </body>
 <style>
     body {
