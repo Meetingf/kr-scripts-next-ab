@@ -12,6 +12,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
+import android.view.Menu
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.JsResult
@@ -23,7 +24,6 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -36,6 +36,8 @@ import com.krscripts.common.ui.DialogHelper
 import com.krscripts.core.R
 import com.krscripts.core.WebViewInjector
 import com.krscripts.core.downloader.Downloader
+import com.krscripts.core.model.PageNode
+import com.krscripts.core.ui.PageMenuLoader
 import com.krscripts.core.ui.ParamsFileChooserRender
 import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface
 import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface.Companion.TYPE_FILE
@@ -45,10 +47,11 @@ import java.util.Timer
 import java.util.TimerTask
 import java.util.UUID
 
-class ActionPageOnline : AppCompatActivity() {
+class ActionPageOnline : KrActivity() {
 
     private lateinit var binding: ActivityActionPageOnlineBinding
-    private var fileSelectorInterface: FileSelectedInterface? = null
+    private var pageConfigCompat: PageNode? = null
+
     private var fileChooser = object : ParamsFileChooserRender.FileChooserInterface {
         override fun openFileChooser(fileSelectedInterface: FileSelectedInterface): Boolean {
             fileSelectorInterface = fileSelectedInterface
@@ -85,6 +88,33 @@ class ActionPageOnline : AppCompatActivity() {
         loadIntentData()
     }
 
+    override fun onReload() {
+        binding.krOnlineWebview.reload()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menu?.clear()
+        menuOptions.clear()
+
+        pageConfigCompat?.let { node ->
+            PageMenuLoader(applicationContext, node).load()?.let {
+                menuOptions.addAll(it)
+            }
+        }
+
+        if (menu != null) {
+            menuOptions.forEachIndexed { index, option ->
+                if (option.isFab) {
+                    addFab(option, binding.floatingActionButton)
+                } else {
+                    menu.add(-1, index, index, option.title)
+                }
+            }
+        }
+
+        return true // super.onCreateOptionsMenu(menu)
+    }
+
     private fun loadIntentData() {
         intent.extras?.let { extras ->
             if (extras.containsKey("title")) {
@@ -92,6 +122,14 @@ class ActionPageOnline : AppCompatActivity() {
             }
 
             when {
+                extras.containsKey("page") -> {
+                    pageConfigCompat = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) extras.getSerializable(
+                        "page",
+                        PageNode::class.java
+                    ) else @Suppress("DEPRECATION") extras.getSerializable("page") as PageNode
+                    menuHandler = pageConfigCompat?.pageHandlerSh
+                    initWebview(pageConfigCompat?.onlineHtmlPage)
+                }
                 extras.containsKey("config") -> initWebview(extras.getString("config"))
                 extras.containsKey("url") -> initWebview(extras.getString("url"))
                 extras.containsKey("downloadUrl") -> initDownload(

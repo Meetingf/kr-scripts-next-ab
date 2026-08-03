@@ -36,7 +36,7 @@ open class KrActivity: AppCompatActivity() {
     ) {
         when(menuOption.type) {
             "refresh", "reload" -> {
-                recreate()
+                onReload()
             }
             "exit", "finish", "close" -> {
                 finish()
@@ -53,12 +53,14 @@ open class KrActivity: AppCompatActivity() {
         }
     }
 
+    protected open fun onReload() = recreate()
+
     protected open fun menuItemExecute(menuOption: PageMenuOption, params: HashMap<String, String>) {
         val onDismiss = Runnable {
             if (menuOption.autoFinish) {
                 finish()
             } else if (menuOption.reloadPage) {
-                recreate()
+                onReload()
             } else if (menuOption.updateBlocks != null) {
                 // TODO rootGroup.triggerUpdateByKey(item.updateBlocks!!)
             }

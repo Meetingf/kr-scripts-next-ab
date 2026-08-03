@@ -109,7 +109,7 @@ open class ActionPage : KrActivity() {
                     try {
                         startActivity(Intent(this, ActionPageOnline::class.java).apply {
                             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                            putExtra("config", page.onlineHtmlPage)
+                            putExtra("page", page)
                         })
                     } catch (_: Exception) {
                     }
@@ -182,22 +182,17 @@ open class ActionPage : KrActivity() {
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menu?.clear()
 
-        PageMenuLoader(applicationContext, pageConfigCompat).load()?.let {
-            menuOptions.addAll(it)
-        }
-
         if (menu != null) {
-            for (i in menuOptions.indices) {
-                val menuOption = menuOptions[i]
-                if (menuOption.isFab) {
-                    addFab(menuOption, binding.actionPageFab)
+            menuOptions.forEachIndexed { index, option ->
+                if (option.isFab) {
+                    addFab(option, binding.actionPageFab)
                 } else {
-                    menu.add(-1, i, i, menuOption.title)
+                    menu.add(-1, index, index, option.title)
                 }
             }
         }
 
-        return true // super.onCreateOptionsMenu(menu)
+        return true
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -273,8 +268,13 @@ open class ActionPage : KrActivity() {
                             }
                         }
 
+                        menuOptions.clear()
+
+                        PageMenuLoader(applicationContext, pageConfigCompat).load()?.let {
+                            menuOptions.addAll(it)
+                        }
+
                         config.pageMenuOptions.let {
-                            menuOptions.clear()
                             menuOptions.addAll(it)
                             invalidateOptionsMenu()
                         }

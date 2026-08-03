@@ -68,6 +68,19 @@
             </handler>
         </page>
 
+        <page html="https://www.example.com/">
+            <title>在网页右上角显示菜单</title>
+            <option type="default" id="a" auto-off="true">自定义 1</option>
+            <option type="default" id="b">自定义 2</option>
+            <option type="refresh">刷新界面</option>
+            <option type="finish">关闭页面</option>
+            <option type="file">选择文件</option>
+            <handler>
+                echo '点击的菜单项' $menu_id
+                echo '选择的文件' $file
+            </handler>
+        </page>
+
         <!--
             相较于右上角菜单，悬浮菜单主要是额外增加了
             type=fab 属性，其它属性的用法基本一致
