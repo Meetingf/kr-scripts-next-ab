@@ -26,10 +26,6 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
 
-        <meta-data
-            android:name="android.max_aspect"
-            android:value="2.8" />
-
         <activity
             android:name=".ActionPage"
             android:exported="true"
