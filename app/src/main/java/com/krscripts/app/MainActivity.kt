@@ -22,7 +22,6 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.app.databinding.ActivityMainBinding
 import com.krscripts.app.util.chooseFilePath
-import com.krscripts.app.util.handleFileSelectorResult
 import com.krscripts.common.ui.DialogHelper
 import com.krscripts.core.config.PageConfigReader
 import com.krscripts.core.config.PageConfigSh
@@ -139,7 +138,8 @@ class MainActivity : KrActivity() {
             val items = getConfig(pageNode)
             withContext(Dispatchers.Main) {
                 items?.let { newItems ->
-                    val tag = "f$index"
+                    val itemId = (binding.viewPager.adapter as? PageFragmentAdapter)?.getItemId(index) ?: return@withContext
+                    val tag = "f$itemId"
                     val fragment = supportFragmentManager.findFragmentByTag(tag) as? ActionListFragment
                     fragment?.update(newItems.content, getKrScriptActionHandler(pageNode, index))
                 }
@@ -188,12 +188,6 @@ class MainActivity : KrActivity() {
                 return chooseFilePath(fileSelectedInterface)
             }
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        handleFileSelectorResult(this, resultCode, requestCode, data, fileSelectorInterface)
-        fileSelectorInterface = null
-        super.onActivityResult(requestCode, resultCode, data)
     }
 
     fun openPage(pageNode: PageNode) {
@@ -271,7 +265,6 @@ class MainActivity : KrActivity() {
         override fun containsItem(itemId: Long): Boolean {
             return itemId in sessionId until (sessionId + pages.size)
         }
-
 
         override fun createFragment(position: Int): Fragment {
             val page = pages[position]

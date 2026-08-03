@@ -30,7 +30,6 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.app.databinding.ActivityActionPageOnlineBinding
 import com.krscripts.app.util.chooseFilePath
-import com.krscripts.app.util.handleFileSelectorResult
 import com.krscripts.common.shared.FilePathResolver
 import com.krscripts.common.ui.DialogHelper
 import com.krscripts.core.R
@@ -290,12 +289,6 @@ class ActionPageOnline : KrActivity() {
             binding.krOnlineWebview.loadUrl(it)
             WebViewInjector(binding.krOnlineWebview).inject(this)
         }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        handleFileSelectorResult(this, resultCode, requestCode, data, fileSelectorInterface, true)
-        fileSelectorInterface = null
-        super.onActivityResult(requestCode, resultCode, data)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent?): Boolean {

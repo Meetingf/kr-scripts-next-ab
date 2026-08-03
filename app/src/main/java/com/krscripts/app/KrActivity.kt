@@ -1,5 +1,6 @@
 package com.krscripts.app
 
+import android.content.Intent
 import android.view.MenuItem
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -7,6 +8,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.krscripts.app.util.chooseFilePath
+import com.krscripts.app.util.handleFileSelectorResult
 import com.krscripts.common.ui.DialogHelper
 import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.core.HiddenTaskThread
@@ -150,5 +152,11 @@ open class KrActivity: AppCompatActivity() {
                 setImageDrawable(ContextCompat.getDrawable(context, R.drawable.baseline_menu_24))
             }
         }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        handleFileSelectorResult(this, resultCode, requestCode, data, fileSelectorInterface)
+        fileSelectorInterface = null
+        super.onActivityResult(requestCode, resultCode, data)
     }
 }

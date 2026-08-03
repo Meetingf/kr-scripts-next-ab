@@ -13,7 +13,6 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.krscripts.app.databinding.ActivityActionPageBinding
 import com.krscripts.app.util.chooseFilePath
-import com.krscripts.app.util.handleFileSelectorResult
 import com.krscripts.core.R
 import com.krscripts.core.TryOpenActivity
 import com.krscripts.core.config.PageConfigReader
@@ -193,12 +192,6 @@ open class ActionPage : KrActivity() {
         }
 
         return true
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        handleFileSelectorResult(this, resultCode, requestCode, data, fileSelectorInterface)
-        fileSelectorInterface = null
-        super.onActivityResult(requestCode, resultCode, data)
     }
 
     private suspend fun showDialog(msg: String) = withContext(Dispatchers.Main) {
