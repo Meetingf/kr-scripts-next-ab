@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.krscripts.app.util.chooseFilePath
+import com.krscripts.common.ui.DialogHelper
 import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.core.HiddenTaskThread
 import com.krscripts.core.R
@@ -64,18 +65,28 @@ open class KrActivity: AppCompatActivity() {
 
         val scripts = menuHandler ?: "echo Handler not found"
 
-        if (menuOption.shell == RunnableNode.shellModeHidden) {
-            HiddenTaskThread.startTask(this, scripts, params, menuOption, { }, onDismiss)
+        fun runScripts() {
+            if (menuOption.shell == RunnableNode.shellModeHidden) {
+                HiddenTaskThread.startTask(this, scripts, params, menuOption, { }, onDismiss)
+            } else {
+                val dialog = DialogLogFragment.create(
+                    menuOption,
+                    { },
+                    onDismiss,
+                    scripts,
+                    params
+                )
+                dialog.show(supportFragmentManager, "")
+                dialog.isCancelable = false
+            }
+        }
+
+        if (menuOption.confirm) {
+            DialogHelper.openConfirmAlert(this, menuOption.title, menuOption.desc.ifEmpty { "真的要这么做么" }) {
+                runScripts()
+            }
         } else {
-            val dialog = DialogLogFragment.create(
-                menuOption,
-                { },
-                onDismiss,
-                scripts,
-                params
-            )
-            dialog.show(supportFragmentManager, "")
-            dialog.isCancelable = false
+            runScripts()
         }
     }
 

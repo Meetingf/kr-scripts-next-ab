@@ -2,12 +2,12 @@
 <nav title="主页">
 
     <menu>
-        <option type="default" id="1" auto-off="true" shell="hidden">关机</option>
-        <option type="default" id="2" auto-off="true" shell="hidden">软重启</option>
-        <option type="default" id="3" auto-off="true" shell="hidden">重启到 Recovery</option>
-        <option type="default" id="4" auto-off="true" shell="hidden">重启到 Bootloader</option>
-        <option type="default" id="5" auto-off="true" shell="hidden">重启到 Download</option>
-        <option type="default" id="6" auto-off="true" shell="hidden">重启到 EDL</option>
+        <option type="default" id="1" auto-off="true" shell="hidden" confirm="true">关机</option>
+        <option type="default" id="2" auto-off="true" shell="hidden" confirm="true">软重启</option>
+        <option type="default" id="3" auto-off="true" shell="hidden" confirm="true">重启到 Recovery</option>
+        <option type="default" id="4" auto-off="true" shell="hidden" confirm="true">重启到 Bootloader</option>
+        <option type="default" id="5" auto-off="true" shell="hidden" confirm="true">重启到 Download</option>
+        <option type="default" id="6" auto-off="true" shell="hidden" confirm="true">重启到 EDL</option>
         <handler>
             case "$menu_id" in
             1)

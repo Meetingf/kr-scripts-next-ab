@@ -360,7 +360,6 @@ class PageConfigReader {
         val option = runnableNode(PageMenuOption(pageConfigAbsPath), parser) as PageMenuOption?
         if (option != null) {
             parser.attr("type")?.let { option.type = it }
-            parser.attr("shell")?.let { option.shell = it }
             parser.attr("style")?.let { option.isFab = it == "fab" }
             parser.attrAny("suffix")?.let {
                 val suffix = lower(it)
@@ -368,6 +367,7 @@ class PageConfigReader {
                 option.suffix = suffix
             }
             parser.attr("mime")?.let { option.mime = it.lowercase(getDefault()) }
+            readRunnableNode(parser, option)
 
             option.title = parser.nextText()
             if (option.key.isEmpty()) option.key = option.title
@@ -543,9 +543,18 @@ class PageConfigReader {
     private fun runnableNode(node: RunnableNode, parser: XmlPullParser): RunnableNode? {
         val base = clickableNode(node, parser) as? RunnableNode? ?: return null
 
+        readRunnableNode(parser, base)
+        return base
+    }
+
+    private fun readRunnableNode(
+        parser: XmlPullParser,
+        base: RunnableNode
+    ) {
         parser.attr("confirm")?.let { base.confirm = isTruthy(it) }
         parser.attrAny("warn", "warning")?.let { base.warning = it }
-        parser.attrAny("auto-off", "auto-close")?.let { base.autoOff = isTruthy(it, "auto-close", "auto-off") }
+        parser.attrAny("auto-off", "auto-close")
+            ?.let { base.autoOff = isTruthy(it, "auto-close", "auto-off") }
         parser.attr("auto-finish")?.let { base.autoFinish = isTruthy(it, "auto-finish") }
         parser.attrAny("interruptible", "interruptable")?.let {
             base.interruptable = it.isEmpty() || isTruthy(it, "interruptable")
@@ -567,7 +576,6 @@ class PageConfigReader {
                 base.shell = RunnableNode.shellModeBgTask
             }
         }
-        return base
     }
 
     private fun mainNode(nodeInfoBase: NodeInfoBase, parser: XmlPullParser): NodeInfoBase? {
