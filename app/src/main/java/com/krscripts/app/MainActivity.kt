@@ -260,7 +260,18 @@ class MainActivity : KrActivity() {
         private val pages: List<PageNode>
     ) : FragmentStateAdapter(activity) {
 
+        private val sessionId: Long = System.nanoTime()
+
         override fun getItemCount() = pages.size
+
+        override fun getItemId(position: Int): Long {
+            return sessionId + position
+        }
+
+        override fun containsItem(itemId: Long): Boolean {
+            return itemId in sessionId until (sessionId + pages.size)
+        }
+
 
         override fun createFragment(position: Int): Fragment {
             val page = pages[position]
