@@ -60,6 +60,8 @@ fun handleFileSelectorResult(
 
     if (requestCode == ActivityFileSelector.ACTION_FILE_PATH_CHOOSER) {
         if (useUri) {
+            val path = getPath(context, data?.data)
+            fileSelectorInterface?.onFileSelected(path)
             fileSelectorInterface?.onFileSelected(data?.data)
         } else {
             val path = getPath(context, data?.data)
