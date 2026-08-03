@@ -16,6 +16,7 @@ import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.ui.DialogLogFragment
 import com.krscripts.core.ui.ParamsFileChooserRender
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 open class KrActivity: AppCompatActivity() {
@@ -94,7 +95,7 @@ open class KrActivity: AppCompatActivity() {
         fileSelectorInterface = object: ParamsFileChooserRender.FileSelectedInterface{
             override fun onFileSelected(path: String?) {
                 if (path != null) {
-                    lifecycleScope.launch {
+                    lifecycleScope.launch(Dispatchers.Main) {
                         menuItemExecute(menuOption, HashMap<String, String>().apply{
                             put("state", menuOption.key)
                             put("menu_id", menuOption.key)
