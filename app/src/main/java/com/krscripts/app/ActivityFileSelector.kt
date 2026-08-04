@@ -11,9 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.app.databinding.ActivityFileSelectorBinding
 import com.krscripts.app.ui.AdapterFileSelector
+import com.krscripts.common.ui.ProgressBarDialog
 import com.krscripts.core.util.PermissionUtil.checkAccessFiles
 import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
 import java.io.File
@@ -44,14 +44,8 @@ class ActivityFileSelector : AppCompatActivity() {
         binding = ActivityFileSelectorBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.fileSelectorList) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+        ViewCompat.setOnApplyWindowInsetsListener(binding.fileSelector) { v, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
