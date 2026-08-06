@@ -14,10 +14,10 @@ import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.app.databinding.ActivitySplashBinding
-import com.krscripts.common.shell.KeepShellPublic
-import com.krscripts.common.shell.ShellExecutor
-import com.krscripts.common.ui.DialogHelper
 import com.krscripts.core.executor.ScriptEnvironment
+import com.krscripts.core.shell.KeepShellPublic
+import com.krscripts.core.shell.ShellExecutor
+import com.krscripts.core.ui.DialogHelper
 import com.krscripts.core.util.PermissionUtil.checkAccessFiles
 import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
 import kotlinx.coroutines.Dispatchers

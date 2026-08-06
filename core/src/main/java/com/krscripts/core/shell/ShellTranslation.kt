@@ -1,9 +1,7 @@
-package com.krscripts.common.shell
+package com.krscripts.core.shell
 
 import android.content.Context
-import java.lang.Exception
-import java.lang.StringBuilder
-import java.util.*
+import java.util.Locale
 
 class ShellTranslation(val context: Context) {
     private val resources = context.resources

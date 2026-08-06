@@ -6,7 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import androidx.core.content.ContextCompat
-import com.krscripts.common.shared.FilePathResolver
+import com.krscripts.core.shared.FilePathResolver
 
 class DownloaderReceiver(
     private val onReceived: (String) -> Unit

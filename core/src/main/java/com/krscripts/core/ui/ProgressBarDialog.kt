@@ -1,4 +1,4 @@
-package com.krscripts.common.ui
+package com.krscripts.core.ui
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -8,7 +8,7 @@ import android.view.LayoutInflater
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.krscripts.common.R
+import com.krscripts.core.R
 
 open class ProgressBarDialog(private var context: Activity) {
     private var alert: AlertDialog? = null

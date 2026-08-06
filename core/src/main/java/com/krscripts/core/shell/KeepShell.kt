@@ -1,4 +1,4 @@
-package com.krscripts.common.shell
+package com.krscripts.core.shell
 
 import android.util.Log
 import kotlinx.coroutines.Dispatchers

@@ -12,7 +12,7 @@
     android:paddingStart="14dp"
     android:paddingEnd="14dp">
 
-    <ImageView
+    <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/ItemIcon"
         android:layout_width="48dp"
         android:layout_height="48dp"

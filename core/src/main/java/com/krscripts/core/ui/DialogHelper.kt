@@ -1,19 +1,15 @@
-package com.krscripts.common.ui
+package com.krscripts.core.ui
 
 import android.app.Activity
 import android.app.Dialog
 import android.content.Context
-import android.graphics.Color
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
-import android.util.TypedValue
-import android.view.*
+import android.view.View
 import androidx.appcompat.app.AlertDialog
-import androidx.core.graphics.drawable.toDrawable
-import com.google.android.material.color.MaterialColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.krscripts.common.R
+import com.krscripts.core.R
 
 class DialogHelper {
     data class DialogButton(

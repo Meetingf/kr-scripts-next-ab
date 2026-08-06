@@ -1,4 +1,4 @@
-package com.krscripts.common.ui
+package com.krscripts.core.ui
 
 import android.content.DialogInterface
 import android.os.Bundle
@@ -9,7 +9,7 @@ import android.widget.CompoundButton
 import android.widget.Filterable
 import android.widget.RelativeLayout
 import androidx.appcompat.widget.SearchView
-import com.krscripts.common.R
+import com.krscripts.core.R
 
 class DialogAppChooser(
     private var packages: ArrayList<AdapterAppChooser.AppInfo>,

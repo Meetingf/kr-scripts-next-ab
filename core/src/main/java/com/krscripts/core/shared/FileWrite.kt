@@ -1,4 +1,4 @@
-package com.krscripts.common.shared
+package com.krscripts.core.shared
 
 import android.annotation.SuppressLint
 import android.content.Context

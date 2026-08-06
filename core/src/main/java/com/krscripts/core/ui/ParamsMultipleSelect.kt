@@ -4,10 +4,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
-import com.krscripts.common.model.SelectItem
-import com.krscripts.common.ui.DialogItemChooser
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
+import com.krscripts.core.model.SelectItem
 
 class ParamsMultipleSelect(private val actionParamInfo: ActionParamInfo, private val context: FragmentActivity) {
     private var options: ArrayList<SelectItem>? = null

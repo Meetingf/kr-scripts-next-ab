@@ -1,4 +1,4 @@
-package com.krscripts.common.ui
+package com.krscripts.core.ui
 
 import android.content.Context
 import android.graphics.drawable.Drawable
@@ -6,10 +6,18 @@ import android.util.LruCache
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
-import com.krscripts.common.R
-import kotlinx.coroutines.*
-import java.util.*
+import android.widget.BaseAdapter
+import android.widget.CheckBox
+import android.widget.Filter
+import android.widget.Filterable
+import android.widget.ImageView
+import android.widget.RadioButton
+import android.widget.TextView
+import com.krscripts.core.R
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale.getDefault
 
 class AdapterAppChooser(

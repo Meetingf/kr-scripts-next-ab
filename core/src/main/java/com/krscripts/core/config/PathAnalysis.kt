@@ -1,10 +1,10 @@
 package com.krscripts.core.config
 
 import android.content.Context
-import com.krscripts.common.shared.FileWrite
-import com.krscripts.common.shell.KeepShellPublic
-import com.krscripts.common.shell.RootFile
 import com.krscripts.core.FileOwner
+import com.krscripts.core.shared.FileWrite
+import com.krscripts.core.shell.KeepShellPublic
+import com.krscripts.core.shell.RootFile
 import java.io.File
 import java.io.InputStream
 

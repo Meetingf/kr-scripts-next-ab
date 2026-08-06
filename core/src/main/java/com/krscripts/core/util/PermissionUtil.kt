@@ -11,9 +11,8 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.krscripts.common.ui.DialogHelper
 import com.krscripts.core.R
-import kotlin.system.exitProcess
+import com.krscripts.core.ui.DialogHelper
 
 object PermissionUtil {
 

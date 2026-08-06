@@ -6,7 +6,7 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
 import com.krscripts.app.ActivityFileSelector
-import com.krscripts.common.shared.FilePathResolver
+import com.krscripts.core.shared.FilePathResolver
 import com.krscripts.core.ui.ParamsFileChooserRender
 
 private fun Activity.startFileSelector(extension: String? = null, mode: Int = ActivityFileSelector.MODE_FILE) {

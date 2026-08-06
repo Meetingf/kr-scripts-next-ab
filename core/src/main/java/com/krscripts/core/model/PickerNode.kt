@@ -1,7 +1,5 @@
 package com.krscripts.core.model
 
-import com.krscripts.common.model.SelectItem
-
 class PickerNode(currentConfigXml: String) : RunnableNode(currentConfigXml) {
     var options: ArrayList<SelectItem>? = null
     var optionsSh = ""

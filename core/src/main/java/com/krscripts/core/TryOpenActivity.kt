@@ -3,7 +3,7 @@ package com.krscripts.core
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
-import com.krscripts.common.shell.KeepShellPublic
+import com.krscripts.core.shell.KeepShellPublic
 
 
 class TryOpenActivity(private val context:  Context, private val activity:String) {

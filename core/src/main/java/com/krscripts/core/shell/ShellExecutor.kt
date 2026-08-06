@@ -1,4 +1,4 @@
-package com.krscripts.common.shell
+package com.krscripts.core.shell
 
 object ShellExecutor {
     private var extraEnvPath: String? = ""

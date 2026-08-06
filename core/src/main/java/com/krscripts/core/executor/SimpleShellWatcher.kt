@@ -1,8 +1,8 @@
 package com.krscripts.core.executor;
 
 import android.content.Context
-import com.krscripts.common.shell.ShellTranslation
 import com.krscripts.core.model.ShellHandlerBase
+import com.krscripts.core.shell.ShellTranslation
 import java.io.InputStream
 
 class SimpleShellWatcher {

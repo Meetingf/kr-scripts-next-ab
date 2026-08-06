@@ -64,7 +64,7 @@ class DialogLogFragment : DialogFragment() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return Dialog(requireActivity(), com.krscripts.common.R.style.dialog_full_screen)
+        return Dialog(requireActivity(), com.krscripts.core.R.style.dialog_full_screen)
     }
 
     private fun openExecutor(nodeInfo: RunnableNode): ShellHandlerBase {

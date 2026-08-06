@@ -1,7 +1,5 @@
 package com.krscripts.core.model
 
-import com.krscripts.common.model.SelectItem
-
 class ActionParamInfo {
     // 参数名：必需保持唯一
     var name: String? = null

@@ -6,10 +6,9 @@ import android.widget.ArrayAdapter
 import android.widget.Spinner
 import android.widget.TextView
 import androidx.fragment.app.FragmentActivity
-import com.krscripts.common.model.SelectItem
-import com.krscripts.common.ui.DialogItemChooser
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
+import com.krscripts.core.model.SelectItem
 
 class ParamsSingleSelect(
         private var actionParamInfo: ActionParamInfo,

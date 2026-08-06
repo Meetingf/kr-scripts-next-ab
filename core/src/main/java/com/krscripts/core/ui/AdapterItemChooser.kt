@@ -1,13 +1,19 @@
-package com.krscripts.common.ui
+package com.krscripts.core.ui
 
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
-import com.krscripts.common.R
-import com.krscripts.common.model.SelectItem
-import java.util.*
+import android.widget.BaseAdapter
+import android.widget.CheckBox
+import android.widget.Filter
+import android.widget.Filterable
+import android.widget.RadioButton
+import android.widget.TextView
+import com.google.android.material.imageview.ShapeableImageView
+import com.krscripts.core.R
+import com.krscripts.core.model.SelectItem
+import java.util.Locale
 
 class AdapterItemChooser(private val context: Context, private var items: ArrayList<SelectItem>, private val multiple: Boolean) : BaseAdapter(), Filterable {
     interface SelectStateListener {
@@ -143,6 +149,9 @@ class AdapterItemChooser(private val context: Context, private var items: ArrayL
         }
         holder.checkBox?.isChecked = item.selected
         holder.radioButton?.isChecked = item.selected
+        item.icon?.let {
+            holder.imgView?.visibility = View.VISIBLE
+        }
     }
 
     fun setSelectAllState(allSelected: Boolean) {
@@ -165,6 +174,7 @@ class AdapterItemChooser(private val context: Context, private var items: ArrayL
     }
 
     class ViewHolder(view: View) {
+        internal var imgView: ShapeableImageView? = view.findViewById(R.id.ItemIcon)
         internal var itemTitle: TextView? = view.findViewById(R.id.ItemTitle)
         internal var itemDesc: TextView? = view.findViewById(R.id.ItemDesc)
         internal var checkBox: CheckBox? = view.findViewById(R.id.ItemCheckBox)

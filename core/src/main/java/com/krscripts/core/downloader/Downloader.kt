@@ -8,9 +8,9 @@ import android.webkit.URLUtil
 import android.widget.Toast
 import androidx.core.content.edit
 import androidx.core.net.toUri
-import com.krscripts.common.shared.FileWrite
-import com.krscripts.common.ui.DialogHelper
 import com.krscripts.core.R
+import com.krscripts.core.shared.FileWrite
+import com.krscripts.core.ui.DialogHelper
 import org.json.JSONObject
 import java.io.File
 import java.nio.charset.Charset

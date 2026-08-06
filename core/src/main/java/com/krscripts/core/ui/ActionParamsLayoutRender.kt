@@ -3,15 +3,19 @@ package com.krscripts.core.ui
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.*
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.TextView
+import androidx.core.graphics.toColorInt
 import androidx.fragment.app.FragmentActivity
 import com.google.android.material.materialswitch.MaterialSwitch
-import com.krscripts.common.model.SelectItem
-import com.krscripts.core.model.ActionParamInfo
-import androidx.core.graphics.toColorInt
 import com.google.android.material.slider.RangeSlider
 import com.krscripts.core.R
-import java.lang.NumberFormatException
+import com.krscripts.core.model.ActionParamInfo
+import com.krscripts.core.model.SelectItem
 
 class ActionParamsLayoutRender(private var linearLayout: LinearLayout, activity: FragmentActivity) {
     companion object {

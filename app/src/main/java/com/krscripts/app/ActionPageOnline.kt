@@ -31,12 +31,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.app.databinding.ActivityActionPageOnlineBinding
 import com.krscripts.app.util.chooseFilePath
 import com.krscripts.app.util.handleFileSelectorResult
-import com.krscripts.common.shared.FilePathResolver
-import com.krscripts.common.ui.DialogHelper
 import com.krscripts.core.R
 import com.krscripts.core.WebViewInjector
 import com.krscripts.core.downloader.Downloader
 import com.krscripts.core.model.PageNode
+import com.krscripts.core.shared.FilePathResolver
+import com.krscripts.core.ui.DialogHelper
 import com.krscripts.core.ui.PageMenuLoader
 import com.krscripts.core.ui.ParamsFileChooserRender
 import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface

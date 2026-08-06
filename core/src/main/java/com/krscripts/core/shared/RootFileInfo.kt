@@ -1,6 +1,6 @@
-package com.krscripts.common.shared
+package com.krscripts.core.shared
 
-import com.krscripts.common.shell.RootFile
+import com.krscripts.core.shell.RootFile
 
 class RootFileInfo {
     constructor()

@@ -2,7 +2,7 @@ package com.krscripts.core.model
 
 import java.io.File
 import java.io.Serializable
-import java.util.*
+import java.util.UUID
 
 open class NodeInfoBase(val currentPageConfigPath: String) : Serializable {
     val pageConfigDir = (

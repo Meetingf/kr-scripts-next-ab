@@ -1,16 +1,13 @@
 package com.krscripts.core.ui
 
-import android.content.pm.PackageManager
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.FragmentActivity
-import com.krscripts.common.model.SelectItem
-import com.krscripts.common.ui.AdapterAppChooser
-import com.krscripts.common.ui.DialogAppChooser
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
+import com.krscripts.core.model.SelectItem
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

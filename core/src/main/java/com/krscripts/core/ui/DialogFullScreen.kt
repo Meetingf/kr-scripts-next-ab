@@ -1,18 +1,15 @@
-package com.krscripts.common.ui
+package com.krscripts.core.ui
 
 import android.app.Dialog
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.graphics.drawable.toDrawable
-import androidx.core.graphics.toColor
-import com.krscripts.common.R
-import androidx.core.graphics.toColorInt
 import com.google.android.material.color.MaterialColors
+import com.krscripts.core.R
 
 open class DialogFullScreen(private val layout: Int) : androidx.fragment.app.DialogFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {

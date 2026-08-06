@@ -1,12 +1,16 @@
-package com.krscripts.common.ui
+package com.krscripts.core.ui
 
 import android.content.DialogInterface
 import android.os.Bundle
 import android.view.View
-import android.widget.*
+import android.widget.AbsListView
+import android.widget.CompoundButton
+import android.widget.Filterable
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.appcompat.widget.SearchView
-import com.krscripts.common.R
-import com.krscripts.common.model.SelectItem
+import com.krscripts.core.R
+import com.krscripts.core.model.SelectItem
 
 class DialogItemChooser(
         // 选择项以及选中状态

@@ -64,4 +64,12 @@
     <string name="picker_not_item">暂无可用选项！</string>
     <string name="picker_select_none">未选中任何一项！</string>
     <string name="kr_stop">停止</string>
+
+    <string name="execute_success">执行成功</string>
+    <string name="execute_fail">执行失败</string>
+    <string name="execute_wait">正在执行，请稍等…</string>
+    <string name="app_chooser_search_hint">输入应用名/包名进行搜索</string>
+    <string name="item_chooser_search_hint">搜索可选择项</string>
+    <string name="select_all">全选</string>
+    <string name="help_title">说明提示</string>
 </resources>

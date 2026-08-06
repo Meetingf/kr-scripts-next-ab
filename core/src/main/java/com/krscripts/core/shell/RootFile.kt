@@ -1,7 +1,7 @@
-package com.krscripts.common.shell
+package com.krscripts.core.shell
 
 import android.util.Log
-import com.krscripts.common.shared.RootFileInfo
+import com.krscripts.core.shared.RootFileInfo
 
 /**
  * Created by Hello on 2018/07/06.

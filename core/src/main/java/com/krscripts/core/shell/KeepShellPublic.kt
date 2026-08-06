@@ -1,4 +1,4 @@
-package com.krscripts.common.shell
+package com.krscripts.core.shell
 
 /**
  * Created by Hello on 2018/01/23.

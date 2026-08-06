@@ -9,7 +9,6 @@ import android.text.Layout
 import android.util.Log
 import android.util.Xml
 import android.widget.Toast
-import com.krscripts.common.model.SelectItem
 import com.krscripts.core.executor.ExtractAssets
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.model.ActionNode
@@ -23,6 +22,7 @@ import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.PickerNode
 import com.krscripts.core.model.RunnableNode
+import com.krscripts.core.model.SelectItem
 import com.krscripts.core.model.SwitchNode
 import com.krscripts.core.model.TextNode
 import org.xmlpull.v1.XmlPullParser
@@ -425,6 +425,8 @@ class PageConfigReader {
                 if (pickerNode.options == null) pickerNode.options = ArrayList()
                 val option = SelectItem()
                 parser.attrAny("val", "value")?.let { option.value = it }
+                parser.attrAny("icon")?.let { option.icon = it }
+                parser.attrAny("clip")?.let { option.iconClip = it }
                 option.title = parser.nextText()
                 if (option.value == null) option.value = option.title
                 pickerNode.options!!.add(option)

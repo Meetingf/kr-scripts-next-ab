@@ -1,4 +1,4 @@
-package com.krscripts.common.shared
+package com.krscripts.core.shared
 
 import android.annotation.SuppressLint
 import android.content.ContentUris
@@ -9,12 +9,12 @@ import android.os.Environment
 import android.provider.DocumentsContract
 import android.provider.MediaStore
 import android.provider.OpenableColumns
+import androidx.core.net.toUri
 import java.io.BufferedOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStream
-import androidx.core.net.toUri
 
 class FilePathResolver {
     /**

@@ -1,4 +1,4 @@
-package com.krscripts.common.model
+package com.krscripts.core.model
 
 
 /*
@@ -9,18 +9,20 @@ ArrayAdapter(context, R.layout.kr_spinner_default, R.id.text, options).apply {
 */
 
 class SelectItem {
+    var icon: String? = null
+    var iconClip: String? = null
     var title: String? = null
     // var desc: String = ""
     var value: String? = null
     var selected: Boolean = false
 
     override fun toString(): String {
-        if (!title.isNullOrEmpty()) {
-            return title!!
+        return if (!title.isNullOrEmpty()) {
+            title!!
         } else if (!value.isNullOrEmpty()) {
-            return value!!
+            value!!
         } else {
-            return "" // super.toString()
+            "" // super.toString()
         }
     }
 }

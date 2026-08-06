@@ -1,9 +1,9 @@
 package com.krscripts.core.executor
 
 import android.content.Context
-import com.krscripts.common.shared.FileWrite.getPrivateFilePath
-import com.krscripts.common.shared.FileWrite.writePrivateFile
-import com.krscripts.common.shared.FileWrite.writePrivateShellFile
+import com.krscripts.core.shared.FileWrite.getPrivateFilePath
+import com.krscripts.core.shared.FileWrite.writePrivateFile
+import com.krscripts.core.shared.FileWrite.writePrivateShellFile
 
 
 /**

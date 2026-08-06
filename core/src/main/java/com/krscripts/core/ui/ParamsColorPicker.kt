@@ -7,12 +7,14 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.*
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.SeekBar
+import android.widget.TextView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.krscripts.common.ui.DialogHelper
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
-import java.util.Locale
 import java.util.Locale.getDefault
 
 class ParamsColorPicker(private val actionParamInfo: ActionParamInfo, private val context: Context) {
