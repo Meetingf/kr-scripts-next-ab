@@ -1,0 +1,13 @@
+<group title="裁剪">
+<!--    clip 标签用来制定该项 icon 的圆角大小-->
+    <action
+        icon="icons/wifi.png"
+        clip="30">
+        <title>圆角矩形</title>
+    </action>
+    <action
+        icon="icons/wifi.png"
+        clip="circle">
+        <title>圆形</title>
+    </action>
+</group>

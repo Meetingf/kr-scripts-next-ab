@@ -1,6 +1,8 @@
 package com.krscripts.core.model
 
 open class ClickableNode(currentPageConfigPath: String) : NodeInfoBase(currentPageConfigPath) {
+    var iconClip = "0"
+
     // 功能图标路径（列表中）
     var iconPath = ""
 

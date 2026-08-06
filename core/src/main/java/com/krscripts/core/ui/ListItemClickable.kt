@@ -2,7 +2,10 @@ package com.krscripts.core.ui
 
 import android.content.Context
 import android.view.View
-import android.widget.ImageView
+import com.google.android.material.imageview.ShapeableImageView
+import com.google.android.material.shape.CornerFamily
+import com.google.android.material.shape.RelativeCornerSize
+import com.google.android.material.shape.ShapeAppearanceModel
 import com.krscripts.core.R
 import com.krscripts.core.config.IconPathAnalysis
 import com.krscripts.core.model.ClickableNode
@@ -15,7 +18,7 @@ open class ListItemClickable(
     protected var mOnClickListener: OnClickListener? = null
     protected var mOnLongClickListener: OnLongClickListener? = null
     protected var shortcutIconView: View? = layout.findViewById(R.id.kr_shortcut_icon)
-    protected var iconView: ImageView? = layout.findViewById(R.id.kr_icon)
+    protected var iconView: ShapeableImageView? = layout.findViewById(R.id.kr_icon)
 
     fun setOnClickListener(onClickListener: OnClickListener): ListItemClickable {
         this.mOnClickListener = onClickListener
@@ -55,6 +58,15 @@ open class ListItemClickable(
             if (config.iconPath.isNotEmpty()) {
                 IconPathAnalysis().loadIcon(context, config)?.run {
                     iconView?.setImageDrawable(this)
+                    val shape = ShapeAppearanceModel
+                        .builder()
+
+                    if (config.iconClip == "circle") {
+                        shape.setAllCornerSizes(RelativeCornerSize(0.5f))
+                    } else {
+                        shape.setAllCorners(CornerFamily.ROUNDED, config.iconClip.toFloat())
+                    }
+                    iconView?.shapeAppearanceModel = shape.build()
                     iconView?.visibility = View.VISIBLE
                 }
             }

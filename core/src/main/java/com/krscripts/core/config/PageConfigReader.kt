@@ -529,6 +529,7 @@ class PageConfigReader {
         parser.attrAny("max-sdk", "sdk-max")?.let { base.maxSdkVersion = it.trim().toInt() }
         parser.attrAny("target-sdk", "sdk-target")?.let { base.targetSdkVersion = it.trim().toInt() }
         parser.attrAny("icon", "icon-path")?.let { base.iconPath = it.trim() }
+        parser.attrAny("clip", "icon-clip")?.let { base.iconClip = it.trim() }
         parser.attrAny("logo", "logo-path")?.let { base.logoPath = it.trim() }
         parser.attr("allow-shortcut")?.let {
             base.allowShortcut = isTruthy(it, "allow", "allow-shortcut")
