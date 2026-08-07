@@ -556,8 +556,11 @@ class PageConfigReader {
 
     private fun tagStartInImageNode(imageNode: ImageNode, parser: XmlPullParser) {
         when(parser.name) {
-            "src", "image" -> imageNode.image = parser.nextText()
-            "clip", "image-clip" -> imageNode.iconClip = parser.nextText()
+            "src" -> imageNode.image = parser.nextText()
+            "clip" -> imageNode.iconClip = parser.nextText()
+            "scale" -> imageNode.scale = parser.nextText()
+            "width" -> imageNode.width = parser.nextText()
+            "height" -> imageNode.height = parser.nextText()
         }
     }
 

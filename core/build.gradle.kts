@@ -34,5 +34,6 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.coil)
     implementation(libs.coil.network.okhttp)
+    implementation(libs.coil.gif)
     implementation(libs.material)
 }

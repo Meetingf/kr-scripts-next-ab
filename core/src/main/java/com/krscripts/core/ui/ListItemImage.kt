@@ -2,6 +2,7 @@ package com.krscripts.core.ui
 
 import android.content.Context
 import android.view.View
+import android.widget.ImageView
 import coil3.load
 import coil3.request.CachePolicy
 import coil3.request.crossfade
@@ -24,18 +25,43 @@ class ListItemImage(
     private val progressBar = layout.findViewById<CircularProgressIndicator?>(R.id.progressBar)
 
     init {
-        imageView?.load(config.image) {
-            crossfade(true)
-            error(R.drawable.baseline_broken_image_24)
-            memoryCachePolicy(CachePolicy.ENABLED)
-            diskCachePolicy(CachePolicy.DISABLED)
-            listener(onStart = {
-                progressBar?.visibility = View.VISIBLE
-            }, onSuccess = { _, _ ->
-                progressBar?.visibility = View.GONE
-            }, onError = { _, _ ->
-                progressBar?.visibility = View.GONE
-            })
+
+        val setHeight = config.height?.toInt()
+        imageView?.scaleType = when (config.scale) {
+            "centerCrop"   -> ImageView.ScaleType.CENTER_CROP
+            "fitCenter"    -> ImageView.ScaleType.FIT_CENTER
+            "fitXY"        -> ImageView.ScaleType.FIT_XY
+            "centerInside" -> ImageView.ScaleType.CENTER_INSIDE
+            "center"       -> ImageView.ScaleType.CENTER
+            "fitStart"     -> ImageView.ScaleType.FIT_START
+            "fitEnd"       -> ImageView.ScaleType.FIT_END
+            "matrix"       -> ImageView.ScaleType.MATRIX
+            else           -> ImageView.ScaleType.CENTER_CROP
+        }
+
+        setHeight?.let {
+            imageView?.layoutParams?.height = it
+        }
+
+        imageView?.apply {
+            load(config.image) {
+                crossfade(true)
+                error(R.drawable.baseline_broken_image_24)
+                memoryCachePolicy(CachePolicy.ENABLED)
+                diskCachePolicy(CachePolicy.DISABLED)
+                listener(
+                    onStart = { progressBar?.visibility = View.VISIBLE },
+                    onSuccess = { _, result ->
+                        progressBar?.visibility = View.GONE
+                        val bitmap = result.image
+                        imageView.layoutParams?.let { lp ->
+                            lp.height = setHeight ?: (imageView.width * bitmap.height / bitmap.width)
+                            imageView.layoutParams = lp
+                        }
+                    },
+                    onError = { _, _ -> progressBar?.visibility = View.GONE }
+                )
+            }
         }
 
         val shape = ShapeAppearanceModel

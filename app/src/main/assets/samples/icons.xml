@@ -11,6 +11,15 @@
     <group title="图片">
         <image>
             <src>https://www.dmoe.cc/random.php</src>
+            <!--所有内容都在里面-->
+            <scale>centerInside</scale>
+            <clip>64</clip>
+        </image>
+        <image>
+            <src>https://www.dmoe.cc/random.php</src>
+            <!--裁剪到匹配高度-->
+            <scale>centerCrop</scale>
+            <height>2560</height>
             <clip>128</clip>
         </image>
     </group>
