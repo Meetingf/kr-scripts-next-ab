@@ -32,5 +32,7 @@ android {
 dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.coil)
+    implementation(libs.coil.network.okhttp)
     implementation(libs.material)
 }

@@ -1,6 +1,7 @@
 [versions]
 agp = "9.3.1"
 appcompat = "1.7.1"
+coil = "3.5.0"
 constraintlayout = "2.2.1"
 kotlin = "2.4.10"
 material = "1.14.0"
@@ -8,6 +9,8 @@ material = "1.14.0"
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
+coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
+coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 
 [plugins]

@@ -51,7 +51,7 @@
         <page config="samples/reload.xml" title="节点刷新" />
         <page config="samples/bg_task/bg_task.xml" title="后台任务" />
         <page config="samples/limit.xml" title="功能限制" />
-        <page config="samples/icons.xml" title="图标" />
+        <page config="samples/icons.xml" title="图标与图片" />
         <action title="控制进度条">
             <script>
                 echo progress:[0/100]

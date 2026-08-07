@@ -9,6 +9,7 @@ import com.krscripts.core.R
 import com.krscripts.core.model.ActionNode
 import com.krscripts.core.model.ClickableNode
 import com.krscripts.core.model.GroupNode
+import com.krscripts.core.model.ImageNode
 import com.krscripts.core.model.NodeInfoBase
 import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.PickerNode
@@ -121,6 +122,7 @@ class PageLayoutRender(
                     is SwitchNode -> { uiRender = createSwitchItem(actionInfo) }
                     is ActionNode -> { uiRender = createActionItem(actionInfo) }
                     is PickerNode -> { uiRender = createListItem(actionInfo) }
+                    is ImageNode -> { uiRender = createImageItem(actionInfo) }
                     is TextNode -> {
                         uiRender = if (parent.isRootGroup) createTextItem(actionInfo) else createTextItemWhite(actionInfo)
                     }
@@ -151,6 +153,10 @@ class PageLayoutRender(
 
     private fun createTextItem(node: TextNode): ListItemView {
         return ListItemText(mContext, R.layout.kr_text_list_item, node)
+    }
+
+    private fun createImageItem(node: ImageNode): ListItemView {
+        return ListItemImage(mContext, R.layout.kr_list_item_image, node)
     }
 
     private fun createTextItemWhite(node: TextNode): ListItemView {

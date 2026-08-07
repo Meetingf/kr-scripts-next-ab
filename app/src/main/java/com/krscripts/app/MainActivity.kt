@@ -77,7 +77,6 @@ class MainActivity : KrActivity() {
         binding.viewPager.apply {
             adapter = PageFragmentAdapter(this@MainActivity, pageConfigs)
             offscreenPageLimit = 1
-            isUserInputEnabled = false
         }
 
         val menu = binding.bottomNavView.menu

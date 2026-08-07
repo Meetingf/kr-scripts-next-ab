@@ -1,13 +1,17 @@
-<group title="裁剪">
-<!--    clip 标签用来制定该项 icon 的圆角大小-->
-    <action
-        icon="icons/wifi.png"
-        clip="30">
-        <title>圆角矩形</title>
-    </action>
-    <action
-        icon="icons/wifi.png"
-        clip="circle">
-        <title>圆形</title>
-    </action>
-</group>
+<config>
+    <group title="裁剪">
+        <!--    clip 标签用来制定该项 icon 的圆角大小-->
+        <action clip="30" icon="icons/wifi.png">
+            <title>圆角矩形</title>
+        </action>
+        <action clip="circle" icon="icons/wifi.png">
+            <title>圆形</title>
+        </action>
+    </group>
+    <group title="图片">
+        <image>
+            <src>https://www.dmoe.cc/random.php</src>
+            <clip>128</clip>
+        </image>
+    </group>
+</config>

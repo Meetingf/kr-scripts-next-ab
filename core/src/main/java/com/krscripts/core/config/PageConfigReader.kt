@@ -16,6 +16,7 @@ import com.krscripts.core.model.ActionParamInfo
 import com.krscripts.core.model.ClickableNode
 import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.GroupNode
+import com.krscripts.core.model.ImageNode
 import com.krscripts.core.model.NavNode
 import com.krscripts.core.model.NodeInfoBase
 import com.krscripts.core.model.PageMenuOption
@@ -71,6 +72,7 @@ class PageConfigReader {
     private sealed class MainNode {
         data class Page(val node: PageNode) : MainNode()
         data class Action(val node: ActionNode) : MainNode()
+        data class Image(val node: ImageNode) : MainNode()
         data class Switch(val node: SwitchNode) : MainNode()
         data class Picker(val node: PickerNode) : MainNode()
         data class Text(val node: TextNode) : MainNode()
@@ -121,6 +123,10 @@ class PageConfigReader {
                                 current = (runnableNode(ActionNode(pageConfigAbsPath), parser) as ActionNode?)
                                     ?.let { MainNode.Action(it) }
                             }
+                            name == "image" -> {
+                                current = (runnableNode(ImageNode(pageConfigAbsPath), parser) as ImageNode?)
+                                    ?.let { MainNode.Image(it) }
+                            }
                             name == "switch" -> {
                                 current = (runnableNode(SwitchNode(pageConfigAbsPath), parser) as SwitchNode?)
                                     ?.let { MainNode.Switch(it) }
@@ -141,6 +147,7 @@ class PageConfigReader {
                             else -> when (val c = current) {
                                 is MainNode.Page -> tagStartInPage(c.node, parser)
                                 is MainNode.Action -> tagStartInAction(c.node, parser)
+                                is MainNode.Image -> { tagStartInImageNode(c.node, parser) }
                                 is MainNode.Switch -> tagStartInSwitch(c.node, parser)
                                 is MainNode.Picker -> tagStartInPicker(c.node, parser)
                                 is MainNode.Text -> tagStartInText(c.node, parser)
@@ -166,6 +173,10 @@ class PageConfigReader {
                             }
                             "action" -> (current as? MainNode.Action)?.let {
                                 tagEndInAction(it.node)
+                                addFinishedNode(it.node)
+                                current = null
+                            }
+                            "image" -> (current as? MainNode.Image)?.let {
                                 addFinishedNode(it.node)
                                 current = null
                             }
@@ -541,6 +552,13 @@ class PageConfigReader {
             base.allowShortcut = false
         }
         return base
+    }
+
+    private fun tagStartInImageNode(imageNode: ImageNode, parser: XmlPullParser) {
+        when(parser.name) {
+            "src", "image" -> imageNode.image = parser.nextText()
+            "clip", "image-clip" -> imageNode.iconClip = parser.nextText()
+        }
     }
 
     private fun runnableNode(node: RunnableNode, parser: XmlPullParser): RunnableNode? {

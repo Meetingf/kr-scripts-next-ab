@@ -24,9 +24,11 @@ import com.krscripts.core.TryOpenActivity
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.model.TextNode
 
-class ListItemText(private val context: Context,
-                   layoutId: Int,
-                   config: TextNode) : ListItemView(context, layoutId, config) {
+class ListItemText(
+    private val context: Context,
+    layoutId: Int,
+    config: TextNode
+) : ListItemView(context, layoutId, config) {
 
     private val rowsView = layout.findViewById<TextView?>(R.id.kr_rows)
 
