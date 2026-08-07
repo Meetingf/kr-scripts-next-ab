@@ -177,6 +177,7 @@ class PageConfigReader {
                                 current = null
                             }
                             "image" -> (current as? MainNode.Image)?.let {
+                                it.node.allowShortcut = false
                                 addFinishedNode(it.node)
                                 current = null
                             }

@@ -142,11 +142,18 @@ open class KrActivity: AppCompatActivity() {
             if (menuOption.type == "file" && menuOption.iconPath.isEmpty()) {
                 setImageDrawable(ContextCompat.getDrawable(context, R.drawable.baseline_folder_24))
             } else if (menuOption.iconPath.isNotEmpty()) {
-                val icon = IconPathAnalysis().loadLogo(context, menuOption, false)
-                if (icon != null) {
-                    setImageDrawable(icon)
-                } else {
-                    setImageDrawable(ContextCompat.getDrawable(context, R.drawable.baseline_menu_24))
+                lifecycleScope.launch {
+                    val icon = IconPathAnalysis().loadLogo(context, menuOption, false)
+                    if (icon != null) {
+                        setImageDrawable(icon)
+                    } else {
+                        setImageDrawable(
+                            ContextCompat.getDrawable(
+                                context,
+                                R.drawable.baseline_menu_24
+                            )
+                        )
+                    }
                 }
             } else {
                 setImageDrawable(ContextCompat.getDrawable(context, R.drawable.baseline_menu_24))

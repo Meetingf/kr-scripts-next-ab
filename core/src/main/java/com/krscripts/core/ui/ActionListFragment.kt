@@ -239,24 +239,26 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                                 getString(R.string.kr_shortcut_create),
                                 String.format(getString(R.string.kr_shortcut_create_desc), clickableNode.title)
                         ) {
-                            val result = ActionShortcutManager(context!!)
-                                .addShortcut(
-                                    intent,
-                                    IconPathAnalysis().loadLogo(context!!, clickableNode)!!,
-                                    clickableNode
-                                )
-                            if (!result) {
-                                Toast.makeText(
-                                    context,
-                                    R.string.kr_shortcut_create_fail,
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            } else {
-                                Toast.makeText(
-                                    context,
-                                    getString(R.string.kr_shortcut_create_success),
-                                    Toast.LENGTH_SHORT
-                                ).show()
+                            lifecycleScope.launch {
+                                val result = ActionShortcutManager(context!!)
+                                    .addShortcut(
+                                        intent,
+                                        IconPathAnalysis().loadLogo(context!!, clickableNode)!!,
+                                        clickableNode
+                                    )
+                                if (!result) {
+                                    Toast.makeText(
+                                        context,
+                                        R.string.kr_shortcut_create_fail,
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                } else {
+                                    Toast.makeText(
+                                        context,
+                                        getString(R.string.kr_shortcut_create_success),
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                }
                             }
                         }
                     }

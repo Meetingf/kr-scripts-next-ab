@@ -10,7 +10,7 @@
     </group>
 
     <group title="网络图片">
-        <action clip="30" icon="https://cdn-icons-png.flaticon.com/128/6422/6422199.png">
+        <action id="web_ic" clip="30" icon="https://cdn-icons-png.flaticon.com/128/6422/6422199.png">
             <title>图标喵</title>
         </action>
         <image>

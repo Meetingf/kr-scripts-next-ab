@@ -3,9 +3,9 @@ package com.krscripts.core.ui
 import android.content.Context
 import android.view.View
 import android.widget.ImageView
+import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.krscripts.core.R
-import com.krscripts.core.config.IconPathAnalysis
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.model.SwitchNode
 import java.util.Locale.getDefault
@@ -17,7 +17,7 @@ class ListItemSwitch(
 
     private var switchView: MaterialSwitch? = layout.findViewById(R.id.kr_switch)
     private var onCheckedChangeListener: OnCheckedChangeListener? = null
-    private var iconView: ImageView? = layout.findViewById(R.id.kr_icon)
+    private var iconView: ShapeableImageView? = layout.findViewById(R.id.kr_icon)
     private var isAdjusting: Boolean = false
 
     fun setOnCheckedChangeListener(listener: OnCheckedChangeListener): ListItemSwitch {
@@ -53,14 +53,14 @@ class ListItemSwitch(
         switchView?.visibility = View.VISIBLE
         layout.findViewById<ImageView>(R.id.kr_widget).visibility = View.GONE
 
-        if (iconView != null) {
-            iconView?.visibility = View.GONE
-            if (config.iconPath.isNotEmpty()) {
-                IconPathAnalysis().loadIcon(context, config)?.run {
-                    iconView?.setImageDrawable(this)
-                    iconView?.visibility = View.VISIBLE
-                }
-            }
+        iconView?.apply {
+            IconHelper.applyIcon(
+                context = context,
+                view = this,
+                iconPath = config.iconPath,
+                configPath = config.pageConfigDir,
+                clip = config.iconClip,
+            )
         }
     }
 
