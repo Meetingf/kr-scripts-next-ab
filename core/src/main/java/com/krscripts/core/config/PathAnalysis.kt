@@ -157,4 +157,33 @@ class PathAnalysis(private var context: Context, private var parentDir: String =
         }
         return null
     }
+
+    fun resolveUri(filePath: String): String? {
+        return try {
+            if (filePath.startsWith(ASSETS_FILE)) {
+                filePath
+            } else {
+                val absolutePath = resolveAbsolutePath(filePath)
+                if (absolutePath.startsWith(ASSETS_FILE)) {
+                    absolutePath
+                } else {
+                    File(absolutePath).toURI().toString()
+                }
+            }
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun resolveAbsolutePath(filePath: String): String {
+        if (filePath.startsWith("/")) {
+            return filePath
+        }
+        if (parentDir.startsWith(ASSETS_FILE)) {
+            return pathConcat(parentDir, filePath)
+        } else {
+            val relative = if (parentDir.isNotEmpty()) pathConcat(parentDir, filePath) else filePath
+            return relative
+        }
+    }
 }

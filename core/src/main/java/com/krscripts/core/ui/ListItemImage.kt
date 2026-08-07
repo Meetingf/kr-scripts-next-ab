@@ -3,16 +3,17 @@ package com.krscripts.core.ui
 import android.content.Context
 import android.view.View
 import android.widget.ImageView
+import android.widget.TextView
 import coil3.load
 import coil3.request.CachePolicy
 import coil3.request.crossfade
-import coil3.request.error
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.shape.CornerFamily
 import com.google.android.material.shape.RelativeCornerSize
 import com.google.android.material.shape.ShapeAppearanceModel
 import com.krscripts.core.R
+import com.krscripts.core.config.PathAnalysis
 import com.krscripts.core.model.ImageNode
 
 class ListItemImage(
@@ -22,6 +23,7 @@ class ListItemImage(
 ) : ListItemClickable(context, layoutId, config) {
 
     private val imageView = layout.findViewById<ShapeableImageView?>(R.id.image_item)
+    private val textView = layout.findViewById<TextView?>(R.id.textView)
     private val progressBar = layout.findViewById<CircularProgressIndicator?>(R.id.progressBar)
 
     init {
@@ -44,9 +46,12 @@ class ListItemImage(
         }
 
         imageView?.apply {
-            load(config.image) {
+
+            val icon = if (config.image.startsWith("http")) {
+                config.image
+            } else PathAnalysis(context, config.pageConfigDir).resolveUri(config.image)
+            load(icon) {
                 crossfade(true)
-                error(R.drawable.baseline_broken_image_24)
                 memoryCachePolicy(CachePolicy.ENABLED)
                 diskCachePolicy(CachePolicy.DISABLED)
                 listener(
@@ -59,7 +64,13 @@ class ListItemImage(
                             imageView.layoutParams = lp
                         }
                     },
-                    onError = { _, _ -> progressBar?.visibility = View.GONE }
+                    onError = { _, _ ->
+                        progressBar?.visibility = View.GONE
+                        textView?.apply {
+                            visibility = View.VISIBLE
+                            text = "无法加载图片"
+                        }
+                    }
                 )
             }
         }
