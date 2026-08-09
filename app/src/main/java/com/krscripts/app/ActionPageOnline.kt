@@ -12,7 +12,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
-import android.view.Menu
 import android.view.View
 import android.webkit.CookieManager
 import android.webkit.JsResult
@@ -76,43 +75,30 @@ class ActionPageOnline : KrActivity() {
             window.isNavigationBarContrastEnforced = false
         }
 
-        setSupportActionBar(binding.toolbar)
-        setTitle(com.krscripts.app.R.string.app_name)
-
-        supportActionBar!!.setHomeButtonEnabled(true)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener {
-            finish()
+        binding.toolbar.apply {
+            setTitle(com.krscripts.app.R.string.app_name)
+            setNavigationIcon(com.krscripts.app.R.drawable.baseline_arrow_back_24)
+            setNavigationOnClickListener {
+                finish()
+            }
+            setOnMenuItemClickListener { menuItem ->
+                menuExtra[menuItem.itemId]?.let {
+                    onMenuItemClick(it)
+                } ?: false
+            }
         }
 
         loadIntentData()
+
+        pageConfigCompat?.let { node ->
+            PageMenuLoader(applicationContext, node).load()?.let {
+                createMenu(binding.toolbar.menu, binding.floatingActionButton, it)
+            }
+        }
     }
 
     override fun onReload() {
         binding.krOnlineWebview.reload()
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menu?.clear()
-        menuOptions.clear()
-
-        pageConfigCompat?.let { node ->
-            PageMenuLoader(applicationContext, node).load()?.let {
-                menuOptions.addAll(it)
-            }
-        }
-
-        if (menu != null) {
-            menuOptions.forEachIndexed { index, option ->
-                if (option.isFab) {
-                    addFab(option, binding.floatingActionButton)
-                } else {
-                    menu.add(-1, index, index, option.title)
-                }
-            }
-        }
-
-        return true // super.onCreateOptionsMenu(menu)
     }
 
     private fun loadIntentData() {

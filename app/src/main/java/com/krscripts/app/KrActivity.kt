@@ -1,7 +1,7 @@
 package com.krscripts.app
 
 import android.content.Intent
-import android.view.MenuItem
+import android.view.Menu
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
@@ -24,18 +24,13 @@ import kotlinx.coroutines.launch
 open class KrActivity: AppCompatActivity() {
 
     protected val progressBarDialog = ProgressBarDialog(this)
-    protected var menuOptions = ArrayList<PageMenuOption>()
+    protected var menuExtra: MutableMap<Int, PageMenuOption> = mutableMapOf()
     protected var menuHandler: String? = null
     protected var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        onMenuItemClick(menuOptions[item.itemId])
-        return true
-    }
-
     protected fun onMenuItemClick(
         menuOption: PageMenuOption
-    ) {
+    ): Boolean {
         when(menuOption.type) {
             "refresh", "reload" -> {
                 onReload()
@@ -53,6 +48,7 @@ open class KrActivity: AppCompatActivity() {
                 })
             }
         }
+        return true
     }
 
     protected open fun onReload() = recreate()
@@ -127,6 +123,21 @@ open class KrActivity: AppCompatActivity() {
             }
         }
         fileSelectorInterface?.let { chooseFilePath(it) }
+    }
+
+    protected fun createMenu(
+        menu: Menu,
+        fab: FloatingActionButton,
+        items: List<PageMenuOption>
+    ) {
+        items.forEachIndexed { index, item ->
+            if (item.isFab) {
+                addFab(item, fab)
+            } else {
+                menu.add(-1, index, index, item.title)
+            }
+            menuExtra[index] = item
+        }
     }
 
     protected fun addFab(

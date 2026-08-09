@@ -4,11 +4,10 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.util.TypedValue
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
@@ -59,7 +58,13 @@ class MainActivity : KrActivity() {
             window.isNavigationBarContrastEnforced = false
         }
 
-        setSupportActionBar(binding.toolbar)
+        binding.toolbar.apply {
+            setTitle(com.krscripts.app.R.string.app_name)
+            inflateMenu(R.menu.main)
+            setOnMenuItemClickListener { menuItem ->
+                onMenuItemSelected(menuItem)
+            }
+        }
 
         lifecycleScope.launch {
             progressBarDialog.showDialog(getString(R.string.please_wait))
@@ -90,10 +95,7 @@ class MainActivity : KrActivity() {
                     menuHandler = it
                 }
 
-                config.pageMenuOptions.let {
-                    menuOptions.addAll(it)
-                    invalidateOptionsMenu()
-                }
+                createMenu(binding.toolbar.menu, binding.fab, config.pageMenuOptions)
 
                 val menuName =
                     config.content.lastOrNull()?.title?.takeIf { it.isNotEmpty() && config.content.last() is NavNode }
@@ -193,34 +195,7 @@ class MainActivity : KrActivity() {
         OpenPageHelper(this).openPage(pageNode)
     }
 
-    private fun getThemeColor(attrRes: Int): Int {
-        val typedValue = TypedValue()
-        this.theme.resolveAttribute(attrRes, typedValue, true)
-        return typedValue.data
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-
-        menu.clear()
-        menuInflater.inflate(R.menu.main, menu)
-
-        for (i in menuOptions.indices) {
-            val menuOption = menuOptions[i]
-            if (menuOption.isFab) {
-                addFab(menuOption, binding.fab)
-            } else {
-                menu.add(-1, i, i, menuOption.title)
-            }
-        }
-
-        menu.findItem(R.id.option_menu_info)?.icon?.setTint(
-            getThemeColor(com.google.android.material.R.attr.colorOnSurface)
-        )
-
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+    fun onMenuItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             R.id.option_menu_info -> {
                 val layoutInflater = LayoutInflater.from(this)
@@ -242,7 +217,9 @@ class MainActivity : KrActivity() {
                 DialogHelper.animDialog(this, MaterialAlertDialogBuilder(this).setView(layout).setTitle(getString(R.string.title_about)))
             }
             else -> {
-                onMenuItemClick(menuOptions[item.itemId])
+                menuExtra[item.itemId]?.let {
+                    onMenuItemClick(it)
+                } ?: Toast.makeText(this, "菜单数据丢失", Toast.LENGTH_SHORT).show()
             }
         }
         return true

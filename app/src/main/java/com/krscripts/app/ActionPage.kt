@@ -4,7 +4,6 @@ import android.content.ComponentName
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.view.Menu
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.core.net.toUri
@@ -22,6 +21,7 @@ import com.krscripts.core.model.AutoRunTask
 import com.krscripts.core.model.ClickableNode
 import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.KrScriptActionHandler
+import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.shortcut.ActionShortcutManager
@@ -69,13 +69,17 @@ open class ActionPage : KrActivity() {
             window.isNavigationBarContrastEnforced = false
         }
 
-        setSupportActionBar(binding.toolbar)
-        setTitle(com.krscripts.app.R.string.app_name)
-
-        supportActionBar!!.setHomeButtonEnabled(true)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        binding.toolbar.setNavigationOnClickListener {
-            finish()
+        binding.toolbar.apply {
+            setTitle(com.krscripts.app.R.string.app_name)
+            setNavigationIcon(com.krscripts.app.R.drawable.baseline_arrow_back_24)
+            setNavigationOnClickListener {
+                finish()
+            }
+            setOnMenuItemClickListener { menuItem ->
+                menuExtra[menuItem.itemId]?.let {
+                    onMenuItemClick(it)
+                } ?: false
+            }
         }
 
         intent?.extras?.let { extras ->
@@ -121,7 +125,7 @@ open class ActionPage : KrActivity() {
                 }
 
                 if (page.title.isNotEmpty()) {
-                    title = page.title
+                    binding.toolbar.title = page.title
                 }
                 pageConfigCompat = page
             } ?: {
@@ -175,23 +179,6 @@ open class ActionPage : KrActivity() {
             fileSelectorInterface = fileSelectedInterface
             return chooseFilePath(fileSelectedInterface)
         }
-    }
-
-    // 右上角菜单的创建
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menu?.clear()
-
-        if (menu != null) {
-            menuOptions.forEachIndexed { index, option ->
-                if (option.isFab) {
-                    addFab(option, binding.actionPageFab)
-                } else {
-                    menu.add(-1, index, index, option.title)
-                }
-            }
-        }
-
-        return true
     }
 
     private suspend fun showDialog(msg: String) = withContext(Dispatchers.Main) {
@@ -261,7 +248,7 @@ open class ActionPage : KrActivity() {
                             }
                         }
 
-                        menuOptions.clear()
+                        val menuOptions: ArrayList<PageMenuOption> = ArrayList()
 
                         PageMenuLoader(applicationContext, pageConfigCompat).load()?.let {
                             menuOptions.addAll(it)
@@ -269,8 +256,9 @@ open class ActionPage : KrActivity() {
 
                         config.pageMenuOptions.let {
                             menuOptions.addAll(it)
-                            invalidateOptionsMenu()
                         }
+
+                        createMenu(binding.toolbar.menu, binding.actionPageFab, menuOptions)
 
                         menuHandler = if (config.pageHandlerSh.isEmpty()) {
                             pageConfigCompat.pageHandlerSh
