@@ -81,7 +81,7 @@ class MainActivity : KrActivity() {
 
         binding.viewPager.apply {
             adapter = PageFragmentAdapter(this@MainActivity, pageConfigs)
-            offscreenPageLimit = 1
+            offscreenPageLimit = 2
         }
 
         val menu = binding.bottomNavView.menu
@@ -107,7 +107,7 @@ class MainActivity : KrActivity() {
                         R.drawable.baseline_bookmark_24
                     )!!
                     setOnMenuItemClickListener {
-                        binding.viewPager.setCurrentItem(index, false)
+                        binding.viewPager.setCurrentItem(index, true)
                         false
                     }
                 }
