@@ -2,17 +2,12 @@
 <config>
     <group title="基本参数类型和输入限制">
         <action>
-            <title>单选下拉</title>
-            <param name="test">
+            <title>选择</title>
+            <param name="single_short" title="单选" label="短列表">
                 <option value="1">选项 1</option>
                 <option value="2">选项 2</option>
             </param>
-            <set>echo '数值为：' $test</set>
-        </action>
-        <action>
-            <title>单选下拉</title>
-            <desc>选项较多时，选择界面会自动调整为全屏弹窗风格</desc>
-            <param name="test" value="1">
+            <param  name="single_long" lable="长列表" value="1">
                 <option value="1">选项 1</option>
                 <option value="2">选项 2</option>
                 <option value="3">选项 3</option>
@@ -23,12 +18,9 @@
                 <option value="8">选项 8</option>
                 <option value="9">选项 9</option>
             </param>
-            <set>echo '数值为：' $test</set>
-        </action>
 
-        <action warn="右侧数字显示的时选中项个数">
-            <title>多选下拉</title>
-            <param name="test" label="多选下拉" multiple="multiple">
+            <!-- separator 属性设置输出用户选择的项目的分隔符号, 默认为 "|", 输出为 "A|B|C" -->
+            <param name="multi" title="多选" multiple="multiple" separator="|">
                 <option value="1">选项 1</option>
                 <option value="2">选项 2</option>
                 <option value="3">选项 3</option>
@@ -39,17 +31,11 @@
                 <option value="8">选项 8</option>
                 <option value="9">选项 9</option>
             </param>
-            <set>echo '数值为：' $test</set>
-        </action>
-
-        <action>
-            <title>自定义多选下拉分隔符</title>
-            <param name="test" title="多选下拉" multiple="multiple" separator="@">
-                <option value="1">选项 1</option>
-                <option value="2">选项 2</option>
-                <option value="3">选项 3</option>
-            </param>
-            <set>echo '数值为：' $test</set>
+            <set>
+                echo '单选 (短列表)：' $single_short
+                echo '单选 (长列表)：' $single_long
+                echo '多选：' $multi
+            </set>
         </action>
 
         <action>
