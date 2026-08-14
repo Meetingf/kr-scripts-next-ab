@@ -2,23 +2,31 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:paddingTop="16dp">
 
     <TextView
         android:id="@id/kr_title"
+        style="@style/TextAppearance.Material3.LabelSmall"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="4dp"
         android:layout_marginStart="6dp"
-        style="@style/TextAppearance.Material3.LabelSmall" />
+        android:layout_marginBottom="4dp" />
 
-    <LinearLayout
-        android:id="@android:id/content"
+    <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@drawable/krscript_item_bg"
         android:clickable="false"
         android:focusable="false"
-        android:orientation="vertical" />
+        app:cardCornerRadius="18dp"
+        app:cardBackgroundColor="?colorSurfaceContainer"
+        style="@style/Widget.Material3.CardView.Filled">
+
+        <LinearLayout
+            android:id="@android:id/content"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </com.google.android.material.card.MaterialCardView>
 </LinearLayout>
