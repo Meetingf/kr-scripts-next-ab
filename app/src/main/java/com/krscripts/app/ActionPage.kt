@@ -69,9 +69,11 @@ open class ActionPage : KrActivity() {
             window.isNavigationBarContrastEnforced = false
         }
 
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+
         binding.toolbar.apply {
             setTitle(com.krscripts.app.R.string.app_name)
-            setNavigationIcon(com.krscripts.app.R.drawable.baseline_arrow_back_24)
             setNavigationOnClickListener {
                 finish()
             }
