@@ -4,8 +4,9 @@ import android.content.Context
 import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.EditText
-import android.widget.TextView
+import androidx.appcompat.content.res.AppCompatResources
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
 
@@ -30,81 +31,77 @@ class ParamsFileChooserRender(private var actionParamInfo: ActionParamInfo, priv
     }
 
 
-    fun setEditTextReadOnly(view: TextView) {
-        // view.setTextColor(R.color.read_only_color) //设置只读时的文字颜色
-        if (view is EditText) {
-            view.setCursorVisible(false) //设置输入框中的光标不可见
-            view.setFocusable(false) //无焦点
-            view.setFocusableInTouchMode(false) //触摸时也得不到焦点
-        }
+    fun setEditTextReadOnly(view: TextInputEditText) {
+        view.setCursorVisible(false)
+        view.setFocusable(false)
+        view.setFocusableInTouchMode(false)
     }
 
     fun render(): View {
-        val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_file, null)
-        val textView = layout.findViewById<TextView>(R.id.kr_param_file_text)
-        val pathView = layout.findViewById<EditText>(R.id.kr_param_file_path)
-        val btn = layout.findViewById<View>(R.id.kr_param_file_btn)
+        val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_edit_text, null)
+        val inputLayout = layout.findViewById<TextInputLayout>(R.id.textInputLayout)
+        val editText = layout.findViewById<TextInputEditText>(R.id.kr_param_text)
 
-        if (actionParamInfo.editable) {
-            textView.visibility = View.GONE
-            pathView.visibility = View.VISIBLE
-            pathView.hint = if (actionParamInfo.type == "folder") {
-                context.getString(R.string.kr_please_choose_folder)
-            } else {
-                context.getString(R.string.kr_please_choose_file)
-            }
-        } else {
-            setEditTextReadOnly(pathView)
+        if (!actionParamInfo.editable) {
+            setEditTextReadOnly(editText)
         }
 
-        btn.setOnClickListener {
-            fileChooser?.openFileChooser(object : FileSelectedInterface {
-                override fun onFileSelected(path: String?) {
-                    if (path.isNullOrEmpty()) {
-                        if (type() == FileSelectedInterface.TYPE_FOLDER) {
-                            textView.text = context.getString(R.string.kr_please_choose_folder)
+        editText.hint = if (actionParamInfo.type == "folder") {
+            context.getString(R.string.kr_please_choose_folder)
+        } else {
+            context.getString(R.string.kr_please_choose_file)
+        }
+
+        inputLayout.apply {
+            endIconMode = TextInputLayout.END_ICON_CUSTOM
+            endIconDrawable = AppCompatResources.getDrawable(context, R.drawable.baseline_folder_24)
+            setEndIconOnClickListener {
+                fileChooser?.openFileChooser(object : FileSelectedInterface {
+                    override fun onFileSelected(path: String?) {
+                        if (path.isNullOrEmpty()) {
+                            if (type() == FileSelectedInterface.TYPE_FOLDER) {
+                                inputLayout.hint =
+                                    context.getString(R.string.kr_please_choose_folder)
+                            } else {
+                                inputLayout.hint = context.getString(R.string.kr_please_choose_file)
+                            }
+                            editText.setText("")
                         } else {
-                            textView.text = context.getString(R.string.kr_please_choose_file)
+                            editText.setText(path)
                         }
-                        pathView.setText("")
-                    } else {
-                        textView.text = path
-                        pathView.setText(path)
                     }
-                }
 
-                override fun mimeType(): String? {
-                    if (actionParamInfo.mime.isNotEmpty()) {
-                        return actionParamInfo.mime
+                    override fun mimeType(): String? {
+                        if (actionParamInfo.mime.isNotEmpty()) {
+                            return actionParamInfo.mime
+                        }
+                        return null
                     }
-                    return null
-                }
 
-                override fun suffix(): String? {
-                    if (actionParamInfo.suffix.isNotEmpty()) {
-                        return actionParamInfo.suffix
+                    override fun suffix(): String? {
+                        if (actionParamInfo.suffix.isNotEmpty()) {
+                            return actionParamInfo.suffix
+                        }
+                        return null
                     }
-                    return null
-                }
 
-                override fun type(): Int {
-                    return when(actionParamInfo.type) {
-                        "folder" -> FileSelectedInterface.TYPE_FOLDER
-                        else -> FileSelectedInterface.TYPE_FILE
+                    override fun type(): Int {
+                        return when (actionParamInfo.type) {
+                            "folder" -> FileSelectedInterface.TYPE_FOLDER
+                            else -> FileSelectedInterface.TYPE_FILE
+                        }
                     }
-                }
-            })
+                })
+            }
         }
 
         if (actionParamInfo.valueFromShell != null) {
-            textView.text = actionParamInfo.valueFromShell
-            pathView.setText(actionParamInfo.valueFromShell)
+            editText.setText(actionParamInfo.valueFromShell)
         } else if (!actionParamInfo.value.isNullOrEmpty()) {
-            textView.text = actionParamInfo.value
-            pathView.setText(actionParamInfo.value)
+            editText.setText(actionParamInfo.value)
         }
 
-        pathView.tag = actionParamInfo.name
+        editText.tag = actionParamInfo.name
 
         return layout
     }

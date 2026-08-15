@@ -10,7 +10,7 @@ import com.krscripts.core.model.ParamInfoFilter
 
 class ParamsEditText(private var actionParamInfo: ActionParamInfo, private var context: Context) {
     fun render(): View {
-        val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_text, null)
+        val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_edit_text, null)
 
 
         layout.findViewById<EditText>(R.id.kr_param_text).run {

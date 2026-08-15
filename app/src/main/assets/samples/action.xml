@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
-    <group title="基本参数类型和输入限制">
+    <group title="基本动作">
         <action>
             <title>选择</title>
             <param name="single_short" title="单选" label="短列表">
@@ -69,84 +69,60 @@
 
     <group title="文件选择">
         <action>
-            <title>文件选择 (不限类型)</title>
-            <param name="test" label="文件选择" type="file"
-                value="/sdcard/test.txt" />
-            <set>echo '路径为：' $test</set>
+            <title>文件选择</title>
+            <param name="normal" type="file" value="test.txt" />
+            <param name="file_suffix" label="后缀 (zip)" type="file" suffix="zip" />
+            <param name="file_mime" label="mime 限制" type="file" mime="application/zip" />
+            <set>
+                echo '普通：' $normal
+                echo '后缀限制：' $file_suffix
+                echo 'mime 限制：' $file_mime
+            </set>
         </action>
-
         <action>
-            <title>文件选择（.Zip）</title>
-            <param name="test" label="文件选择" type="file"
-                suffix="zip"
-                value="/sdcard/test.zip" />
-            <set>echo '路径为：' $test</set>
-        </action>
-
-        <action>
-            <title>文件选择(application/zip)</title>
-            <param name="test" label="文件选择" type="file"
-                mime="application/zip"
-                value="/sdcard/test.apk" />
-            <set>echo '路径为：' $test</set>
-        </action>
-
-        <action>
-            <title>目录选择器</title>
-            <param name="test" type="folder" value="/sdcard" />
-            <set>echo '路径为：' $test</set>
-        </action>
-
-        <action>
-            <title>允许用户编辑路径</title>
-            <desc>file、folder参数都不允许用户手动输入，除非你添加editable="true"</desc>
-            <param name="test" type="folder" value="/sdcard" editable="true" />
-            <set>echo '路径为：' $test</set>
+            <title>文件夹选择</title>
+            <param name="normal" type="folder" value="/sdcard" />
+            <param label="可编辑" name="editable" type="folder" value="/sdcard" editable="true" />
+            <set>
+                echo '普通：' $normal
+                echo '可编辑：' $editable
+            </set>
         </action>
     </group>
 
     <group title="应用选择">
-        <!--借助于type=app轻松的显示应用名称-->
-
         <action>
-            <title>请选择一个应用</title>
-            <param name="package_name" type="app" />
-            <set>echo '包名为：' $package_name</set>
-        </action>
+            <title>应用/包名选择</title>
 
-        <action>
-            <title>请选择一个应用</title>
-            <desc>配合options-sh轻松的限制可被选择的APP</desc>
+            <param name="app_normal" type="app" />
+
             <param
-                name="package_name"
+                name="app_limited"
+                title="自定义获取命令"
                 type="app"
                 options-sh="pm list package -3 | cut -f2 -d ':'" />
-            <set>echo '包名为：' $package_name</set>
-        </action>
 
-        <action>
-            <title>请选择几个应用</title>
-            <desc>也可以设置允许选择多个应用，同时还可以设置默认选中项</desc>
             <param
-                name="package_name"
+                name="app_multiple"
+                label="多选"
                 value="com.krscripts.app,com.android.browser"
                 separator=","
                 type="app"
-                multiple="multiple"
-                options-sh="pm list package -3 | cut -f2 -d ':'" />
-            <set>echo '包名为：' $package_name</set>
-        </action>
+                multiple="multiple" />
 
-        <action>
-            <title>包名选择器</title>
-            <desc>包名选择器(type=packages)和应用选择器(type=app)的区别在于，它会显示包含在定义的option里，但用户并未安装的应用作为选项</desc>
-            <param name="package_name" type="packages" />
+            <param name="package_selector" label="包名选择器" type="packages" />
             <options>
                 <option value="android">Android 系统</option>
                 <option value="com.android.systemui">系统界面</option>
                 <option value="com.krscripts.next.plus.pro">Kr Scripts Next Plus Pro</option>
             </options>
-            <set>echo '包名为：' $package_name</set>
+
+            <set>
+                echo '普通应用：' $app_normal
+                echo '限制应用：' $app_limited
+                echo '多选应用：' $app_multiple
+                echo '包名选择器：' $package_selector
+            </set>
         </action>
     </group>
 

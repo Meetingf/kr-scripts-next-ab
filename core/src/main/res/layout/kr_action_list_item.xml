@@ -31,6 +31,7 @@
 
     <TextView
         android:id="@id/kr_title"
+        android:textColor="?colorOnSurface"
         style="@style/TextAppearance.Material3.TitleSmall"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -45,6 +46,7 @@
     <TextView
         android:id="@id/kr_desc"
         style="@style/TextAppearance.Material3.BodySmall"
+        android:textColor="?colorOnSurfaceVariant"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
@@ -63,7 +65,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="4dp"
         android:layout_marginEnd="8dp"
-        android:textColor="?colorAccent"
+        android:textColor="?colorOutline"
         app:layout_constraintBottom_toBottomOf="@+id/kr_icon"
         app:layout_constraintEnd_toStartOf="@+id/right_side_barrier"
         app:layout_constraintStart_toEndOf="@+id/kr_icon"

@@ -26,7 +26,8 @@
         android:layout_height="22dp"
         android:layout_gravity="center_vertical"
         android:padding="2dp"
-        android:src="@drawable/baseline_error_24" />
+        android:src="@drawable/baseline_error_24"
+        app:tint="?colorOnSurfaceVariant" />
 
     <View
         android:id="@+id/kr_param_color_preview"
@@ -45,5 +46,5 @@
         android:padding="5dp"
         android:scaleType="centerInside"
         android:src="@drawable/baseline_color_lens_24"
-        app:tint="?colorAccent" />
+        app:tint="?colorOnSurfaceVariant" />
 </LinearLayout>

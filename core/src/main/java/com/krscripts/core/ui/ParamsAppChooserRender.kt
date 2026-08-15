@@ -2,12 +2,15 @@ package com.krscripts.core.ui
 
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.TextView
-import android.widget.Toast
+import androidx.appcompat.content.res.AppCompatResources
 import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
 import com.krscripts.core.model.SelectItem
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -18,36 +21,52 @@ class ParamsAppChooserRender(
     private var actionParamInfo: ActionParamInfo,
     private var context: FragmentActivity
 ) : DialogAppChooser.Callback {
-    private lateinit var valueView: TextView
-    private lateinit var nameView: TextView
+    private lateinit var editText: TextInputEditText
+    private lateinit var inputLayout: TextInputLayout
     private lateinit var packages: ArrayList<AdapterAppChooser.AppInfo>
+    private val packagesReady = CompletableDeferred<Unit>()
+    private val progressDialog = ProgressBarDialog(context)
 
     fun render(): View {
-        val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_app, null)
-        valueView = layout.findViewById(R.id.kr_param_app_package)
-        nameView = layout.findViewById(R.id.kr_param_app_name)
-
-        setTextView()
-
-        layout.findViewById<View>(R.id.kr_param_app_btn).setOnClickListener {
-            openAppChooser()
-        }
-        nameView.setOnClickListener {
-            openAppChooser()
+        val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_edit_text, null)
+        editText = layout.findViewById(R.id.kr_param_text)
+        inputLayout = layout.findViewById(R.id.textInputLayout)
+        editText.apply {
+            hint = context.getString(R.string.kr_please_choose_app)
+            setCursorVisible(false)
+            setFocusable(false)
+            setFocusableInTouchMode(false)
         }
 
-        valueView.tag = actionParamInfo.name
+        initView()
+
+        inputLayout.apply {
+            endIconMode = TextInputLayout.END_ICON_CUSTOM
+            endIconDrawable = AppCompatResources.getDrawable(context, R.drawable.baseline_android_24)
+            setEndIconOnClickListener { openAppChooser() }
+        }
+
+        editText.setOnClickListener { openAppChooser() }
+
+        editText.tag = actionParamInfo.name
 
         return layout
     }
 
     private fun openAppChooser() {
-        if (!::packages.isInitialized) {
-            Toast.makeText(context, "应用列表加载中", Toast.LENGTH_SHORT).show()
-            return
+        context.lifecycleScope.launch {
+            if (!::packages.isInitialized) {
+                progressDialog.showDialog()
+                packagesReady.await()
+                progressDialog.hideDialog()
+            }
+            setSelectStatus()
+            DialogAppChooser(
+                packages,
+                actionParamInfo.multiple,
+                this@ParamsAppChooserRender
+            ).show(context.supportFragmentManager, "app-chooser")
         }
-        setSelectStatus()
-        DialogAppChooser(packages, actionParamInfo.multiple, this).show(context.supportFragmentManager, "app-chooser")
     }
 
     private suspend fun loadPackages(includeMissing: Boolean = false): List<AdapterAppChooser.AppInfo> {
@@ -88,43 +107,36 @@ class ParamsAppChooserRender(
         packages.forEach {
             it.selected = false
         }
-        val currentValue = valueView.text
+        val currentValue = editText.text
         if (actionParamInfo.multiple) {
-            currentValue.split(actionParamInfo.separator).run {
-                this.forEach {
-                    val value = it
-                    val app = packages.find { it.packageName == value }
-                    if (app != null) {
-                        app.selected = true
-                    }
+            currentValue?.split(actionParamInfo.separator)?.forEach { value ->
+                val app = packages.find { it.packageName == value }
+                if (app != null) {
+                    app.selected = true
                 }
             }
         } else {
-            val current = packages.find { it.packageName == currentValue }
+            val current = packages.find { it.packageName == currentValue?.toString() }
             val currentIndex = if (current != null) packages.indexOf(current) else -1
             if (currentIndex > -1) {
-                packages.get(currentIndex).selected = true
+                packages[currentIndex].selected = true
             }
         }
     }
 
     // 设置界面显示和元素赋值
-    private fun setTextView() {
+    private fun initView() {
         val lifecycleScope = CoroutineScope(SupervisorJob())
         lifecycleScope.launch {
             packages = ArrayList(loadPackages(actionParamInfo.type == "packages"))
 
             packages.run {
-                val labels = map { it.appName }.toTypedArray()
                 val values = map { it.packageName }.toTypedArray()
                 if (actionParamInfo.multiple) {
-                    ActionParamsLayoutRender.getParamValues(actionParamInfo)?.run {
-                        this.forEach {
-                            val value = it
-                            val app = packages.find { it.packageName == value }
-                            if (app != null) {
-                                app.selected = true
-                            }
+                    ActionParamsLayoutRender.getParamValues(actionParamInfo)?.forEach { value ->
+                        val app = packages.find { it.packageName == value }
+                        if (app != null) {
+                            app.selected = true
                         }
                     }
 
@@ -147,32 +159,30 @@ class ParamsAppChooserRender(
 
                     withContext(Dispatchers.Main) {
                         if (currentIndex > -1) {
-                            valueView.text = values[currentIndex]
-                            nameView.text = labels[currentIndex]
+                            editText.setText(values[currentIndex])
                         } else {
-                            valueView.text = ""
-                            nameView.text = ""
+                            editText.setText(null)
                         }
                     }
                 }
+            }
+
+            if (!packagesReady.isCompleted) {
+                packagesReady.complete(Unit)
             }
         }
     }
 
     override fun onConfirm(apps: List<AdapterAppChooser.AppInfo>) {
         if (actionParamInfo.multiple) {
-            val values = apps.map { it.packageName }.joinToString(actionParamInfo.separator)
-            val labels = apps.map { it.appName }.joinToString("，")
-            valueView.text = values
-            nameView.text = labels
+            val values = apps.joinToString(actionParamInfo.separator) { it.packageName }
+            editText.setText(values)
         } else {
             val item = apps.firstOrNull()
             if (item == null) {
-                valueView.text = ""
-                nameView.text = ""
+                editText.setText(null)
             } else {
-                valueView.text = item.packageName
-                nameView.text = item.appName
+                editText.setText(item.packageName)
             }
         }
     }
