@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Environment
+import android.util.Log
 import androidx.core.content.edit
 import com.krscripts.core.FileOwner
 import com.krscripts.core.model.NodeInfoBase
@@ -322,57 +323,42 @@ object ScriptEnvironment {
         nodeInfo: NodeInfoBase?,
         tag: String?
     ) {
-        var params = params
-        if (params == null) {
-            params = HashMap()
-        }
+        val envParams = params ?: HashMap()
 
-        // 页面配置文件路径
-        if (nodeInfo != null) {
-            val parentPageConfigDir = nodeInfo.pageConfigDir
-            val currentPageConfigPath = nodeInfo.currentPageConfigPath
-            params["PAGE_CONFIG_DIR"] = parentPageConfigDir
-            params["PAGE_CONFIG_FILE"] = currentPageConfigPath
-            if (currentPageConfigPath.startsWith("file:///android_asset/")) {
+        nodeInfo?.let {
+            val configDir = it.pageConfigDir
+            val configFile = it.currentPageConfigPath
+            envParams["PAGE_CONFIG_DIR"] = configDir
+            envParams["PAGE_CONFIG_FILE"] = configFile
+
+            var workDir: String? = null
+            var workFile: String? = null
+            if (configFile.startsWith("file:///android_asset/")) {
                 val extractor = AssetsExtractor(context)
-                params["PAGE_WORK_DIR"] = extractor.getExtractPath(parentPageConfigDir)
-                params["PAGE_WORK_FILE"] = extractor.getExtractPath(currentPageConfigPath)
-            } else {
-                params["PAGE_WORK_DIR"] = parentPageConfigDir
-                params["PAGE_WORK_FILE"] = currentPageConfigPath
+                workDir = extractor.getExtractPath(configDir)
+                workFile = extractor.getExtractPath(configFile)
             }
-        } else {
-            params["PAGE_CONFIG_DIR"] = ""
-            params["PAGE_CONFIG_FILE"] = ""
-            params["PAGE_WORK_DIR"] = ""
-            params["PAGE_WORK_FILE"] = ""
+
+            envParams["PAGE_WORK_DIR"] = workDir ?: configDir
+            envParams["PAGE_WORK_FILE"] = workFile ?: configFile
         }
 
-        val envp = getVariables(params)
-        val envpCmds = StringBuilder()
-        if (!envp.isEmpty()) {
-            for (param in envp) {
-                envpCmds.append("export ").append(param).append("\n")
+        val exportCommands = getVariables(envParams).joinToString(separator = "\n") { "export $it" }
+        val script = getExecuteScript(context, cmds, tag)
+
+        val content = buildString {
+            if (exportCommands.isNotEmpty()) {
+                append(exportCommands).append('\n')
             }
+            append(script)
+            append("\nexit 0\n")
         }
+
         try {
-            dataOutputStream.write(envpCmds.toString().toByteArray(charset("UTF-8")))
-
-            dataOutputStream.write(
-                getExecuteScript(
-                    context,
-                    cmds,
-                    tag
-                ).toByteArray(charset("UTF-8"))
-            )
-
-            dataOutputStream.writeBytes("\n\n")
-            dataOutputStream.writeBytes("sleep 0.2;\n")
-            dataOutputStream.writeBytes("exit\n")
-            dataOutputStream.writeBytes("exit\n")
+            dataOutputStream.write(content.toByteArray(Charsets.UTF_8))
             dataOutputStream.flush()
-        } catch (_: Exception) {
-
+        } catch (e: Exception) {
+            Log.e("ShellEnvironment", "Failed to write shell commands", e)
         }
     }
 }

@@ -63,11 +63,14 @@
         android:id="@+id/action_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="20dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginHorizontal="18dp"
+        android:paddingVertical="4dp"
         android:indeterminate="true"
         android:max="100"
         android:progress="0"
+        app:trackThickness="14dp"
+        app:trackStopIndicatorSize="0dp"
+        app:indicatorColor="?colorPrimaryVariant"
         app:layout_constraintTop_toBottomOf="@id/top_barrier" />
 
     <ScrollView

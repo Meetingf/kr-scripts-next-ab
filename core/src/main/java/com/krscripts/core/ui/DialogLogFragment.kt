@@ -5,18 +5,19 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.DialogInterface
+import android.os.Build
 import android.os.Bundle
 import android.os.Message
 import android.text.Spanned
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
 import com.google.android.material.color.MaterialColors
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.krscripts.core.R
 import com.krscripts.core.databinding.KrDialogLogBinding
 import com.krscripts.core.executor.ShellExecutor
@@ -120,7 +121,12 @@ class DialogLogFragment : DialogFragment() {
 
                 if (_binding != null) {
                     binding.btnExit.visibility = View.VISIBLE
-                    binding.actionProgress.visibility = View.GONE
+                    binding.actionProgress.isIndeterminate = false
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        binding.actionProgress.setProgress(100, true)
+                    } else {
+                        binding.actionProgress.visibility = View.INVISIBLE
+                    }
                 }
 
                 isCancelable = true
@@ -155,7 +161,7 @@ class DialogLogFragment : DialogFragment() {
     class MyShellHandler(
         private var actionEventHandler: IActionEventHandler,
         private var logView: TextView,
-        private var shellProgress: ProgressBar
+        private var shellProgress: LinearProgressIndicator
     ) : ShellHandlerBase() {
 
         private val context: Context = logView.context
@@ -199,12 +205,15 @@ class DialogLogFragment : DialogFragment() {
                     shellProgress.visibility = View.VISIBLE
                     shellProgress.isIndeterminate = true
                 }
-                total -> shellProgress.visibility = View.GONE
                 else -> {
                     shellProgress.visibility = View.VISIBLE
                     shellProgress.isIndeterminate = false
                     shellProgress.max = total
-                    shellProgress.progress = current
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                        shellProgress.setProgress(current, true)
+                    } else {
+                        shellProgress.progress = current
+                    }
                 }
             }
         }
