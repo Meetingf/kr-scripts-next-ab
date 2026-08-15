@@ -137,6 +137,8 @@ open class ActionPage : KrActivity() {
             setResult(2)
             finish()
         }
+
+        loadPageConfig()
     }
 
     private var actionShortClickHandler = object : KrScriptActionHandler {
@@ -186,14 +188,6 @@ open class ActionPage : KrActivity() {
 
     private suspend fun hideDialog() = withContext(Dispatchers.Main) {
         progressBarDialog.hideDialog()
-    }
-
-    override fun onResume() {
-        super.onResume()
-
-        if (!actionsLoaded) {
-            loadPageConfig()
-        }
     }
 
     private fun loadPageConfig() {

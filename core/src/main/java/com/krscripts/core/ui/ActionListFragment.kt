@@ -101,6 +101,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
 
     private lateinit var rootGroup: ListItemGroup
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        view.alpha = 0f
         super.onViewCreated(view, savedInstanceState)
         this.progressBarDialog = ProgressBarDialog(this.requireActivity())
 
@@ -124,6 +125,11 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
             rootView?.addView(layout)
             triggerAction(autoRunTask)
         }
+
+        view.animate()
+            .alpha(1f)
+            .setDuration(220)
+            .start()
     }
 
     private fun triggerAction(autoRunTask: AutoRunTask?) {
