@@ -8,7 +8,7 @@ import android.widget.Toast
 import androidx.annotation.Keep
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.core.downloader.Downloader
-import com.krscripts.core.executor.ExtractAssets
+import com.krscripts.core.executor.AssetsExtractor
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.executor.ScriptEnvironment.executeResultRoot
 import com.krscripts.core.model.NodeInfoBase
@@ -136,7 +136,7 @@ class WebViewInjector(
          */
         @JavascriptInterface
         fun extractAssets(assets: String?): String? {
-            return ExtractAssets(context).extractResource(assets)
+            return AssetsExtractor(context).extractResource(assets)
         }
 
         fun setHandler(process: Process, callbackFunction: String?, onExit: Runnable?) {

@@ -1,5 +1,6 @@
 package com.krscripts.core.executor
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Build
 import android.os.Environment
@@ -29,10 +30,14 @@ object ScriptEnvironment {
     private var TOOLKIT_DIR: String? = ""
     private var rooted = false
     private var privateShell: KeepShell? = null
+    @SuppressLint("StaticFieldLeak")
     private var shellTranslation: ShellTranslation? = null
+    @SuppressLint("StaticFieldLeak")
+    private var assetsExtractor: AssetsExtractor? = null
     private val PLACEHOLDER_REGEX = Regex("""\{([^}]+)\}""")
 
     private fun init(context: Context): Boolean {
+
         val configSpf = context.getSharedPreferences("kr-script-config", Context.MODE_PRIVATE)
 
         return init(
@@ -54,12 +59,15 @@ object ScriptEnvironment {
             return true
         }
 
-        shellTranslation = ShellTranslation(context.applicationContext)
+        val appContext = context.applicationContext
+        assetsExtractor = AssetsExtractor(appContext)
+        shellTranslation = ShellTranslation(appContext)
+
         rooted = checkRoot()
 
         try {
             if (!toolkitDir.isNullOrEmpty()) {
-                TOOLKIT_DIR = ExtractAssets(context).extractResources(toolkitDir)
+                TOOLKIT_DIR = assetsExtractor?.extractResources(toolkitDir)
             }
 
             val fileName = executor.removePrefix(ASSETS_FILE)
@@ -144,39 +152,33 @@ object ScriptEnvironment {
             createShellCache(context, script)
         }
 
-        if (!isInitialed) {
-            init(context)
-        }
-
         val script = buildString {
-            appendLine()
-            if (nodeInfoBase != null && nodeInfoBase.currentPageConfigPath.isNotEmpty()) {
-                val parentDir = nodeInfoBase.pageConfigDir
-                val configPath = nodeInfoBase.currentPageConfigPath
-                append("export PAGE_CONFIG_DIR='").append(parentDir).append("'\n")
-                append("export PAGE_CONFIG_FILE='").append(configPath).append("'\n")
+            if (!nodeInfoBase?.currentPageConfigPath.isNullOrEmpty()) {
+                val configDir = nodeInfoBase.pageConfigDir
+                val configFile = nodeInfoBase.currentPageConfigPath
+                appendExport("PAGE_CONFIG_DIR", configDir)
+                appendExport("PAGE_CONFIG_FILE", configFile)
 
-                if (configPath.startsWith("file:///android_asset/")) {
-                    val extractor = ExtractAssets(context)
-                    append("export PAGE_WORK_DIR='").append(extractor.getExtractPath(parentDir)).append("'\n")
-                    append("export PAGE_WORK_FILE='").append(extractor.getExtractPath(configPath)).append("'\n")
-                } else {
-                    append("export PAGE_WORK_DIR='").append(parentDir).append("'\n")
-                    append("export PAGE_WORK_FILE='").append(configPath).append("'\n")
+                var workDir: String? = null
+                var workFile: String? = null
+                if (configFile.startsWith("file:///android_asset/")) {
+                    workDir = assetsExtractor?.getExtractPath(configDir)
+                    workFile = assetsExtractor?.getExtractPath(configFile)
                 }
-            } else {
-                append("export PAGE_CONFIG_DIR=''\n")
-                append("export PAGE_CONFIG_FILE=''\n")
-                append("export PAGE_WORK_DIR=''\n")
-                append("export PAGE_WORK_FILE=''\n")
+
+                appendExport("PAGE_WORK_DIR", workDir ?: configDir)
+                appendExport("PAGE_WORK_FILE", workFile ?: configFile)
             }
-            appendLine()
             appendLine()
             append("${if (rooted) "" else "sh " }$environmentPath \"$path\"")
         }
 
         val cmdResult = privateShell!!.doCmdSync(script)
         return shellTranslation?.resolveRow(cmdResult) ?: cmdResult
+    }
+
+    private fun StringBuilder.appendExport(name: String, value: String) {
+        append("export ").append(name).append("=\'").append(value).append("\'\n")
     }
 
     private fun getStartPath(context: Context): String {
@@ -332,7 +334,7 @@ object ScriptEnvironment {
             params["PAGE_CONFIG_DIR"] = parentPageConfigDir
             params["PAGE_CONFIG_FILE"] = currentPageConfigPath
             if (currentPageConfigPath.startsWith("file:///android_asset/")) {
-                val extractor = ExtractAssets(context)
+                val extractor = AssetsExtractor(context)
                 params["PAGE_WORK_DIR"] = extractor.getExtractPath(parentPageConfigDir)
                 params["PAGE_WORK_FILE"] = extractor.getExtractPath(currentPageConfigPath)
             } else {

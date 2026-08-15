@@ -11,7 +11,7 @@ import com.krscripts.core.shared.FileWrite.writePrivateShellFile
  * Refactored by buylan on 2026/07/26.
  */
 
-class ExtractAssets(private val context: Context) {
+class AssetsExtractor(private val context: Context) {
 
     fun extractResource(fileName: String?): String? {
         val name = fileName?.takeIf { it.isNotEmpty() } ?: return null

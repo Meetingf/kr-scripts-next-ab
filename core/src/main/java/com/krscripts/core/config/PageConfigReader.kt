@@ -9,7 +9,7 @@ import android.text.Layout
 import android.util.Log
 import android.util.Xml
 import android.widget.Toast
-import com.krscripts.core.executor.ExtractAssets
+import com.krscripts.core.executor.AssetsExtractor
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.model.ActionNode
 import com.krscripts.core.model.ActionParamInfo
@@ -639,7 +639,7 @@ class PageConfigReader {
     }
 
     private fun resourceNode(parser: XmlPullParser) {
-        parser.attr("file")?.let { ExtractAssets(context).extractResource(it.trim()) }
-        parser.attr("dir")?.let { ExtractAssets(context).extractResources(it.trim()) }
+        parser.attr("file")?.let { AssetsExtractor(context).extractResource(it.trim()) }
+        parser.attr("dir")?.let { AssetsExtractor(context).extractResources(it.trim()) }
     }
 }
