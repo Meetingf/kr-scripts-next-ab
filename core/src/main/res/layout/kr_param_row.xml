@@ -40,7 +40,7 @@
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
             android:maxLines="2"
-            android:minWidth="80dp"
+            android:minWidth="70dp"
             android:textStyle="normal"
             app:drawableRightCompat="@drawable/kr_param_label" />
 
