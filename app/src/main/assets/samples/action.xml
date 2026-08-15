@@ -7,7 +7,7 @@
                 <option value="1">选项 1</option>
                 <option value="2">选项 2</option>
             </param>
-            <param  name="single_long" lable="长列表" value="1">
+            <param  name="single_long" label="长列表" value="1">
                 <option value="1">选项 1</option>
                 <option value="2">选项 2</option>
                 <option value="3">选项 3</option>
