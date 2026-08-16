@@ -19,7 +19,7 @@
 # $START_DIR/downloader/status/[taskId]     以taskId为文件名，存储下载任务的进度（-1表示创建下载任务失败，0~100为具体进度，如果下载过程中关闭了进度页面，此状态将不会再跟新）
 
 # 下载文件（传入url 和 md5）
-function downloader() {
+downloader() {
     local downloadUrl="$1"
     local md5="$2"
     downloader_result="" # 清空变量，后续此变量将用于存放文件下载后的存储路径
@@ -46,7 +46,7 @@ function downloader() {
     # --ez autoClose autoClose 【true/false】 是否下载完成后自动关闭界面
     # --es taskId 【taskId】下载任务的唯一标识 用于跟踪进度
 
-    activity="$PACKAGE_NAME/com.krscripts.app.ActionPageOnline"
+    activity="$PACKAGE_NAME/com.krscripts.app.DownloaderActivity"
     am start -a android.intent.action.MAIN -n "$activity" --es downloadUrl "$downloadUrl" --ez autoClose true --es taskId "$task_id" 1 > /dev/null
 
     # 等待下载完成

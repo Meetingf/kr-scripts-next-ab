@@ -28,29 +28,28 @@
         </action>
 
         <action>
-            <title>调用内置的网页浏览界面下载文件</title>
-            <desc>am start -a android.intent.action.MAIN -n "$activity" --es downloadUrl "$url"
-            </desc>
+            <title>下载文件</title>
+            <desc>内置下载器</desc>
             <script>
                 # intent参数
                 # --es downloadUrl 【url】下载路径
                 # --ez autoClose autoClose 【true/false】 是否下载完成后自动关闭界面
 
-                downloadUrl="https://github.com/termux/termux-app/releases/download/v0.118.3/termux-app_v0.118.3+github-debug_sha256sums"
+                downloadUrl="https://speed.cloudflare.com/__down?during=download&amp;bytes=1024"
                 activity="$PACKAGE_NAME/com.krscripts.app.ActionPageOnline"
                 am start -a android.intent.action.MAIN -n "$activity" --es downloadUrl "$downloadUrl"
             </script>
         </action>
 
         <action>
-            <title>试验* 下载测试2</title>
-            <desc>使用封装的downloader.sh等待下载结果</desc>
+            <title>下载文件</title>
+            <desc>使用自定义包装器处理结果</desc>
             <resource file="file:///android_asset/samples/common/downloader.sh" />
             <script>
                 source $START_DIR/samples/common/downloader.sh
 
-                md5="a45ed6360f2bd56bd9cbcda1693bc237"
-                downloadUrl="https://github.com/termux/termux-app/releases/download/v0.118.3/termux-app_v0.118.3+github-debug_sha256sums"
+                md5="9d0ef2e3d00a0793bd4c5f31b8ad9e8a"
+                downloadUrl="https://speed.cloudflare.com/__down?during=download&amp;bytes=1024"
                 downloader "$downloadUrl" $md5
 
                 if [[ ! "$downloader_result" = "" ]]; then
