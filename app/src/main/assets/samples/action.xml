@@ -40,11 +40,11 @@
 
         <action>
             <title>文本输入</title>
-            <param name="input_text" title="文本框" label="文本" value="文本喵" required="1" />
-            <param name="input_int" label="数字" max="10" min="0" type="int" value="6" required="1" />
+            <param name="input_text" title="文本框" label="文本" value="默认文本喵" />
+            <param name="input_int" label="数字" max="10" min="0" type="int" />
             <set>
                 echo '文本为：' $input_text
-                echo '数值文本为：' $input_int
+                echo '数值为：' $input_int
             </set>
         </action>
 
@@ -63,6 +63,14 @@
             <set>
                 echo '选框数值为：' $input_bool
                 echo '开关数值为：' $input_switch
+            </set>
+        </action>
+
+        <action>
+            <title>要求非空参数</title>
+            <param name="input_text" title="文本框" required="1" placeholder="请输入文本" />
+            <set>
+                echo '文本为：' $input_text
             </set>
         </action>
     </group>

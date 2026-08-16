@@ -3,11 +3,12 @@
     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="0dp"
-    app:boxBackgroundMode="none"
+    app:boxCornerRadiusBottomEnd="16dp"
+    app:boxCornerRadiusBottomStart="16dp"
+    app:boxCornerRadiusTopStart="16dp"
+    app:boxCornerRadiusTopEnd="16dp"
     app:boxStrokeWidth="0dp"
     app:boxStrokeWidthFocused="0dp"
-    app:boxStrokeColor="@android:color/transparent"
     app:hintEnabled="false"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
@@ -18,7 +19,5 @@
         android:layout_height="wrap_content"
         android:textSize="15sp"
         android:inputType="text"
-        android:maxLines="8"
-        android:padding="0dp"
-        android:background="@android:color/transparent" />
+        android:maxLines="8" />
 </com.google.android.material.textfield.TextInputLayout>
