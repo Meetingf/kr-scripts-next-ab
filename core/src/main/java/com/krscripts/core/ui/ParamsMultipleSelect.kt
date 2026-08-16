@@ -31,7 +31,7 @@ class ParamsMultipleSelect(private val actionParamInfo: ActionParamInfo, private
 
         setView(textView, valueView, countView)
 
-        textView.setOnClickListener {
+        layout.setOnClickListener {
             openDialog(textView, valueView, countView)
         }
 
