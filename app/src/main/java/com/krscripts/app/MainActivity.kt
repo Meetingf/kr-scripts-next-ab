@@ -59,7 +59,7 @@ class MainActivity : KrActivity() {
         }
 
         binding.toolbar.apply {
-            setTitle(com.krscripts.app.R.string.app_name)
+            setTitle(R.string.app_name)
             inflateMenu(R.menu.main)
             setOnMenuItemClickListener { menuItem ->
                 onMenuItemSelected(menuItem)

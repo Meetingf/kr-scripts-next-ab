@@ -12,7 +12,6 @@ class ParamsEditText(private var actionParamInfo: ActionParamInfo, private var c
     fun render(): View {
         val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_edit_text, null)
 
-
         layout.findViewById<EditText>(R.id.kr_param_text).run {
             tag = actionParamInfo.name
             if (actionParamInfo.valueFromShell != null)

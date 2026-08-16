@@ -11,10 +11,10 @@ class ListItemAction(context: Context, config: ActionNode) : ListItemClickable(c
 
     init {
         widgetView?.visibility = View.VISIBLE
-        if (config.params != null && config.params!!.size > 0) {
-            widgetView?.setImageDrawable(context.getDrawable(R.drawable.baseline_checklist_24))
+        if (!config.params.isNullOrEmpty()) {
+            widgetView?.setImageResource(R.drawable.baseline_checklist_24)
         } else {
-            widgetView?.setImageDrawable(context.getDrawable(R.drawable.baseline_build_24))
+            widgetView?.setImageResource(R.drawable.baseline_build_24)
         }
     }
 }

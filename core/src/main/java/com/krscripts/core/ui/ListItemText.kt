@@ -3,7 +3,6 @@ package com.krscripts.core.ui
 import android.content.Context
 import android.content.Intent
 import android.graphics.Typeface
-import android.net.Uri
 import android.text.Layout
 import android.text.SpannableString
 import android.text.Spanned
@@ -19,6 +18,7 @@ import android.text.style.UnderlineSpan
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.net.toUri
 import com.krscripts.core.R
 import com.krscripts.core.TryOpenActivity
 import com.krscripts.core.executor.ScriptEnvironment
@@ -33,7 +33,7 @@ class ListItemText(
     private val rowsView = layout.findViewById<TextView?>(R.id.kr_rows)
 
     init {
-        if (config.rows.size > 0 && rowsView != null) {
+        if (config.rows.isNotEmpty() && rowsView != null) {
             rowsView.movementMethod = LinkMovementMethod.getInstance() // 不设置 ClickableSpan 点击没反应
             // rowsView.setOnClickListener {}
 
@@ -56,10 +56,10 @@ class ListItemText(
                         override fun onClick(widget: View) {
                             if (row.link.isNotEmpty()) {
                                 try {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(row.link))
+                                    val intent = Intent(Intent.ACTION_VIEW, row.link.toUri())
                                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                     context.startActivity(intent)
-                                } catch (ex: Exception) {
+                                } catch (_: Exception) {
                                     Toast.makeText(context, context.getString(R.string.kr_slice_activity_fail), Toast.LENGTH_SHORT).show()
                                 }
                             }
