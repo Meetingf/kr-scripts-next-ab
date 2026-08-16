@@ -18,7 +18,11 @@ class ListItemSwitch(
     private var switchView: MaterialSwitch? = layout.findViewById(R.id.kr_switch)
     private var onCheckedChangeListener: OnCheckedChangeListener? = null
     private var iconView: ShapeableImageView? = layout.findViewById(R.id.kr_icon)
-    private var isAdjusting: Boolean = false
+    var isAdjusting: Boolean = false
+
+    fun setEnabled(enabled: Boolean) {
+        switchView?.post { switchView?.isEnabled = enabled }
+    }
 
     fun setOnCheckedChangeListener(listener: OnCheckedChangeListener): ListItemSwitch {
         this.onCheckedChangeListener = listener

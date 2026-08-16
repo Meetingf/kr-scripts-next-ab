@@ -4,8 +4,8 @@
         <switch>
             <title>测试开关</title>
             <desc>测试开关功能</desc>
-            <get>getprop test.switch.aaa</get>
-            <set>setprop test.switch.aaa $state</set>
+            <get>getprop app.switch.a</get>
+            <set>setprop app.switch.a $state</set>
         </switch>
     </group>
 
@@ -15,23 +15,37 @@
             这样，执行set指定的脚本时，就会隐藏日志输出界面
         -->
         <switch shell="hidden">
-            <title>测试开关2</title>
+            <title>隐藏日志</title>
             <desc>测试开关功能（设置 shell="hidden" 不显示日志输出界面）</desc>
-            <get>getprop test.switch.bbb</get>
-            <set>setprop test.switch.bbb $state</set>
+            <get>getprop app.switch.b</get>
+            <set>setprop app.switch.b $state</set>
         </switch>
 
-        <!--
-
-        -->
         <switch shell="hidden">
-            <title>测试开关3</title>
+            <title>输出错误内容</title>
             <desc>设置shell="hidden"后，错误信息依然会被提示</desc>
-            <summary sh="echo '嗯哼'" />
-            <get>getprop test.switch.bbb</get>
+            <get>getprop app.switch.c</get>
             <set>
-                setprop test.switch.bbb $state
+                setprop app.switch.c $state
                 echo '我就是想显示个错误，咋的' 1>&amp;2</set>
         </switch>
+
+        <switch shell="hidden">
+            <title>耗时操作</title>
+            <desc>开关将会在命令运行期间禁用</desc>
+            <get>getprop app.switch.d</get>
+            <set>
+                sleep 2
+                setprop app.switch.d $state
+            </set>
+        </switch>
+
+        <switch shell="hidden">
+            <title>自动关闭</title>
+            <desc>好玩儿</desc>
+            <get>getprop app.switch.e</get>
+            <set>setprop app.switch.e 0</set>
+        </switch>
+
     </group>
 </config>
