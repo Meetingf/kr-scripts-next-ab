@@ -4,7 +4,7 @@
         <page html="https://buylan01.github.io/kr-scripts-next" title="Kr Scripts Next 开发文档" />
     </group>
 
-    <group title="无关紧要的测试代码">
+    <group title="动态页面">
         <resource dir="file:///android_asset/samples/thermal" />
         <resource dir="file:///android_asset/samples/kt" />
 
@@ -30,26 +30,13 @@
             config-sh="echo $START_DIR/samples/relative_path2/page.xml" />
     </group>
 
-    <group title="Ansole 联动">
-        <action title="打开命令行">
-            <resource dir="samples/ansole" />
-            <script>
-                test_sh="$START_DIR/samples/ansole/test.sh"
-                if [[ `pm list package com.romide.terminal` != "" ]]; then
-                    am start -a jackpal.androidterm.RUN_SCRIPT --es cmd "su -c $test_sh" --es title "PIO > Ansole" --activity-multiple-task
-                else
-                    echo '你没有安装可用的Ansole'
-                fi
-            </script>
-        </action>
-    </group>
-
     <group title="其他">
         <action>
             <title>引用 Arsc 资源</title>
             <desc sh="echo '@string:resource_reference_desc'" />
             <set>
-                echo "内容：@string/appliction_name"
+                echo "格式：@string/xxx"
+                echo "输出：@string/app_name"
             </set>
         </action>
     </group>

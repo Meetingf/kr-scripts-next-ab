@@ -32,10 +32,11 @@
         </handler>
     </menu>
 
-    <group title="运行环境测试">
+    <group title="运行命令">
         <page config="samples/env/env.xml" title="环境测试">
             <resource dir="file:///android_asset/samples/env" />
         </page>
+        <page config="samples/scripts.xml" title="命令" />
     </group>
 
     <group title="节点">
@@ -49,27 +50,8 @@
     <group title="属性">
         <page config="samples/shortcut.xml" title="快捷方式" />
         <page config="samples/reload.xml" title="节点刷新" />
-        <page config="samples/bg_task/bg_task.xml" title="后台任务" />
         <page config="samples/limit.xml" title="功能限制" />
         <page config="samples/icons.xml" title="图标与图片" />
-        <action title="控制进度条">
-            <script>
-                echo progress:[0/100]
-                echo 第一步
-                sleep 1
-                echo progress:[13/100]
-                echo 第二步
-                sleep 1
-                echo progress:[66/100]
-                echo 第三步
-                sleep 1
-                echo progress:[85/100]
-                echo 最后一步
-                sleep 1
-                echo 好了
-                echo progress:[100/100]
-            </script>
-        </action>
     </group>
 
     <group title="Web引擎">

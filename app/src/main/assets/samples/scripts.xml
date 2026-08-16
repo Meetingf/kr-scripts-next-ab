@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<config>
+    <group title="运行命令">
+        <action title="运行命令">
+            <script>
+                echo 开始~
+                sleep 5
+                exit 0
+            </script>
+        </action>
+        <action title="运行命令" desc="运行时禁止中断" interruptible="false">
+            <script>
+                echo 开始~
+                sleep 4
+                exit 0
+            </script>
+        </action>
+        <action title="控制进度条">
+            <script>
+                echo progress:[0/100]
+                echo 第一步
+                sleep 1
+                echo progress:[13/100]
+                echo 第二步
+                sleep 1
+                echo progress:[66/100]
+                echo 第三步
+                sleep 1
+                echo progress:[85/100]
+                echo 最后一步
+                sleep 1
+                echo 好了
+                echo progress:[100/100]
+            </script>
+        </action>
+    </group>
+
+    <resource dir="file:///android_asset/samples/bg_task" />
+
+    <group title="在后台运行任务">
+        <action shell="bg-task">
+            <title>后台任务测试</title>
+            <desc>后台任务点击后不显示日志界面，而是在通知栏中显示</desc>
+            <set>
+                echo '进度1/5'; echo "progress:[1/6]"; sleep 5;
+                echo '进度2/5'; echo "progress:[2/6]"; sleep 5;
+                echo '进度3/5'; echo "progress:[3/6]"; sleep 5;
+                echo '进度4/5'; echo "progress:[4/6]"; sleep 5;
+                echo '进度5/5'; echo "progress:[5/6]"; sleep 5;
+                echo '操作完成！'; echo "progress:[6/6]"
+            </set>
+        </action>
+
+        <action>
+            <title>Activity 监视器</title>
+            <desc>记录当前 Activity</desc>
+            <set>$PAGE_WORK_DIR/bg_task/activity_monitor.sh</set>
+        </action>
+
+        <action shell="bg-task">
+            <title>Activity 监视器 (后台)</title>
+            <desc>记录当前 Activity, 并在后台运行</desc>
+            <set>$PAGE_WORK_DIR/bg_task/activity_monitor.sh</set>
+        </action>
+    </group>
+
+    <group title="Ansole 联动">
+        <action title="打开命令行">
+            <resource dir="samples/ansole" />
+            <script>
+                test_sh="$START_DIR/samples/ansole/test.sh"
+                if [[ `pm list package com.romide.terminal` != "" ]]; then
+                am start -a jackpal.androidterm.RUN_SCRIPT --es cmd "su -c $test_sh" --es title "PIO > Ansole" --activity-multiple-task
+                else
+                echo '你没有安装可用的Ansole'
+                fi
+            </script>
+        </action>
+    </group>
+</config>
