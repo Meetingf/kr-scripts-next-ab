@@ -9,7 +9,16 @@ import java.io.File
 import java.io.InputStream
 
 class PathAnalysis(private var context: Context, private var parentDir: String = "") {
-    private val ASSETS_FILE = "file:///android_asset/"
+
+    companion object {
+        private const val ASSETS_FILE = "file:///android_asset/"
+    }
+
+    init {
+        if (parentDir.isEmpty()) {
+            parentDir = ASSETS_FILE
+        }
+    }
 
     // 解析路径时自动获得
     private var currentAbsPath: String = ""
