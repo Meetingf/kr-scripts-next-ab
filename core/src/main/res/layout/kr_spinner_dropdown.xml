@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/text"
+    android:ellipsize="marquee"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="12dp"
-    style="?actionMenuTextAppearance" />
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="13dp"
+    style="?textAppearanceBodyLarge" />

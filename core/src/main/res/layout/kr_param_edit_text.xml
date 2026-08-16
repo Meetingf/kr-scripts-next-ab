@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.textfield.TextInputLayout android:id="@+id/textInputLayout"
-    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    app:boxCornerRadiusBottomEnd="16dp"
-    app:boxCornerRadiusBottomStart="16dp"
-    app:boxCornerRadiusTopStart="16dp"
-    app:boxCornerRadiusTopEnd="16dp"
     app:boxStrokeWidth="0dp"
     app:boxStrokeWidthFocused="0dp"
     app:hintEnabled="false"
+    app:endIconMinSize="32dp"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
@@ -19,5 +16,7 @@
         android:layout_height="wrap_content"
         android:textSize="15sp"
         android:inputType="text"
-        android:maxLines="8" />
+        android:maxLines="8"
+        android:paddingTop="0dp"
+        android:paddingBottom="0dp" />
 </com.google.android.material.textfield.TextInputLayout>

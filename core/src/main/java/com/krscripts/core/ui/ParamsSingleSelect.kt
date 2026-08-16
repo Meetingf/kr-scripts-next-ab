@@ -4,38 +4,65 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.ArrayAdapter
 import androidx.fragment.app.FragmentActivity
+import com.google.android.material.textfield.TextInputLayout
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
 import com.krscripts.core.model.SelectItem
+import com.krscripts.core.ui.ActionParamsLayoutRender.Companion.getParamOptionsCurrentIndex
 
 class ParamsSingleSelect(
         private var actionParamInfo: ActionParamInfo,
         private var context: FragmentActivity
 ) {
     val options = actionParamInfo.optionsFromShell!!
-    var selectedIndex = ActionParamsLayoutRender.getParamOptionsCurrentIndex(actionParamInfo, options) // 获取当前选中项索引
+    var autoCompleteTextView: KrAutoCompleteTextView? = null
 
     fun render(): View {
         val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_spinner, null)
-        val spinner = layout.findViewById<KrSpinner>(R.id.kr_param_spinner)
+        val inputLayout = layout.findViewById<TextInputLayout>(R.id.textInputLayout)
+        autoCompleteTextView = layout.findViewById(R.id.kr_param_autoCompleteTextView)
 
-        spinner.run {
-            onDialogOpen = {
-                openSingleSelectDialog { setSelection(it) }
-            }
-            showMenuAsDialog = options.size >= 5
+        autoCompleteTextView?.run {
+
+            // User input by keyboard wouldn't be saved.
+
             tag = actionParamInfo.name
-
-            if (!actionParamInfo.value.isNullOrEmpty() && selectedIndex > -1 && selectedIndex < options.size) {
-                setSelection(selectedIndex)
-            } else {
-                println("ree")
-            }
-
-            adapter = ArrayAdapter(context, R.layout.kr_spinner_default, R.id.text, options).apply {
-                setDropDownViewResource(R.layout.kr_spinner_dropdown)
-            }
             isEnabled = !actionParamInfo.readonly
+            hint = actionParamInfo.placeholder.ifEmpty { "请选择" }
+
+            val initialIndex = getParamOptionsCurrentIndex(actionParamInfo, options)
+            if (initialIndex > -1 && initialIndex < options.size) {
+                val initialOption = options[initialIndex]
+                setText(initialOption.title, false)
+                selectedValue = initialOption.value
+            } else {
+                selectedValue = null
+            }
+
+            showMenuAsDialog = options.size >= 5
+            if (showMenuAsDialog) {
+                setOnClickListener {
+                    openSingleSelectDialog { index ->
+                        val selectedItem = options[index]
+                        setText(selectedItem.title, false)
+                        selectedValue = selectedItem.value
+                    }
+                }
+                inputLayout.endIconMode = TextInputLayout.END_ICON_CUSTOM
+                inputLayout.setEndIconDrawable(R.drawable.baseline_chevron_right_24)
+            } else {
+                setOnItemClickListener { _, _, position, _ ->
+                    selectedValue = options[position].value
+                }
+
+                val adapter = ArrayAdapter(
+                    context,
+                    R.layout.kr_spinner_dropdown,
+                    options
+                )
+
+                setAdapter(adapter)
+            }
         }
 
         return layout
@@ -47,12 +74,11 @@ class ParamsSingleSelect(
         DialogItemChooser(ArrayList(options.mapIndexed{ index, item->
             SelectItem().apply {
                 title = item.title
-                selected = index == selectedIndex
+                selected = item.value == autoCompleteTextView?.selectedValue
             }
         }), false, object : DialogItemChooser.Callback {
             override fun onConfirm(selected: List<SelectItem>, status: BooleanArray) {
-                selectedIndex = status.indexOf(true)
-                onConfirm(selectedIndex)
+                onConfirm(status.indexOf(true))
             }
         }).show(context.supportFragmentManager, "params-single-select")
     }

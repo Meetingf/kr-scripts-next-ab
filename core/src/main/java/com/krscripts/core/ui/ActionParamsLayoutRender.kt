@@ -8,7 +8,6 @@ import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.Spinner
 import android.widget.TextView
 import androidx.core.graphics.toColorInt
 import androidx.fragment.app.FragmentActivity
@@ -208,6 +207,10 @@ class ActionParamsLayoutRender(private var linearLayout: LinearLayout, activity:
             when (
                 val view = linearLayout.findViewWithTag<View>(actionParamInfo.name)
             ) {
+                is KrAutoCompleteTextView -> {
+                    actionParamInfo.value = view.selectedValue ?: ""
+                }
+
                 is EditText -> {
                     val text = view.text.toString()
                     if (text.isNotEmpty()) {
@@ -252,18 +255,6 @@ class ActionParamsLayoutRender(private var linearLayout: LinearLayout, activity:
 
                 is TextView -> {
                     actionParamInfo.value = view.text.toString()
-                }
-
-                is Spinner -> {
-                    val item = view.selectedItem
-                    when {
-                        item is SelectItem -> {
-                            actionParamInfo.value = item.value
-                        }
-
-                        item != null -> actionParamInfo.value = item.toString()
-                        else -> actionParamInfo.value = ""
-                    }
                 }
             }
 
