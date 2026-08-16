@@ -3,6 +3,7 @@
     android:id="@+id/kr_param_spinner"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:paddingStart="8dp"
     android:hint="@string/kr_please_select"
     android:popupBackground="?popupMenuBackground"
     style="@style/Widget.AppCompat.Spinner.DropDown" />

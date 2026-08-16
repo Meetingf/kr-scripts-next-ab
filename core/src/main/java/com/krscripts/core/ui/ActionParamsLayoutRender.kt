@@ -6,6 +6,7 @@ import android.view.View
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
@@ -161,6 +162,7 @@ class ActionParamsLayoutRender(private var linearLayout: LinearLayout, activity:
             }
         } else {
             layout.findViewById<TextView>(R.id.kr_param_label).visibility = View.GONE
+            layout.findViewById<ImageView>(R.id.kr_param_label_divier).visibility = View.GONE
         }
 
 

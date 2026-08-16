@@ -36,13 +36,18 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="10dp"
-            android:drawablePadding="8dp"
             android:ellipsize="marquee"
             android:marqueeRepeatLimit="marquee_forever"
             android:maxLines="2"
             android:minWidth="70dp"
-            android:textStyle="normal"
-            app:drawableRightCompat="@drawable/kr_param_label" />
+            android:textStyle="normal" />
+
+        <ImageView
+            android:id="@+id/kr_param_label_divier"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="8dp"
+            android:src="@drawable/kr_param_label" />
 
         <FrameLayout
             android:id="@+id/kr_param_input"
