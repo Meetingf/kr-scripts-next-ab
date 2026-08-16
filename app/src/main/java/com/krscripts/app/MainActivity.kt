@@ -40,6 +40,7 @@ class MainActivity : KrActivity() {
 
     private var krScriptConfig = KrScriptConfig()
     lateinit var binding: ActivityMainBinding
+    private val pageConfigCache = mutableMapOf<PageNode, ConfigNode>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -79,39 +80,40 @@ class MainActivity : KrActivity() {
 
     private suspend fun buildNavgationMenu(pageConfigs: List<PageNode>) = withContext(Dispatchers.Main) {
 
-        binding.viewPager.apply {
-            adapter = PageFragmentAdapter(this@MainActivity, pageConfigs)
-            offscreenPageLimit = 2
-        }
-
         val menu = binding.bottomNavView.menu
         menu.clear()
 
         pageConfigs.forEachIndexed { index, page ->
 
-            getConfig(page)?.let { config ->
+            val config = getConfig(page) ?: return@forEachIndexed
 
-                config.pageHandlerSh.takeIf { it.isNotEmpty() }?.let {
-                    menuHandler = it
-                }
+            pageConfigCache[page] = config
 
-                createMenu(binding.toolbar.menu, binding.fab, config.pageMenuOptions)
+            config.pageHandlerSh.takeIf { it.isNotEmpty() }?.let {
+                menuHandler = it
+            }
 
-                val menuName =
-                    config.content.lastOrNull()?.title?.takeIf { it.isNotEmpty() && config.content.last() is NavNode }
-                        ?: page.pageConfigPath.substringAfterLast('/')
+            createMenu(binding.toolbar.menu, binding.fab, config.pageMenuOptions)
 
-                menu.add(menuName).apply {
-                    icon = ContextCompat.getDrawable(
-                        this@MainActivity,
-                        R.drawable.baseline_bookmark_24
-                    )!!
-                    setOnMenuItemClickListener {
-                        binding.viewPager.setCurrentItem(index, true)
-                        false
-                    }
+            val menuName =
+                config.content.lastOrNull()?.title?.takeIf { it.isNotEmpty() && config.content.last() is NavNode }
+                    ?: page.pageConfigPath.substringAfterLast('/')
+
+            menu.add(menuName).apply {
+                icon = ContextCompat.getDrawable(
+                    this@MainActivity,
+                    R.drawable.baseline_bookmark_24
+                )!!
+                setOnMenuItemClickListener {
+                    binding.viewPager.setCurrentItem(index, true)
+                    false
                 }
             }
+        }
+
+        binding.viewPager.apply {
+            adapter = PageFragmentAdapter(this@MainActivity, pageConfigs, pageConfigCache)
+            offscreenPageLimit = 2
         }
 
         binding.viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
@@ -227,7 +229,8 @@ class MainActivity : KrActivity() {
 
     inner class PageFragmentAdapter(
         activity: FragmentActivity,
-        private val pages: List<PageNode>
+        private val pages: List<PageNode>,
+        private val configCache: Map<PageNode, ConfigNode>
     ) : FragmentStateAdapter(activity) {
 
         private val sessionId: Long = System.nanoTime()
@@ -244,7 +247,7 @@ class MainActivity : KrActivity() {
 
         override fun createFragment(position: Int): Fragment {
             val page = pages[position]
-            val items = getConfig(page) ?: ConfigNode()
+            val items = configCache[page] ?: getConfig(page) ?: ConfigNode()
             return ActionListFragment.create(items.content, getKrScriptActionHandler(page, position), null, false)
         }
     }
