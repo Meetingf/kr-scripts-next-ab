@@ -15,7 +15,7 @@ import androidx.core.app.NotificationCompat
 import com.krscripts.core.executor.ShellExecutor
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.model.ShellHandlerBase
-import com.krscripts.core.ui.DialogHelper
+import com.krscripts.core.ui.dialog.DialogHelper
 import java.util.concurrent.CopyOnWriteArrayList
 
 class BgTaskThread(private var process: Process) : Thread() {

@@ -14,10 +14,10 @@ import com.krscripts.core.R
 import com.krscripts.core.config.IconPathAnalysis
 import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.RunnableNode
-import com.krscripts.core.ui.DialogHelper
-import com.krscripts.core.ui.DialogLogFragment
-import com.krscripts.core.ui.ParamsFileChooserRender
-import com.krscripts.core.ui.ProgressBarDialog
+import com.krscripts.core.ui.dialog.DialogHelper
+import com.krscripts.core.ui.dialog.DialogLogFragment
+import com.krscripts.core.ui.dialog.ProgressBarDialog
+import com.krscripts.core.ui.param.FileChooserRender
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -26,7 +26,7 @@ open class KrActivity: AppCompatActivity() {
     protected val progressBarDialog = ProgressBarDialog(this)
     protected var menuExtra: MutableMap<Int, PageMenuOption> = mutableMapOf()
     protected var menuHandler: String? = null
-    protected var fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface? = null
+    protected var fileSelectorInterface: FileChooserRender.FileSelectedInterface? = null
 
     protected fun onMenuItemClick(
         menuOption: PageMenuOption
@@ -92,7 +92,7 @@ open class KrActivity: AppCompatActivity() {
     }
 
     protected fun menuItemChooseFile(menuOption: PageMenuOption) {
-        fileSelectorInterface = object: ParamsFileChooserRender.FileSelectedInterface{
+        fileSelectorInterface = object: FileChooserRender.FileSelectedInterface{
             override fun onFileSelected(path: String?) {
                 if (path != null) {
                     lifecycleScope.launch(Dispatchers.Main) {
@@ -116,9 +116,9 @@ open class KrActivity: AppCompatActivity() {
 
             override fun type(): Int {
                 return when(menuOption.type) {
-                    "folder" -> ParamsFileChooserRender.FileSelectedInterface.TYPE_FOLDER
-                    "file" -> ParamsFileChooserRender.FileSelectedInterface.TYPE_FILE
-                    else -> ParamsFileChooserRender.FileSelectedInterface.TYPE_FILE
+                    "folder" -> FileChooserRender.FileSelectedInterface.TYPE_FOLDER
+                    "file" -> FileChooserRender.FileSelectedInterface.TYPE_FILE
+                    else -> FileChooserRender.FileSelectedInterface.TYPE_FILE
                 }
             }
         }

@@ -17,7 +17,7 @@ import com.krscripts.app.databinding.ActivitySplashBinding
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.shell.KeepShellPublic
 import com.krscripts.core.shell.ShellExecutor
-import com.krscripts.core.ui.DialogHelper
+import com.krscripts.core.ui.dialog.DialogHelper
 import com.krscripts.core.util.PermissionUtil.checkAccessFiles
 import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
 import kotlinx.coroutines.Dispatchers

@@ -11,8 +11,8 @@ import android.widget.TextView
 import android.widget.Toast
 import com.google.android.material.snackbar.Snackbar
 import com.krscripts.app.R
-import com.krscripts.core.ui.DialogHelper
-import com.krscripts.core.ui.ProgressBarDialog
+import com.krscripts.core.ui.dialog.DialogHelper
+import com.krscripts.core.ui.dialog.ProgressBarDialog
 import java.io.File
 import java.text.Collator
 import java.util.Locale

@@ -27,18 +27,18 @@ import com.krscripts.app.util.handleFileSelectorResult
 import com.krscripts.core.R
 import com.krscripts.core.WebViewInjector
 import com.krscripts.core.model.PageNode
-import com.krscripts.core.ui.DialogHelper
 import com.krscripts.core.ui.PageMenuLoader
-import com.krscripts.core.ui.ParamsFileChooserRender
-import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface
-import com.krscripts.core.ui.ParamsFileChooserRender.FileSelectedInterface.Companion.TYPE_FILE
+import com.krscripts.core.ui.dialog.DialogHelper
+import com.krscripts.core.ui.param.FileChooserRender
+import com.krscripts.core.ui.param.FileChooserRender.FileSelectedInterface
+import com.krscripts.core.ui.param.FileChooserRender.FileSelectedInterface.Companion.TYPE_FILE
 
 class ActionPageOnline : KrActivity() {
 
     private lateinit var binding: ActivityActionPageOnlineBinding
     private var pageConfigCompat: PageNode? = null
 
-    private var fileChooser = object : ParamsFileChooserRender.FileChooserInterface {
+    private var fileChooser = object : FileChooserRender.FileChooserInterface {
         override fun openFileChooser(fileSelectedInterface: FileSelectedInterface): Boolean {
             fileSelectorInterface = fileSelectedInterface
             return chooseFilePath(fileSelectedInterface)

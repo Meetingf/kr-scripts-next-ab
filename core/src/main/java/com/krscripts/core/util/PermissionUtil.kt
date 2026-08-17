@@ -12,7 +12,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.core.R
-import com.krscripts.core.ui.DialogHelper
+import com.krscripts.core.ui.dialog.DialogHelper
 
 object PermissionUtil {
 

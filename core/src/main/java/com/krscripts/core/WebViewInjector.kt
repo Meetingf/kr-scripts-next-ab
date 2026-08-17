@@ -15,7 +15,7 @@ import com.krscripts.core.model.NodeInfoBase
 import com.krscripts.core.model.ShellHandlerBase
 import com.krscripts.core.shell.KeepShellPublic.checkRoot
 import com.krscripts.core.shell.ShellExecutor
-import com.krscripts.core.ui.DialogHelper
+import com.krscripts.core.ui.dialog.DialogHelper
 import com.krscripts.core.util.PermissionUtil
 import org.json.JSONObject
 import java.io.DataOutputStream

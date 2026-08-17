@@ -13,7 +13,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.krscripts.app.databinding.ActivityFileSelectorBinding
 import com.krscripts.app.ui.AdapterFileSelector
-import com.krscripts.core.ui.ProgressBarDialog
+import com.krscripts.core.ui.dialog.ProgressBarDialog
 import com.krscripts.core.util.PermissionUtil.checkAccessFiles
 import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
 import java.io.File

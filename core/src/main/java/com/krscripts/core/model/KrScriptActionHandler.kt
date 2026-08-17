@@ -2,10 +2,10 @@ package com.krscripts.core.model
 
 import android.content.Intent
 import android.view.View
-import com.krscripts.core.ui.ParamsFileChooserRender
+import com.krscripts.core.ui.param.FileChooserRender
 
 interface KrScriptActionHandler {
-    fun openFileChooser(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean
+    fun openFileChooser(fileSelectedInterface: FileChooserRender.FileSelectedInterface): Boolean
     fun onSubPageClick(pageNode: PageNode)
     fun onActionCompleted(runnableNode: RunnableNode)
     fun createShortcut(clickableNode: ClickableNode, createShortcutHandler: CreateShortcutHandler)

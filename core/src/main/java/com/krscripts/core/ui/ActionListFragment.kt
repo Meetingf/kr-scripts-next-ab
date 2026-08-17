@@ -34,6 +34,13 @@ import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.model.SelectItem
 import com.krscripts.core.model.SwitchNode
 import com.krscripts.core.shortcut.ActionShortcutManager
+import com.krscripts.core.ui.dialog.DialogHelper
+import com.krscripts.core.ui.dialog.DialogItemChooser
+import com.krscripts.core.ui.dialog.DialogLogFragment
+import com.krscripts.core.ui.dialog.ProgressBarDialog
+import com.krscripts.core.ui.param.FileChooserRender
+import com.krscripts.core.ui.param.ParamLayoutRender
+import com.krscripts.core.ui.widget.ListItemGroup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -309,7 +316,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
             // 获取可选项（合并options-sh和静态options的结果）
             val options = getParamOptions(paramInfo, item)
             val optionsSorted = (if (options != null) {
-                ActionParamsLayoutRender.setParamOptionsSelectedStatus(paramInfo, options)
+                ParamLayoutRender.setParamOptionsSelectedStatus(paramInfo, options)
             } else {
                 null
             })
@@ -318,19 +325,37 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                 progressBarDialog.hideDialog()
 
                 if (optionsSorted != null) {
-                    DialogItemChooser(optionsSorted, item.multiple, object : DialogItemChooser.Callback {
-                        override fun onConfirm(selected: List<SelectItem>, status: BooleanArray) {
-                            if (item.multiple) {
-                                pickerExecute(item, (selected.map { it.value }).joinToString(item.separator), onCompleted)
-                            } else {
-                                if (selected.isNotEmpty()) {
-                                    pickerExecute(item, selected[0].value.toString(), onCompleted)
+                    DialogItemChooser(
+                        optionsSorted,
+                        item.multiple,
+                        object : DialogItemChooser.Callback {
+                            override fun onConfirm(
+                                selected: List<SelectItem>,
+                                status: BooleanArray
+                            ) {
+                                if (item.multiple) {
+                                    pickerExecute(
+                                        item,
+                                        (selected.map { it.value }).joinToString(item.separator),
+                                        onCompleted
+                                    )
                                 } else {
-                                    Toast.makeText(context, getString(R.string.picker_select_none), Toast.LENGTH_SHORT).show()
+                                    if (selected.isNotEmpty()) {
+                                        pickerExecute(
+                                            item,
+                                            selected[0].value.toString(),
+                                            onCompleted
+                                        )
+                                    } else {
+                                        Toast.makeText(
+                                            context,
+                                            getString(R.string.picker_select_none),
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                    }
                                 }
                             }
-                        }
-                    }).show(requireActivity().supportFragmentManager, "picker-item-chooser")
+                        }).show(requireActivity().supportFragmentManager, "picker-item-chooser")
                 } else {
                     Toast.makeText(context, getString(R.string.picker_not_item), Toast.LENGTH_SHORT).show()
                 }
@@ -404,11 +429,11 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                         progressBarDialog.showDialog(
                             requireContext().getString(R.string.kr_params_render)
                         )
-                        val render = ActionParamsLayoutRender(linearLayout, requireActivity())
+                        val render = ParamLayoutRender(linearLayout, requireActivity())
                         render.renderList(
                             actionParamInfos,
-                            object : ParamsFileChooserRender.FileChooserInterface {
-                                override fun openFileChooser(fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface): Boolean {
+                            object : FileChooserRender.FileChooserInterface {
+                                override fun openFileChooser(fileSelectedInterface: FileChooserRender.FileSelectedInterface): Boolean {
                                     return if (krScriptActionHandler == null) {
                                         false
                                     } else {

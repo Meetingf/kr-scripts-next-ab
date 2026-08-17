@@ -7,7 +7,7 @@ import android.net.Uri
 import android.widget.Toast
 import com.krscripts.app.ActivityFileSelector
 import com.krscripts.core.shared.FilePathResolver
-import com.krscripts.core.ui.ParamsFileChooserRender
+import com.krscripts.core.ui.param.FileChooserRender
 
 private fun Activity.startFileSelector(extension: String? = null, mode: Int = ActivityFileSelector.MODE_FILE) {
     try {
@@ -21,10 +21,10 @@ private fun Activity.startFileSelector(extension: String? = null, mode: Int = Ac
 }
 
 fun Activity.chooseFilePath(
-    fileSelectedInterface: ParamsFileChooserRender.FileSelectedInterface
+    fileSelectedInterface: FileChooserRender.FileSelectedInterface
 ): Boolean {
     return try {
-        if (fileSelectedInterface.type() == ParamsFileChooserRender.FileSelectedInterface.TYPE_FOLDER) {
+        if (fileSelectedInterface.type() == FileChooserRender.FileSelectedInterface.TYPE_FOLDER) {
             this.startFileSelector(mode = ActivityFileSelector.MODE_FOLDER)
         } else {
             val suffix = fileSelectedInterface.suffix()
@@ -53,7 +53,7 @@ fun handleFileSelectorResult(
     resultCode: Int,
     requestCode: Int,
     data: Intent?,
-    fileSelectorInterface: ParamsFileChooserRender.FileSelectedInterface?,
+    fileSelectorInterface: FileChooserRender.FileSelectedInterface?,
     useUri: Boolean = false
 ) {
     if (resultCode != Activity.RESULT_OK) return
