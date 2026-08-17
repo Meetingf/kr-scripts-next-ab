@@ -9,40 +9,52 @@ import com.google.android.material.slider.RangeSlider
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
 
-class ParamsSeekBar(private var actionParamInfo: ActionParamInfo, private var context: Context) {
-    fun render(): View {
+class ParamsSeekBar(
+    override var actionParamInfo: ActionParamInfo,
+    private var context: Context
+): ParamRenderer {
+    private var rangeSlider: RangeSlider? = null
+
+    override fun getValue(): String? {
+        return rangeSlider?.values?.firstOrNull()?.toInt()?.toString()
+    }
+
+    override fun render(): View {
         val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_seekbar, null)
-        val rangeSlider = layout.findViewById<RangeSlider>(R.id.kr_param_seekbar)
+        rangeSlider = layout.findViewById(R.id.kr_param_seekbar)
 
         val minValue = actionParamInfo.min.toFloat()
         val maxValue = actionParamInfo.max.toFloat()
-        rangeSlider.valueFrom = minValue
-        rangeSlider.valueTo = maxValue
-        rangeSlider.stepSize = 1.0f
 
-        val initialValue = getInitialValue(minValue, maxValue)
-        rangeSlider.values = listOf(initialValue)
-        rangeSlider.tag = actionParamInfo.name
+        rangeSlider?.run {
+            valueFrom = minValue
+            valueTo = maxValue
+            stepSize = 1.0f
 
-        val minusBtn = layout.findViewById<ImageButton>(R.id.kr_param_seekbar_minus)
-        val plusBtn = layout.findViewById<ImageButton>(R.id.kr_param_seekbar_plus)
-        val textView = layout.findViewById<TextView>(R.id.kr_param_seekbar_value)
-        textView.text = formatValue(initialValue)
+            val initialValue = getInitialValue(minValue, maxValue)
+            values = listOf(initialValue)
+            tag = actionParamInfo.name
 
-        rangeSlider.addOnChangeListener { _, value, _ ->
-            textView.text = formatValue(value)
-        }
+            val minusBtn = layout.findViewById<ImageButton>(R.id.kr_param_seekbar_minus)
+            val plusBtn = layout.findViewById<ImageButton>(R.id.kr_param_seekbar_plus)
+            val textView = layout.findViewById<TextView>(R.id.kr_param_seekbar_value)
+            textView.text = formatValue(initialValue)
 
-        minusBtn.setOnClickListener {
-            val current = rangeSlider.values[0]
-            if (current > minValue) {
-                rangeSlider.values = listOf(current - 1)
+            addOnChangeListener { _, value, _ ->
+                textView.text = formatValue(value)
             }
-        }
-        plusBtn.setOnClickListener {
-            val current = rangeSlider.values[0]
-            if (current < maxValue) {
-                rangeSlider.values = listOf(current + 1)
+
+            minusBtn.setOnClickListener {
+                val current = values[0]
+                if (current > minValue) {
+                    values = listOf(current - 1)
+                }
+            }
+            plusBtn.setOnClickListener {
+                val current = values[0]
+                if (current < maxValue) {
+                    values = listOf(current + 1)
+                }
             }
         }
 

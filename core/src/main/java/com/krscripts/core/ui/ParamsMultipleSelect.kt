@@ -8,13 +8,22 @@ import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
 import com.krscripts.core.model.SelectItem
 
-class ParamsMultipleSelect(private val actionParamInfo: ActionParamInfo, private val context: FragmentActivity) {
+class ParamsMultipleSelect(
+    override var actionParamInfo: ActionParamInfo,
+    private val context: FragmentActivity
+): ParamRenderer {
     private var options: ArrayList<SelectItem>? = null
     private var status = booleanArrayOf()
     private var labels: Array<String?> = arrayOf()
     private var values: Array<String?> = arrayOf()
+    private var inputTextView: TextView? = null
+    private var value: String? = null
 
-    fun render(): View {
+    override fun getValue(): String? {
+        return value
+    }
+
+    override fun render(): View {
         options = actionParamInfo.optionsFromShell
         options?.run {
             labels = map { it.title }.toTypedArray()
@@ -23,22 +32,21 @@ class ParamsMultipleSelect(private val actionParamInfo: ActionParamInfo, private
         }
 
         val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_multiple_select, null)
-        val textView = layout.findViewById<TextView>(R.id.kr_param_label_text)
-        val valueView = layout.findViewById<TextView>(R.id.kr_param_value_text)
+        inputTextView = layout.findViewById(R.id.kr_param_label_text)
         val countView = layout.findViewById<TextView>(R.id.kr_param_count_text)
 
-        valueView.tag = actionParamInfo.name
+        inputTextView?.tag = actionParamInfo.name
 
-        setView(textView, valueView, countView)
+        setView(countView)
 
         layout.setOnClickListener {
-            openDialog(textView, valueView, countView)
+            openDialog(countView)
         }
 
         return layout
     }
 
-    private fun setView(textView: TextView, valueView: TextView, countView: TextView) {
+    private fun setView(countView: TextView) {
         val resultValues = ArrayList<String?>()
         val resultLables = ArrayList<String?>()
         var count = 0
@@ -53,15 +61,12 @@ class ParamsMultipleSelect(private val actionParamInfo: ActionParamInfo, private
                 count++
             }
         }
-        val resultValueStr = "" + resultValues.joinToString(actionParamInfo.separator)
-        val resultLabelStr = if (resultLables.size > 0) "" + resultLables.joinToString("，") else ""
-
-        textView.text = resultLabelStr
-        valueView.text = resultValueStr
+        value = resultValues.joinToString(actionParamInfo.separator)
+        inputTextView?.text = resultLables.joinToString("，")
         countView.text = count.toString()
     }
 
-    private fun openDialog(textView: TextView, valueView: TextView, countView: TextView) {
+    private fun openDialog(countView: TextView) {
         options?.run {
             val items = ArrayList<SelectItem>()
             for (i in labels.indices) {
@@ -70,28 +75,15 @@ class ParamsMultipleSelect(private val actionParamInfo: ActionParamInfo, private
                     selected = status[i]
                 })
             }
-            // TODO:深色模式、浅色模式
+
             DialogItemChooser(ArrayList(items), true, object : DialogItemChooser.Callback {
                 override fun onConfirm(selected: List<SelectItem>, status: BooleanArray) {
                     status.forEachIndexed { index, value ->
                         this@ParamsMultipleSelect.status[index] = value
                     }
-                    setView(textView, valueView, countView)
+                    setView(countView)
                 }
             }).show(context.supportFragmentManager, "params-multi-select")
         }
-        /*
-        options?.run {
-            DialogHelper.animDialog(AlertDialog.Builder(context)
-                    .setTitle(context.getString(R.string.kr_please_select))
-                    .setMultiChoiceItems(labels, status) { _, index, isChecked ->
-                        status[index] = isChecked
-                    }
-                    .setNeutralButton(R.string.btn_cancel) { _, _ -> }
-                    .setPositiveButton(R.string.btn_confirm) { _, _ ->
-                        setView(textView, valueView, countView)
-                    })
-        }
-        */
     }
 }

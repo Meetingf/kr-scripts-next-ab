@@ -6,15 +6,20 @@ import android.view.View
 import android.widget.CheckBox
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
-import java.util.Locale.getDefault
 
-class ParamsCheckbox(private var actionParamInfo: ActionParamInfo, private var context: Context) {
-    fun render(): View {
+class ParamsCheckbox(
+    override var actionParamInfo: ActionParamInfo,
+    private var context: Context
+): ParamRenderer {
+    private var checkbox: CheckBox? = null
+
+    override fun render(): View {
         val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_checkbox, null)
+        checkbox = layout.findViewById(R.id.kr_param_checkbox)
 
-        layout.findViewById<CheckBox>(R.id.kr_param_checkbox).run {
+        checkbox?.run {
             tag = actionParamInfo.name
-            isChecked = getCheckState(actionParamInfo, false)
+            isChecked = getCheckState(actionParamInfo)
             if (!actionParamInfo.label.isNullOrEmpty()) {
                 text = actionParamInfo.label
             }
@@ -23,17 +28,15 @@ class ParamsCheckbox(private var actionParamInfo: ActionParamInfo, private var c
         return layout
     }
 
-    /**
-     * 获取选中状态
-     */
-    private fun getCheckState(actionParamInfo: ActionParamInfo, defaultValue: Boolean): Boolean {
-        if (actionParamInfo.valueFromShell != null) {
-            return actionParamInfo.valueFromShell == "1" || actionParamInfo.valueFromShell!!.lowercase(
-                getDefault()
-            ) == "true"
-        } else if (actionParamInfo.value != null) {
-            return actionParamInfo.value == "1" || actionParamInfo.value!!.lowercase(getDefault()) == "true"
-        }
-        return defaultValue
+    private fun getCheckState(
+        actionParamInfo: ActionParamInfo,
+        defaultValue: Boolean = false
+    ): Boolean {
+        val value = actionParamInfo.valueFromShell ?: actionParamInfo.value ?: return defaultValue
+        return value == "1" || value.lowercase() == "true"
+    }
+
+    override fun getValue(): String? {
+        return if (checkbox?.isChecked == true) "1" else "0"
     }
 }

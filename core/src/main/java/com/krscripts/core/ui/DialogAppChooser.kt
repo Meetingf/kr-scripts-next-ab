@@ -14,7 +14,7 @@ import com.krscripts.core.R
 class DialogAppChooser(
     private var packages: ArrayList<AdapterAppChooser.AppInfo>,
     private val multiple: Boolean = false,
-    private var callback: Callback? = null
+    private var onConfirm: ((List<AdapterAppChooser.AppInfo>) -> Unit)? = null
 ) : DialogFullScreen(R.layout.dialog_item_chooser) {
 
     private var allowAllSelect = true
@@ -74,10 +74,6 @@ class DialogAppChooser(
         gridView.adapter = AdapterAppChooser(gridView.context, filterResult, multiple)
     }
 
-    interface Callback {
-        fun onConfirm(apps: List<AdapterAppChooser.AppInfo>)
-    }
-
     fun setExcludeApps(apps: Array<String>): DialogAppChooser {
         this.excludeApps = apps
         if (this.view != null) {
@@ -97,7 +93,7 @@ class DialogAppChooser(
     private fun onConfirm(gridView: AbsListView) {
         val apps = (gridView.adapter as AdapterAppChooser).getSelectedItems()
 
-        callback?.onConfirm(apps)
+        onConfirm?.invoke(apps)
 
         this.dismiss()
     }

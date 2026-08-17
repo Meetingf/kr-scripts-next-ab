@@ -17,8 +17,8 @@ class ActionParamInfo {
     var valueFromShell: String? = null
     var maxLength = -1 // input only
     var type: String? = null
-    var max: Int = Int.MAX_VALUE // seekbar only
-    var min: Int = Int.MIN_VALUE // seekbar only
+    var max: Int = Int.MAX_VALUE
+    var min: Int = Int.MIN_VALUE
     var required: Boolean = false // 是否是必需的
     var readonly: Boolean = false
     var options: ArrayList<SelectItem>? = null

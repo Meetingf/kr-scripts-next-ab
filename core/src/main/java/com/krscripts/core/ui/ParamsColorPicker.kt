@@ -1,8 +1,8 @@
 package com.krscripts.core.ui
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -12,38 +12,66 @@ import android.widget.EditText
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
+import androidx.core.graphics.drawable.toDrawable
+import androidx.core.graphics.toColorInt
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
-import java.util.Locale.getDefault
 
-class ParamsColorPicker(private val actionParamInfo: ActionParamInfo, private val context: Context) {
-    fun render(): View {
+class ParamsColorPicker(
+    override var actionParamInfo: ActionParamInfo,
+    private val context: Context
+): ParamRenderer {
+
+    private var editText: EditText? = null
+
+    override fun getValue(): String? {
+        try {
+            return editText?.text?.toString()?.toColorInt()?.toString()
+        } catch (_: Exception) {
+            throw Exception(context.getString(R.string.kr_invalid_color))
+        }
+    }
+
+    override fun render(): View {
         val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_color, null)
-        val textView = layout.findViewById<EditText>(R.id.kr_param_color_text)
+        editText = layout.findViewById(R.id.kr_param_color_text)
         val invalidView = layout.findViewById<ImageView>(R.id.kr_param_color_invalid)
         val preview = layout.findViewById<View>(R.id.kr_param_color_preview)
-        textView.tag = actionParamInfo.name
-        textView.addTextChangedListener(object : TextWatcher {
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+
+        editText?.apply {
+            tag = actionParamInfo.name
+            addTextChangedListener(
+                object : TextWatcher {
+                    override fun onTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        before: Int,
+                        count: Int
+                    ) {}
+
+                    override fun beforeTextChanged(
+                        s: CharSequence?,
+                        start: Int,
+                        count: Int,
+                        after: Int
+                    ) {}
+
+                    override fun afterTextChanged(s: Editable?) {
+                        updateColorPreview(editText!!, invalidView, preview, s!!.toString())
+                    }
+                }
+            )
+            if (actionParamInfo.valueFromShell != null) {
+                setText(actionParamInfo.valueFromShell!!)
+            } else if (actionParamInfo.value != null) {
+                setText(actionParamInfo.value!!)
             }
 
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+            updateColorPreview(this, invalidView, preview, this.text.toString())
+            layout.findViewById<View>(R.id.kr_param_color_picker).setOnClickListener {
+                openColorPicker(this, invalidView, preview)
             }
-
-            override fun afterTextChanged(s: Editable?) {
-                updateColorPreview(textView, invalidView, preview, s!!.toString())
-            }
-        })
-        if (actionParamInfo.valueFromShell != null) {
-            textView.setText(actionParamInfo.valueFromShell!!)
-        } else if (actionParamInfo.value != null) {
-            textView.setText(actionParamInfo.value!!)
-        }
-
-        updateColorPreview(textView, invalidView, preview, textView.text.toString())
-        layout.findViewById<View>(R.id.kr_param_color_picker).setOnClickListener {
-            openColorPicker(textView, invalidView, preview)
         }
 
         return layout
@@ -51,14 +79,12 @@ class ParamsColorPicker(private val actionParamInfo: ActionParamInfo, private va
 
     private fun updateColorPreview(textView: TextView, invalidView: ImageView, preview: View, colorStr: String): Boolean {
         try {
-            val color = Color.parseColor(colorStr)
-            // textView.setBackgroundColor(Color.TRANSPARENT)
+            val color = colorStr.toColorInt()
             invalidView.visibility = View.GONE
             preview.visibility = View.VISIBLE
-            preview.background = ColorDrawable(color)
+            preview.background = color.toDrawable()
             return true
-        } catch (ex: Exception) {
-            // textView.setBackgroundColor(Color.RED)
+        } catch (_: Exception) {
             invalidView.visibility = View.VISIBLE
             preview.visibility = View.GONE
             return false
@@ -66,10 +92,10 @@ class ParamsColorPicker(private val actionParamInfo: ActionParamInfo, private va
     }
 
     private fun currentColor(colorStr: CharSequence?): Int {
-        if (colorStr != null && colorStr.isNotEmpty()) {
+        if (!colorStr.isNullOrEmpty()) {
             try {
-                return Color.parseColor(colorStr.toString())
-            } catch (ex: Exception) {
+                return colorStr.toString().toColorInt()
+            } catch (_: Exception) {
             }
         }
         return (0xff000000).toInt()
@@ -94,10 +120,11 @@ class ParamsColorPicker(private val actionParamInfo: ActionParamInfo, private va
         colorPreviewText.text = parseHexStr(alphaBar.progress, redBar.progress, greenBar.progress, blueBar.progress)
 
         val listener = object : SeekBar.OnSeekBarChangeListener {
+            @SuppressLint("SetTextI18n")
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 val color = Color.argb(alphaBar.progress, redBar.progress, greenBar.progress, blueBar.progress)
                 colorPreview.setBackgroundColor(color)
-                colorPreviewText.text = "#" + color.toHexString().uppercase(getDefault())
+                colorPreviewText.text = "#" + color.toHexString().uppercase()
             }
 
             override fun onStartTrackingTouch(seekBar: SeekBar) {}
@@ -109,21 +136,32 @@ class ParamsColorPicker(private val actionParamInfo: ActionParamInfo, private va
         greenBar.setOnSeekBarChangeListener(listener)
         blueBar.setOnSeekBarChangeListener(listener)
 
-        DialogHelper.animDialog(context, MaterialAlertDialogBuilder(context)
-                .setTitle(context.getString(R.string.kr_color_picker))
-                .setView(view)
-                .setPositiveButton(context.getString(R.string.btn_confirm)) { _, which ->
-                    val color = Color.argb(alphaBar.progress, redBar.progress, greenBar.progress, blueBar.progress)
-                    colorPreview.setBackgroundColor(color)
-                    try {
-                        textView.text = parseHexStr(alphaBar.progress, redBar.progress, greenBar.progress, blueBar.progress)
-                        invalidView.visibility = View.GONE
-                        preview.background = ColorDrawable(color)
-                    } catch (ex: Exception) {
-                    }
-                    // Integer.toHexString(color) // "argb(${alphaBar.progress}, ${redBar.progress}, ${greenBar.progress}, ${blueBar.progress}, )"
+        DialogHelper.animDialog(
+            context, MaterialAlertDialogBuilder(context)
+            .setTitle(context.getString(R.string.kr_color_picker))
+            .setView(view)
+            .setPositiveButton(context.getString(R.string.btn_confirm)) { _, _ ->
+                val color = Color.argb(
+                    alphaBar.progress,
+                    redBar.progress,
+                    greenBar.progress,
+                    blueBar.progress
+                )
+                colorPreview.setBackgroundColor(color)
+                try {
+                    textView.text = parseHexStr(
+                        alphaBar.progress,
+                        redBar.progress,
+                        greenBar.progress,
+                        blueBar.progress
+                    )
+                    invalidView.visibility = View.GONE
+                    preview.background = color.toDrawable()
+                } catch (ex: Exception) {
                 }
-                .setNegativeButton(context.getString(R.string.btn_cancel)) { _, _ -> })
+                // Integer.toHexString(color) // "argb(${alphaBar.progress}, ${redBar.progress}, ${greenBar.progress}, ${blueBar.progress}, )"
+            }
+            .setNegativeButton(context.getString(R.string.btn_cancel)) { _, _ -> })
     }
 
     private fun parseHexStr(a: Int, r: Int, g: Int, b: Int): String {

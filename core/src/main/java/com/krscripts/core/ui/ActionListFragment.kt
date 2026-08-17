@@ -426,7 +426,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                             linearLayout
                         ) {
                             try {
-                                val params = render.readParamsValue(actionParamInfos)
+                                val params = render.readParamsValue()
                                 actionExecute(action, script, onExit, params)
                             } catch (ex: Exception) {
                                 Toast.makeText(
@@ -450,7 +450,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
 
                             val onConfirm = {
                                 try {
-                                    val params = render.readParamsValue(actionParamInfos)
+                                    val params = render.readParamsValue()
                                     actionExecute(action, script, onExit, params)
                                 } catch (ex: Exception) {
                                     Toast.makeText(

@@ -3,22 +3,26 @@ package com.krscripts.core.ui
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.CheckBox
-import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.TextView
-import androidx.core.graphics.toColorInt
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentActivity
-import com.google.android.material.materialswitch.MaterialSwitch
-import com.google.android.material.slider.RangeSlider
 import com.krscripts.core.R
+import com.krscripts.core.databinding.KrParamRowBinding
 import com.krscripts.core.model.ActionParamInfo
 import com.krscripts.core.model.SelectItem
 
-class ActionParamsLayoutRender(private var linearLayout: LinearLayout, activity: FragmentActivity) {
+class ActionParamsLayoutRender(
+    private var linearLayout: LinearLayout,
+    private val context: FragmentActivity
+) {
+    private val renderers = mutableListOf<ParamRenderer>()
+
     companion object {
+
+        // Label is hidden in these params
+        private val HIDE_LABEL_TYPES = setOf("bool", "checkbox", "switch")
+
         /**
          * 获取当前选中项索引（单选）
          * @param actionParamInfo 参数信息
@@ -86,186 +90,118 @@ class ActionParamsLayoutRender(private var linearLayout: LinearLayout, activity:
         }
     }
 
-    private var context: FragmentActivity = activity
-
     fun renderList(actionParamInfos: ArrayList<ActionParamInfo>, fileChooser: ParamsFileChooserRender.FileChooserInterface?) {
         for (actionParamInfo in actionParamInfos) {
             val options = actionParamInfo.optionsFromShell
-            when {
-                // 下拉框
-                options != null && !(actionParamInfo.type == "app" || actionParamInfo.type == "packages") -> {
-                    if (actionParamInfo.multiple) {
-                        val view = ParamsMultipleSelect(actionParamInfo, context).render()
-                        addToLayout(view, actionParamInfo)
+            val render: ParamRenderer = when(actionParamInfo.type) {
+                // CheckBox
+                "bool", "checkbox" -> ParamsCheckbox(actionParamInfo, context)
+                // Switch
+                "switch" -> ParamsSwitch(actionParamInfo, context)
+                // SeekBar
+                "seekbar" -> ParamsSeekBar(actionParamInfo, context)
+                // FileSelector
+                "file", "folder" -> ParamsFileChooserRender(actionParamInfo, context, fileChooser)
+                // AppsSelector
+                "app", "packages" -> ParamsAppChooserRender(actionParamInfo, context)
+                // ColorPicker
+                "color" -> ParamsColorPicker(actionParamInfo, context)
+
+                else -> {
+                    if (options != null) {
+                        // Selector
+                        if (actionParamInfo.multiple) {
+                            ParamsMultipleSelect(actionParamInfo, context)
+                        } else {
+                            ParamsSingleSelect(actionParamInfo, context)
+                        }
                     } else {
-                        addToLayout(
-                            ParamsSingleSelect(actionParamInfo, context).render(),
-                            actionParamInfo
-                        )
+                        // EditText
+                        ParamsEditText(actionParamInfo, context)
                     }
                 }
-                // 选择框
-                actionParamInfo.type == "bool" || actionParamInfo.type == "checkbox" -> {
-                    addToLayout(ParamsCheckbox(actionParamInfo, context).render(), actionParamInfo)
-                }
-                // 开关
-                actionParamInfo.type == "switch" -> {
-                    addToLayout(ParamsSwitch(actionParamInfo, context).render(), actionParamInfo)
-                }
-                // 滑块
-                actionParamInfo.type == "seekbar" -> {
-                    val layout = ParamsSeekBar(actionParamInfo, context).render()
-
-                    addToLayout(layout, actionParamInfo)
-                }
-                // 文件选择
-                actionParamInfo.type == "file" || actionParamInfo.type == "folder" -> {
-                    val layout =
-                        ParamsFileChooserRender(actionParamInfo, context, fileChooser).render()
-
-                    addToLayout(layout, actionParamInfo)
-                }
-                // 应用选择
-                actionParamInfo.type == "app" || actionParamInfo.type == "packages" -> {
-                    val layout = ParamsAppChooserRender(actionParamInfo, context).render()
-
-                    addToLayout(layout, actionParamInfo)
-                }
-                // 颜色输入
-                actionParamInfo.type == "color" -> {
-                    val layout = ParamsColorPicker(actionParamInfo, context).render()
-
-                    addToLayout(layout, actionParamInfo)
-                }
-                // 文本框
-                else -> {
-                    addToLayout(ParamsEditText(actionParamInfo, context).render(), actionParamInfo)
-                }
             }
+
+            addRender(actionParamInfo, render)
         }
     }
 
-    // 隐藏label的参数类型
-    private val hideLabelTypes = arrayOf("bool", "checkbox", "switch")
+    private fun addRender(
+        actionParamInfo: ActionParamInfo,
+        render: ParamRenderer
+    ) {
+        val view = render.render()
+        addToLayout(view, actionParamInfo)
+        renderers.add(render)
+    }
+
     private fun addToLayout(inputView: View, actionParamInfo: ActionParamInfo) {
-        val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_row, null)
-        if (!actionParamInfo.title.isNullOrEmpty()) {
-            layout.findViewById<TextView>(R.id.kr_param_title).text = actionParamInfo.title
-        } else {
-            layout.findViewById<TextView>(R.id.kr_param_title).visibility = View.GONE
+        val binding = KrParamRowBinding.inflate(LayoutInflater.from(context))
+        with(binding) {
+            // title
+            val title = actionParamInfo.title
+            krParamTitle.isVisible = !title.isNullOrEmpty()
+            krParamTitle.text = title.orEmpty()
+
+            // label
+            val label = actionParamInfo.label
+            val showLabel = !label.isNullOrEmpty() && !HIDE_LABEL_TYPES.contains(actionParamInfo.type)
+            krParamLabel.isVisible = showLabel
+            krParamLabel.text = label.orEmpty()
+            krParamLabelDivier.isVisible = showLabel
+
+            // desc
+            val desc = actionParamInfo.desc
+            krParamDesc.isVisible = !desc.isNullOrEmpty()
+            krParamDesc.text = desc.orEmpty()
+
+            krParamInput.addView(inputView)
+            linearLayout.addView(root)
+
+            (inputView.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER_VERTICAL
         }
-
-        if ((!actionParamInfo.label.isNullOrEmpty()) && !hideLabelTypes.contains(actionParamInfo.type)) {
-            layout.findViewById<TextView>(R.id.kr_param_label).run {
-                text = actionParamInfo.label
-            }
-        } else {
-            layout.findViewById<TextView>(R.id.kr_param_label).visibility = View.GONE
-            layout.findViewById<ImageView>(R.id.kr_param_label_divier).visibility = View.GONE
-        }
-
-
-        if (!actionParamInfo.desc.isNullOrEmpty()) {
-            layout.findViewById<TextView>(R.id.kr_param_desc).text = actionParamInfo.desc
-        } else {
-            layout.findViewById<TextView>(R.id.kr_param_desc).visibility = View.GONE
-        }
-
-        layout.findViewById<FrameLayout>(R.id.kr_param_input).addView(inputView)
-        linearLayout.addView(layout)
-        // (layout.layoutParams as LinearLayout.LayoutParams).topMargin = dp2px(context, 1f)
-
-        (inputView.layoutParams as FrameLayout.LayoutParams).gravity = Gravity.CENTER_VERTICAL
     }
 
     private fun getFieldTips(actionParamInfo: ActionParamInfo): String {
-        val tips = StringBuilder()
-        if (!actionParamInfo.title.isNullOrEmpty()) {
-            tips.append(actionParamInfo.title)
-            tips.append(" ")
+        return buildString {
+            if (!actionParamInfo.title.isNullOrEmpty()) {
+                append(actionParamInfo.title)
+                append(" ")
+            }
+            if (!actionParamInfo.label.isNullOrEmpty()) {
+                append(actionParamInfo.label)
+                append(" ")
+            }
+            append("(")
+            append(actionParamInfo.name)
+            append(") ")
         }
-        if (!actionParamInfo.label.isNullOrEmpty()) {
-            tips.append(actionParamInfo.label)
-            tips.append(" ")
-        }
-        tips.append("(")
-        tips.append(actionParamInfo.name)
-        tips.append(") ")
-        return tips.toString()
     }
 
-    /**
-     * 读取界面上填入的参数值
-     */
-    fun readParamsValue(actionParamInfos: ArrayList<ActionParamInfo>): HashMap<String, String> {
+    fun readParamsValue(): HashMap<String, String> {
         val params = HashMap<String, String>()
-        for (actionParamInfo in actionParamInfos) {
-            if (actionParamInfo.name == null) {
-                continue
+        for (renderer in renderers) {
+
+            var value: String? = null
+            try {
+                value = renderer.getValue()
+            } catch (e: Exception) {
+                throw Exception(getFieldTips(renderer.actionParamInfo) + ": " + e.message)
             }
 
-            when (
-                val view = linearLayout.findViewWithTag<View>(actionParamInfo.name)
-            ) {
-                is KrAutoCompleteTextView -> {
-                    actionParamInfo.value = view.selectedValue ?: ""
-                }
+            val paramName = renderer.paramName
 
-                is EditText -> {
-                    val text = view.text.toString()
-                    if (text.isNotEmpty()) {
-                        if ((actionParamInfo.type == "int" || actionParamInfo.type == "number")) {
-                            try {
-                                val value = text.toInt()
-                                if (value < actionParamInfo.min) {
-                                    throw Exception("${getFieldTips(actionParamInfo)} $value < ${actionParamInfo.min} !!!")
-                                } else if (value > actionParamInfo.max) {
-                                    throw Exception("${getFieldTips(actionParamInfo)} $value > ${actionParamInfo.max} !!!")
-                                }
-                            } catch (_: NumberFormatException) {
+            if (value == null) continue
 
-                            }
-                        } else if (actionParamInfo.type == "color") {
-                            try {
-                                text.toColorInt()
-                            } catch (_: java.lang.Exception) {
-                                throw Exception(
-                                    getFieldTips(actionParamInfo) + "  \n" + context.getString(
-                                        R.string.kr_invalid_color
-                                    )
-                                )
-                            }
-                        }
-                    }
-                    actionParamInfo.value = text
-                }
-
-                is CheckBox -> {
-                    actionParamInfo.value = if (view.isChecked) "1" else "0"
-                }
-
-                is MaterialSwitch -> {
-                    actionParamInfo.value = if (view.isChecked) "1" else "0"
-                }
-
-                is RangeSlider -> {
-                    val value = view.values.firstOrNull()?.toInt() ?: break
-                    actionParamInfo.value = value.toString()
-                }
-
-                is TextView -> {
-                    actionParamInfo.value = view.text.toString()
-                }
-            }
-
-            if (actionParamInfo.value.isNullOrEmpty()) {
-                if (actionParamInfo.required) {
-                    throw Exception(getFieldTips(actionParamInfo) + context.getString(R.string.do_not_empty))
-                } else {
-                    params[actionParamInfo.name!!] = ""
-                }
+            if (value.isEmpty() && renderer.actionParamInfo.required) {
+                throw Exception(getFieldTips(renderer.actionParamInfo) + context.getString(R.string.do_not_empty))
             } else {
-                params[actionParamInfo.name!!] = actionParamInfo.value!!
+                paramName?.let { name ->
+                    params[name] = value
+                    // It's out of responsibility of the function,
+                    // but reserve that match the orign behavior
+                    renderer.actionParamInfo.value = value
+                }
             }
         }
         return params

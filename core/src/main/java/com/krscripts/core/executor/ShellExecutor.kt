@@ -82,8 +82,6 @@ class ShellExecutor {
 
                 shellHandlerBase.onStart(forceStopRunnable)
 
-                dataOutputStream.writeBytes("sleep 0.2;\n")
-
                 ScriptEnvironment.executeShell(
                     context,
                     dataOutputStream,

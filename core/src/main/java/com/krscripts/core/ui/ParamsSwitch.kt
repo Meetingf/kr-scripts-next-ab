@@ -6,16 +6,24 @@ import android.view.View
 import com.google.android.material.materialswitch.MaterialSwitch
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
-import java.util.Locale.getDefault
 
-class ParamsSwitch(private var actionParamInfo: ActionParamInfo, private var context: Context) {
-    fun render(): View {
+class ParamsSwitch(
+    override var actionParamInfo: ActionParamInfo,
+    private var context: Context
+): ParamRenderer {
+    private var switch: MaterialSwitch? = null
+
+    override fun getValue(): String? {
+        return if (switch?.isChecked == true) "1" else "0"
+    }
+
+    override fun render(): View {
         val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_switch, null)
+        switch = layout.findViewById(R.id.kr_param_switch)
 
-
-        layout.findViewById<MaterialSwitch>(R.id.kr_param_switch).run {
+        switch?.run {
             tag = actionParamInfo.name
-            isChecked = getCheckState(actionParamInfo, false)
+            isChecked = getCheckState(actionParamInfo)
             if (!actionParamInfo.label.isNullOrEmpty()) {
                 text = actionParamInfo.label
             }
@@ -24,17 +32,11 @@ class ParamsSwitch(private var actionParamInfo: ActionParamInfo, private var con
         return layout
     }
 
-    /**
-     * 获取选中状态
-     */
-    private fun getCheckState(actionParamInfo: ActionParamInfo, defaultValue: Boolean): Boolean {
-        if (actionParamInfo.valueFromShell != null) {
-            return actionParamInfo.valueFromShell == "1" || actionParamInfo.valueFromShell!!.lowercase(
-                getDefault()
-            ) == "true"
-        } else if (actionParamInfo.value != null) {
-            return actionParamInfo.value == "1" || actionParamInfo.value!!.lowercase(getDefault()) == "true"
-        }
-        return defaultValue
+    private fun getCheckState(
+        actionParamInfo: ActionParamInfo,
+        defaultValue: Boolean = false
+    ): Boolean {
+        val value = actionParamInfo.valueFromShell ?: actionParamInfo.value ?: return defaultValue
+        return value == "1" || value.lowercase() == "true"
     }
 }

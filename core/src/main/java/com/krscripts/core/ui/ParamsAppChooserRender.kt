@@ -18,16 +18,20 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class ParamsAppChooserRender(
-    private var actionParamInfo: ActionParamInfo,
-    private var context: FragmentActivity
-) : DialogAppChooser.Callback {
+    override var actionParamInfo: ActionParamInfo,
+    private var context: FragmentActivity,
+) : ParamRenderer {
     private lateinit var editText: TextInputEditText
     private lateinit var inputLayout: TextInputLayout
     private lateinit var packages: ArrayList<AdapterAppChooser.AppInfo>
     private val packagesReady = CompletableDeferred<Unit>()
     private val progressDialog = ProgressBarDialog(context)
 
-    fun render(): View {
+    override fun getValue(): String? {
+        return editText.text?.toString()
+    }
+
+    override fun render(): View {
         val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_edit_text, null)
         editText = layout.findViewById(R.id.kr_param_text)
         inputLayout = layout.findViewById(R.id.textInputLayout)
@@ -63,9 +67,10 @@ class ParamsAppChooserRender(
             setSelectStatus()
             DialogAppChooser(
                 packages,
-                actionParamInfo.multiple,
-                this@ParamsAppChooserRender
-            ).show(context.supportFragmentManager, "app-chooser")
+                actionParamInfo.multiple
+            ) {
+                onConfirm(it)
+            }.show(context.supportFragmentManager, "app-chooser")
         }
     }
 
@@ -173,7 +178,7 @@ class ParamsAppChooserRender(
         }
     }
 
-    override fun onConfirm(apps: List<AdapterAppChooser.AppInfo>) {
+    fun onConfirm(apps: List<AdapterAppChooser.AppInfo>) {
         if (actionParamInfo.multiple) {
             val values = apps.joinToString(actionParamInfo.separator) { it.packageName }
             editText.setText(values)

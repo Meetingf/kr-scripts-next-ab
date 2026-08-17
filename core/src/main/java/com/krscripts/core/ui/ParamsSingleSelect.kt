@@ -11,13 +11,18 @@ import com.krscripts.core.model.SelectItem
 import com.krscripts.core.ui.ActionParamsLayoutRender.Companion.getParamOptionsCurrentIndex
 
 class ParamsSingleSelect(
-        private var actionParamInfo: ActionParamInfo,
-        private var context: FragmentActivity
-) {
+    override var actionParamInfo: ActionParamInfo,
+    private var context: FragmentActivity
+): ParamRenderer {
+
     val options = actionParamInfo.optionsFromShell!!
     var autoCompleteTextView: KrAutoCompleteTextView? = null
 
-    fun render(): View {
+    override fun getValue(): String? {
+        return autoCompleteTextView?.selectedValue
+    }
+
+    override fun render(): View {
         val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_spinner, null)
         val inputLayout = layout.findViewById<TextInputLayout>(R.id.textInputLayout)
         autoCompleteTextView = layout.findViewById(R.id.kr_param_autoCompleteTextView)
@@ -28,7 +33,9 @@ class ParamsSingleSelect(
 
             tag = actionParamInfo.name
             isEnabled = !actionParamInfo.readonly
-            hint = actionParamInfo.placeholder.ifEmpty { "请选择" }
+            actionParamInfo.placeholder.takeIf { it.isNotEmpty() }?.apply {
+                hint = this
+            }
 
             val initialIndex = getParamOptionsCurrentIndex(actionParamInfo, options)
             if (initialIndex > -1 && initialIndex < options.size) {
