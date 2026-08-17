@@ -20,53 +20,33 @@ open class ListItemView(
 
 
     val key: String
-        get() {
-            return config.key
-        }
-
-    var title: String
-        get() {
-            return titleView?.text.toString()
-        }
-        set(value) {
-            if (value.isEmpty()) {
-                titleView?.visibility = View.GONE
-            } else {
-                titleView?.text = value
-                titleView?.visibility = View.VISIBLE
-            }
-        }
-
-    var desc: String
-        get() {
-            return descView?.text.toString()
-        }
-        set(value) {
-            if (value.isEmpty()) {
-                descView?.visibility = View.GONE
-            } else {
-                descView?.text = value
-                descView?.visibility = View.VISIBLE
-            }
-        }
-
-    var summary: String
-        get() {
-            return summaryView?.text.toString()
-        }
-        set(value) {
-            if (value.isEmpty()) {
-                summaryView?.visibility = View.GONE
-            } else {
-                summaryView?.text = value
-                summaryView?.visibility = View.VISIBLE
-            }
-        }
+        get() = config.key
 
     val index: String
-        get() {
-            return config.index
+        get() = config.index
+
+    var title: String
+        get() = titleView?.text.toString()
+        set(value) = titleView.update(value)
+
+    var desc: String
+        get() = descView?.text.toString()
+        set(value) = descView.update(value)
+
+    var summary: String
+        get() = summaryView?.text.toString()
+        set(value) = summaryView.update(value)
+
+    private fun TextView?.update(value: String) {
+        this?.apply {
+            if (value.isEmpty()) {
+                visibility = View.GONE
+            } else {
+                text = value
+                visibility = View.VISIBLE
+            }
         }
+    }
 
     open fun updateViewByShell() {
         if (config.descSh.isNotEmpty()) {

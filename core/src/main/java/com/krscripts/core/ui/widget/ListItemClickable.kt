@@ -33,10 +33,6 @@ open class ListItemClickable(
     }
 
     init {
-        title = config.title
-        desc = config.desc
-        summary = config.summary
-
         this.layout.setOnClickListener {
             this.mOnClickListener?.onClick(this)
         }

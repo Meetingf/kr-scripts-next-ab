@@ -42,10 +42,6 @@ class ListItemSwitch(
     }
 
     init {
-        title = config.title
-        desc = config.desc
-        summary = config.summary
-
         switchView?.isChecked = config.checked
 
         switchView?.setOnCheckedChangeListener { _, isChecked ->

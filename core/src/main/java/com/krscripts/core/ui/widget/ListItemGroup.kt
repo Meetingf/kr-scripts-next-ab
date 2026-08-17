@@ -64,8 +64,4 @@ open class ListItemGroup(
             }
         }
     }
-
-    init {
-        title = config.title
-    }
 }
