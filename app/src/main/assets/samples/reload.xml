@@ -10,7 +10,7 @@
     </group>
 
     <group title="刷新整个页面">
-        <action reload="true" auto-off="true">
+        <action reload="true" shell="hidden">
             <title>reload 属性测试</title>
             <desc>会刷新当前界面喵</desc>
             <script>
@@ -39,7 +39,7 @@
             <summary sh="getprop kr.time.date" />
         </action>
 
-        <action reload="node-1" auto-off="true">
+        <action reload="node-1" shell="hidden">
             <title>刷新第一项</title>
             <desc>执行以刷新 node-1</desc>
             <script>
@@ -47,7 +47,7 @@
             </script>
         </action>
 
-        <action reload="@node-2" auto-off="true">
+        <action reload="@node-2" shell="hidden">
             <title>刷新第二项</title>
             <desc>执行以刷新 @node-2</desc>
             <script>
@@ -57,7 +57,7 @@
     </group>
 
     <group title="整组刷新">
-        <action reload="group-1" auto-off="true">
+        <action reload="group-1" shell="hidden">
             <title>reload 属性测试</title>
             <desc>执行以刷新上面一组</desc>
             <script>

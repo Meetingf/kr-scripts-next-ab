@@ -44,7 +44,10 @@
             <title>自动关闭</title>
             <desc>好玩儿</desc>
             <get>getprop app.switch.e</get>
-            <set>setprop app.switch.e 0</set>
+            <set>
+                sleep 0.1
+                setprop app.switch.e 0
+            </set>
         </switch>
 
     </group>
