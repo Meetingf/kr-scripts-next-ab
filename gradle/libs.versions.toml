@@ -5,7 +5,7 @@ coil = "3.5.0"
 constraintlayout = "2.2.1"
 kotlin = "2.4.10"
 material = "1.14.0"
-activityKtx = "1.8.0"
+activityKtx = "1.13.0"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
