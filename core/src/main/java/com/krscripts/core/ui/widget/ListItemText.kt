@@ -1,7 +1,6 @@
 package com.krscripts.core.ui.widget
 
 import android.content.Context
-import android.content.Intent
 import android.graphics.Typeface
 import android.text.Layout
 import android.text.SpannableString
@@ -17,13 +16,12 @@ import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
-import androidx.core.net.toUri
 import com.krscripts.core.R
 import com.krscripts.core.TryOpenActivity
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.model.TextNode
 import com.krscripts.core.ui.dialog.DialogHelper
+import com.krscripts.core.util.startActivityLink
 
 class ListItemText(
     private val context: Context,
@@ -56,13 +54,7 @@ class ListItemText(
                     spannableString.setSpan(object : ClickableSpan() {
                         override fun onClick(widget: View) {
                             if (row.link.isNotEmpty()) {
-                                try {
-                                    val intent = Intent(Intent.ACTION_VIEW, row.link.toUri())
-                                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                                    context.startActivity(intent)
-                                } catch (_: Exception) {
-                                    Toast.makeText(context, context.getString(R.string.kr_slice_activity_fail), Toast.LENGTH_SHORT).show()
-                                }
+                                context.startActivityLink(row.link)
                             }
                         }
 

@@ -10,7 +10,6 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
@@ -41,6 +40,7 @@ import com.krscripts.core.ui.dialog.ProgressBarDialog
 import com.krscripts.core.ui.param.FileChooserRender
 import com.krscripts.core.ui.param.ParamLayoutRender
 import com.krscripts.core.ui.widget.ListItemGroup
+import com.krscripts.core.util.startActivityLink
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -191,21 +191,20 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
     }
 
     override fun onPageClick(item: PageNode, onCompleted: Runnable) {
+        val context = context ?: return
         val locked = checkNodeLocked(item)
         if (locked) return
 
-        if (context != null && item.link.isNotEmpty()) {
-            try {
-                val intent = Intent(Intent.ACTION_VIEW, item.link.toUri())
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context?.startActivity(intent)
-            } catch (_: Exception) {
-                Toast.makeText(context, context?.getString(R.string.kr_slice_activity_fail), Toast.LENGTH_SHORT).show()
+        when {
+            item.link.isNotEmpty() -> {
+                context.startActivityLink(item.link)
             }
-        } else if (context != null && item.activity.isNotEmpty()) {
-            TryOpenActivity(requireContext(), item.activity).tryOpen()
-        } else {
-            krScriptActionHandler?.onSubPageClick(item)
+            item.activity.isNotEmpty() -> {
+                TryOpenActivity(context, item.activity).tryOpen()
+            }
+            else -> {
+                krScriptActionHandler?.onSubPageClick(item)
+            }
         }
     }
 
@@ -232,19 +231,11 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                                         IconPathAnalysis().loadLogo(context!!, clickableNode)!!,
                                         clickableNode
                                     )
-                                if (!result) {
                                     Toast.makeText(
                                         context,
-                                        R.string.kr_shortcut_create_fail,
+                                        if (result) R.string.kr_shortcut_create_success else R.string.kr_shortcut_create_fail,
                                         Toast.LENGTH_SHORT
                                     ).show()
-                                } else {
-                                    Toast.makeText(
-                                        context,
-                                        getString(R.string.kr_shortcut_create_success),
-                                        Toast.LENGTH_SHORT
-                                    ).show()
-                                }
                             }
                         }
                     }
@@ -262,12 +253,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
 
     private fun switchExecute(switchNode: SwitchNode, toValue: Boolean, onExit: Runnable) {
         val script = switchNode.setState ?: return
-
-        actionExecute(switchNode, script, onExit, object : java.util.HashMap<String, String>() {
-            init {
-                put("state", if (toValue) "1" else "0")
-            }
-        })
+        actionExecute(switchNode, script, onExit, hashMapOf("state" to if (toValue) "1" else "0"))
     }
 
     // Picker
@@ -342,12 +328,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
 
     private fun pickerOnConfirm(pickerNode: PickerNode, toValue: String, onExit: Runnable) {
         val script = pickerNode.setState ?: return
-
-        actionExecute(pickerNode, script, onExit, object : java.util.HashMap<String, String>() {
-            init {
-                put("state", toValue)
-            }
-        })
+        actionExecute(pickerNode, script, onExit, hashMapOf("state" to toValue))
     }
 
     // Action
