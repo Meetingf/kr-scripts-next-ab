@@ -2,8 +2,6 @@ package com.krscripts.core.ui.param
 
 import android.content.Context
 import android.graphics.Color
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
@@ -11,6 +9,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.graphics.toColorInt
+import androidx.core.widget.doOnTextChanged
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.slider.Slider
 import com.krscripts.core.R
@@ -41,29 +40,9 @@ class ColorPickerRender(
 
         editText?.apply {
             tag = actionParamInfo.name
-            addTextChangedListener(
-                object : TextWatcher {
-                    override fun onTextChanged(
-                        s: CharSequence?,
-                        start: Int,
-                        before: Int,
-                        count: Int
-                    ) {
-                    }
-
-                    override fun beforeTextChanged(
-                        s: CharSequence?,
-                        start: Int,
-                        count: Int,
-                        after: Int
-                    ) {
-                    }
-
-                    override fun afterTextChanged(s: Editable?) {
-                        updateColorPreview(invalidView, preview, s!!.toString())
-                    }
-                }
-            )
+            doOnTextChanged { text, _, _, _ ->
+                updateColorPreview(invalidView, preview, text.toString())
+            }
             if (actionParamInfo.valueFromShell != null) {
                 setText(actionParamInfo.valueFromShell!!)
             } else if (actionParamInfo.value != null) {
