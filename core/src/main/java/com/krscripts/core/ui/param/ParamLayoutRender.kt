@@ -99,7 +99,7 @@ class ParamLayoutRender(
                 // Switch
                 "switch" -> SwitchRender(actionParamInfo, context)
                 // SeekBar
-                "seekbar" -> SeekBarRender(actionParamInfo, context)
+                "seekbar" -> SliderRender(actionParamInfo, context)
                 // FileSelector
                 "file", "folder" -> FileChooserRender(actionParamInfo, context, fileChooser)
                 // AppsSelector

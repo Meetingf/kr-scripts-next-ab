@@ -5,34 +5,34 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.ImageButton
 import android.widget.TextView
-import com.google.android.material.slider.RangeSlider
+import com.google.android.material.slider.Slider
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
 
-class SeekBarRender(
+class SliderRender(
     override var actionParamInfo: ActionParamInfo,
     private var context: Context
 ): ParamRenderer {
-    private var rangeSlider: RangeSlider? = null
+    private var slider: Slider? = null
 
     override fun getValue(): String? {
-        return rangeSlider?.values?.firstOrNull()?.toInt()?.toString()
+        return slider?.value?.toInt()?.toString()
     }
 
     override fun render(): View {
         val layout = LayoutInflater.from(context).inflate(R.layout.kr_param_seekbar, null)
-        rangeSlider = layout.findViewById(R.id.kr_param_seekbar)
+        slider = layout.findViewById(R.id.kr_param_seekbar)
 
         val minValue = actionParamInfo.min.toFloat()
         val maxValue = actionParamInfo.max.toFloat()
 
-        rangeSlider?.run {
+        slider?.run {
             valueFrom = minValue
             valueTo = maxValue
             stepSize = 1.0f
 
             val initialValue = getInitialValue(minValue, maxValue)
-            values = listOf(initialValue)
+            value = initialValue
             tag = actionParamInfo.name
 
             val minusBtn = layout.findViewById<ImageButton>(R.id.kr_param_seekbar_minus)
@@ -45,15 +45,15 @@ class SeekBarRender(
             }
 
             minusBtn.setOnClickListener {
-                val current = values[0]
+                val current = value
                 if (current > minValue) {
-                    values = listOf(current - 1)
+                    value = current - 1
                 }
             }
             plusBtn.setOnClickListener {
-                val current = values[0]
+                val current = value
                 if (current < maxValue) {
-                    values = listOf(current + 1)
+                    value = current + 1
                 }
             }
         }

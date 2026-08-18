@@ -21,12 +21,14 @@
         android:layout_height="wrap_content"
         android:textAlignment="center" />
 
-    <com.google.android.material.slider.RangeSlider
+    <com.google.android.material.slider.Slider
         android:id="@+id/kr_param_seekbar"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:paddingHorizontal="16dp" />
+        android:paddingHorizontal="16dp"
+        app:thumbHeight="32dp"
+        app:trackStopIndicatorSize="0dp" />
 
     <ImageButton
         android:id="@+id/kr_param_seekbar_plus"
