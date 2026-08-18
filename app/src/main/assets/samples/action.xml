@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
-    <group title="基本动作">
+
+    <group>
+        <text>
+            <title>简介</title>
+            <desc>Action (动作) 被点击时会启动参数选择弹窗(如果有), 在确认时运行命令</desc>
+        </text>
+    </group>
+
+    <group title="基本参数">
         <action>
             <title>选择</title>
             <param name="single_short" title="单选" label="短列表">
@@ -140,14 +148,6 @@
         <action>
             <title>颜色输入</title>
             <param name="test" label="颜色输入" type="color" />
-            <set>echo '数值为：' $test</set>
-        </action>
-    </group>
-
-    <group title="输入提示">
-        <action>
-            <title>输入提示</title>
-            <param name="test" label="颜色输入" title="输入框标题" placeholder="请输入...." type="text" />
             <set>echo '数值为：' $test</set>
         </action>
     </group>
