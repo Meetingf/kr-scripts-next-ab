@@ -9,6 +9,7 @@ import android.widget.Filterable
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
 import com.krscripts.core.R
 import com.krscripts.core.model.SelectItem
 import com.krscripts.core.ui.adapter.AdapterItemChooser
@@ -66,8 +67,10 @@ class DialogItemChooser(
         }
 
         // 长列表才有搜索
+
+        val searchView = view.findViewById<SearchView>(R.id.search_view)
         if (items.size > 5) {
-            val searchView = view.findViewById<SearchView>(R.id.search_view)
+            searchView.isVisible = true
             searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
                 override fun onQueryTextSubmit(query: String?) = false
                 override fun onQueryTextChange(newText: String?): Boolean {
@@ -75,6 +78,8 @@ class DialogItemChooser(
                     return true
                 }
             })
+        } else {
+            searchView.isVisible = false
         }
 
         updateTitle()
