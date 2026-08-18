@@ -2,10 +2,13 @@ package com.krscripts.core.ui.widget
 
 import android.content.Context
 import android.view.View
+import androidx.appcompat.content.res.AppCompatResources
+import androidx.core.graphics.drawable.DrawableCompat
+import coil3.asImage
 import coil3.load
 import coil3.request.CachePolicy
 import coil3.request.crossfade
-import coil3.request.error
+import com.google.android.material.color.MaterialColors
 import com.google.android.material.imageview.ShapeableImageView
 import com.google.android.material.shape.CornerFamily
 import com.google.android.material.shape.RelativeCornerSize
@@ -35,7 +38,14 @@ object IconHelper {
 
         view.load(icon) {
             crossfade(true)
-            error(R.drawable.baseline_broken_image_24)
+            error { _ ->
+                val errImage = AppCompatResources.getDrawable(context, R.drawable.baseline_broken_image_24)
+                errImage?.let {
+                    DrawableCompat.setTint(it, MaterialColors.getColor(view, com.google.android.material.R.attr.colorOnSurfaceVariant))
+                    it
+                }
+                errImage?.asImage()
+            }
             memoryCachePolicy(CachePolicy.ENABLED)
             diskCachePolicy(CachePolicy.ENABLED)
         }
