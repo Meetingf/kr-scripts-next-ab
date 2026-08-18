@@ -29,14 +29,12 @@ class AdapterAppChooser(
         fun onSelectChange(selected: List<AppInfo>)
     }
 
-    open class AppInfo {
-        var appName: String = ""
-        var packageName: String = ""
-
-        // 是否未找到此应用
-        var notFound: Boolean = false
+    data class AppInfo (
+        var appName: String = "",
+        var packageName: String = "",
+        var notFound: Boolean = false,
         var selected: Boolean = false
-    }
+    )
 
     private var selectStateListener: SelectStateListener? = null
     private var filter: Filter? = null

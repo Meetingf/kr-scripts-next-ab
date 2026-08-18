@@ -9,14 +9,11 @@ import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.krscripts.core.R
 import com.krscripts.core.model.ActionParamInfo
-import com.krscripts.core.model.SelectItem
 import com.krscripts.core.ui.adapter.AdapterAppChooser
 import com.krscripts.core.ui.dialog.DialogAppChooser
 import com.krscripts.core.ui.dialog.ProgressBarDialog
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -29,9 +26,10 @@ class AppChooserRender(
     private lateinit var packages: ArrayList<AdapterAppChooser.AppInfo>
     private val packagesReady = CompletableDeferred<Unit>()
     private val progressDialog = ProgressBarDialog(context)
+    private var value: String? = null
 
     override fun getValue(): String? {
-        return editText.text?.toString()
+        return value
     }
 
     override fun render(): View {
@@ -72,7 +70,7 @@ class AppChooserRender(
                 packages,
                 actionParamInfo.multiple
             ) {
-                onConfirm(it)
+                updateView(it)
             }.show(context.supportFragmentManager, "app-chooser")
         }
     }
@@ -80,30 +78,34 @@ class AppChooserRender(
     private suspend fun loadPackages(includeMissing: Boolean = false): List<AdapterAppChooser.AppInfo> {
         return withContext(Dispatchers.IO) {
             val pm = context.packageManager
-            val filter = actionParamInfo.optionsFromShell?.map {
-                it.value
-            }
+            val currentOptions = actionParamInfo.optionsFromShell
 
-            val packages = pm.getInstalledPackages(0).filter {
-                filter == null || filter.contains(it.packageName)
-            }
+            val filter = currentOptions?.map { it.value }
 
-            val options = ArrayList(packages.map {
-                AdapterAppChooser.AppInfo().apply {
-                    appName = "" + it.applicationInfo!!.loadLabel(pm)
+            val packages = pm.getInstalledPackages(0)
+            val filteredPackages = filter?.let { filter ->
+                packages.filter { filter.contains(it.packageName) }
+            } ?: packages
+
+            val options = filteredPackages.map {
+                AdapterAppChooser.AppInfo(
+                    appName = "" + it.applicationInfo!!.loadLabel(pm),
                     packageName = it.packageName
-                }
-            })
+                )
+            }.toMutableList()
 
-            // 是否包含丢失的应用程序
-            if (includeMissing && actionParamInfo.optionsFromShell != null) {
-                for (item in actionParamInfo.optionsFromShell!!) {
-                    if (options.none { it.packageName == item.value }) {
-                        options.add(AdapterAppChooser.AppInfo().apply {
-                            appName = "" + item.title
-                            packageName = "" + item.value
-                        })
-                    }
+            if (includeMissing) {
+                actionParamInfo.optionsFromShell?.let { shellOptions ->
+                    val existingPackageNames = options.map { it.packageName }.toSet()
+                    val newItems = shellOptions
+                        .filter { it.value !in existingPackageNames }
+                        .map {
+                            AdapterAppChooser.AppInfo(
+                                appName = it.title ?: "",
+                                packageName = it.value ?: ""
+                            )
+                        }
+                    options.addAll(newItems)
                 }
             }
 
@@ -112,64 +114,49 @@ class AppChooserRender(
     }
 
     private fun setSelectStatus() {
-        packages.forEach {
-            it.selected = false
+        packages.forEach { it.selected = false }
+
+        if (value.isNullOrEmpty()) {
+            return
         }
-        val currentValue = editText.text
+
+        val packageMap = packages.associateBy { it.packageName }
+
+        packages.forEach { it.selected = false }
+
         if (actionParamInfo.multiple) {
-            currentValue?.split(actionParamInfo.separator)?.forEach { value ->
-                val app = packages.find { it.packageName == value }
-                if (app != null) {
-                    app.selected = true
-                }
+            value?.split(actionParamInfo.separator)?.forEach { value ->
+                packageMap[value]?.selected = true
             }
         } else {
-            val current = packages.find { it.packageName == currentValue?.toString() }
-            val currentIndex = if (current != null) packages.indexOf(current) else -1
-            if (currentIndex > -1) {
-                packages[currentIndex].selected = true
-            }
+            packageMap[value]?.selected = true
         }
     }
 
-    // 设置界面显示和元素赋值
     private fun initView() {
-        val lifecycleScope = CoroutineScope(SupervisorJob())
+        val lifecycleScope = context.lifecycleScope
         lifecycleScope.launch {
             packages = ArrayList(loadPackages(actionParamInfo.type == "packages"))
 
             packages.run {
-                val values = map { it.packageName }.toTypedArray()
+                val packageMap = packages.associateBy { it.packageName }
+
                 if (actionParamInfo.multiple) {
                     ParamLayoutRender.getParamValues(actionParamInfo)?.forEach { value ->
-                        val app = packages.find { it.packageName == value }
-                        if (app != null) {
-                            app.selected = true
-                        }
+                        packageMap[value]?.selected = true
                     }
 
                     withContext(Dispatchers.Main) {
-                        onConfirm((packages.filter { it.selected }))
+                        updateView((packages.filter { it.selected }))
                     }
                 } else {
-                    // TODO: 这里有过多的数据包装盒解包，需要进行优化
-                    val validOptions = ArrayList(packages.map {
-                        SelectItem().apply {
-                            title = it.appName
-                            value = it.packageName
-                        }
-                    }.toList())
-
-                    val currentIndex = ParamLayoutRender.getParamOptionsCurrentIndex(
-                        actionParamInfo,
-                        validOptions
-                    )
+                    val preferredPackageName = actionParamInfo.valueFromShell ?: actionParamInfo.value
+                    val app = preferredPackageName?.let { packageMap[it] }
 
                     withContext(Dispatchers.Main) {
-                        if (currentIndex > -1) {
-                            editText.setText(values[currentIndex])
-                        } else {
-                            editText.setText(null)
+                        app?.let {
+                            value = it.packageName
+                            editText.setText(it.appName)
                         }
                     }
                 }
@@ -181,17 +168,8 @@ class AppChooserRender(
         }
     }
 
-    fun onConfirm(apps: List<AdapterAppChooser.AppInfo>) {
-        if (actionParamInfo.multiple) {
-            val values = apps.joinToString(actionParamInfo.separator) { it.packageName }
-            editText.setText(values)
-        } else {
-            val item = apps.firstOrNull()
-            if (item == null) {
-                editText.setText(null)
-            } else {
-                editText.setText(item.packageName)
-            }
-        }
+    fun updateView(apps: List<AdapterAppChooser.AppInfo>) {
+        value = apps.joinToString(actionParamInfo.separator) { it.packageName }
+        editText.setText(apps.joinToString(",") { it.appName })
     }
 }

@@ -83,8 +83,8 @@ class ParamLayoutRender(
         }
 
         // 获取多选下拉的选中值列表
-        fun getParamValues (actionParamInfo: ActionParamInfo): List<String>? {
-            val value = if (actionParamInfo.valueFromShell != null) actionParamInfo.valueFromShell else actionParamInfo.value
+        fun getParamValues(actionParamInfo: ActionParamInfo): List<String>? {
+            val value = actionParamInfo.valueFromShell ?: actionParamInfo.value
             val values = value?.split(actionParamInfo.separator)
             return values
         }
