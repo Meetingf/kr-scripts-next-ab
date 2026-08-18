@@ -251,21 +251,10 @@ object ScriptEnvironment {
         return params
     }
 
-    private fun getVariables(params: HashMap<String, String>?): ArrayList<String?> {
-        val envp = ArrayList<String?>()
-
-        if (params != null) {
-            for (key in params.keys) {
-                var value = params[key]
-                if (value == null) {
-                    value = ""
-                }
-                envp.add(key + "='" + value.replace("'".toRegex(), "'\\\\''") + "'")
-            }
-        }
-
-        return envp
-    }
+    private fun buildVariables(params: Map<String, String?>?): List<String> =
+        params?.map { (key, value) ->
+            "export $key='${(value ?: "").replace("'", "'\\''")}'"
+        } ?: emptyList()
 
     private fun getExecuteScript(context: Context, script: String?, tag: String?): String {
         if (!isInitialed) {
@@ -343,7 +332,7 @@ object ScriptEnvironment {
             envParams["PAGE_WORK_FILE"] = workFile ?: configFile
         }
 
-        val exportCommands = getVariables(envParams).joinToString(separator = "\n") { "export $it" }
+        val exportCommands = buildVariables(envParams).joinToString(separator = "\n")
         val script = getExecuteScript(context, cmds, tag)
 
         val content = buildString {
