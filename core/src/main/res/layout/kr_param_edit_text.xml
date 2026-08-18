@@ -15,8 +15,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textSize="15sp"
+        android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
         android:inputType="text"
         android:maxLines="8"
+        android:paddingStart="6dp"
         android:paddingTop="0dp"
         android:paddingBottom="0dp" />
 </com.google.android.material.textfield.TextInputLayout>

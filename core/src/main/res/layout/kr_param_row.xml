@@ -45,7 +45,7 @@
             android:id="@+id/kr_param_label_divier"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:paddingStart="8dp"
+            android:paddingHorizontal="8dp"
             android:src="@drawable/kr_param_label" />
 
         <FrameLayout
