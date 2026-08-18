@@ -565,35 +565,41 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
     }
 
 
-    // 标识是否有隐藏任务在运行中
-    var hiddenTaskRunning = false
+    private var runningTasks = mutableListOf<String>()
     private fun actionExecute(nodeInfo: RunnableNode, script: String, onExit: Runnable, params: HashMap<String, String>?) {
-        val context = requireContext()
+        val context = context ?: return
 
-        if (nodeInfo.shell == RunnableNode.shellModeBgTask) {
-            val onDismiss = Runnable {
-                krScriptActionHandler?.onActionCompleted(nodeInfo)
-            }
-            BgTaskThread.startTask(context, script, params, nodeInfo, onExit, onDismiss)
-        } else if (nodeInfo.shell == RunnableNode.shellModeHidden) {
-            if (hiddenTaskRunning) {
-                Toast.makeText(context, getString(R.string.kr_hidden_task_running), Toast.LENGTH_SHORT).show()
-            } else {
-                hiddenTaskRunning = true
+        when(nodeInfo.shell) {
+            RunnableNode.shellModeBgTask -> {
                 val onDismiss = Runnable {
-                    hiddenTaskRunning = false
                     krScriptActionHandler?.onActionCompleted(nodeInfo)
                 }
-                HiddenTaskThread.startTask(context, script, params, nodeInfo, onExit, onDismiss)
-            }
-        } else {
-            val onDismiss = Runnable {
-                krScriptActionHandler?.onActionCompleted(nodeInfo)
+                BgTaskThread.startTask(context, script, params, nodeInfo, onExit, onDismiss)
             }
 
-            val dialog = DialogLogFragment.create(nodeInfo, onExit, onDismiss, script, params)
-            dialog.isCancelable = false
-            dialog.show(parentFragmentManager, "")
+            RunnableNode.shellModeHidden -> {
+                val index = nodeInfo.index
+                if (index in runningTasks) {
+                    Toast.makeText(context, getString(R.string.kr_hidden_task_running), Toast.LENGTH_SHORT).show()
+                } else {
+                    runningTasks.add(index)
+                    val onDismiss = Runnable {
+                        runningTasks.remove(index)
+                        krScriptActionHandler?.onActionCompleted(nodeInfo)
+                    }
+                    HiddenTaskThread.startTask(context, script, params, nodeInfo, onExit, onDismiss)
+                }
+            }
+
+            else -> {
+                val onDismiss = Runnable {
+                    krScriptActionHandler?.onActionCompleted(nodeInfo)
+                }
+
+                val dialog = DialogLogFragment.create(nodeInfo, onExit, onDismiss, script, params)
+                dialog.isCancelable = false
+                dialog.show(parentFragmentManager, null)
+            }
         }
     }
 }

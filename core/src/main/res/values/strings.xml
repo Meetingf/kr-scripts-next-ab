@@ -54,7 +54,7 @@
     <string name="kr_page_load_fail">页面加载失败</string>
     <string name="kr_page_load_success">页面加载成功</string>
     <string name="kr_auto_run_item_losted">指定项已丢失</string>
-    <string name="kr_hidden_task_running">手速太快了，上个操作还没完成！</string>
+    <string name="kr_hidden_task_running">已有相同任务在运行</string>
     <string name="kr_lock_message">此功能已被锁定</string>
     <string name="kr_sdk_too_low">系统版本过低</string>
     <string name="kr_sdk_overtop">系统版本过高</string>
