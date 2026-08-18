@@ -147,92 +147,65 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
         }
     }
 
-    private fun nodeUnlocked(clickableNode: ClickableNode): Boolean {
+    private fun checkNodeLocked(clickableNode: ClickableNode): Boolean {
+
+        // Check for system sdk
         val currentSDK = Build.VERSION.SDK_INT
-        if (clickableNode.targetSdkVersion > 0 && currentSDK != clickableNode.targetSdkVersion) {
-            DialogHelper.openInfoAlert(requireContext(),
-                    getString(R.string.kr_sdk_discrepancy),
-                    getString(R.string.kr_sdk_discrepancy_message).format(clickableNode.targetSdkVersion)
+        val requiredSdk = clickableNode.targetSdkVersion
+        val requiredMinSdk = clickableNode.minSdkVersion
+        val requiredMaxSdk = clickableNode.maxSdkVersion
+        val lockedMessage = when {
+            requiredSdk != null && currentSDK != requiredSdk -> {
+                getString(R.string.kr_sdk_discrepancy) to getString(R.string.kr_sdk_discrepancy_message).format(requiredSdk)
+            }
+            requiredMaxSdk != null && currentSDK > requiredMaxSdk -> {
+                getString(R.string.kr_sdk_overtop) to getString(R.string.kr_sdk_message).format(requiredMinSdk, requiredMaxSdk)
+            }
+            requiredMinSdk != null && currentSDK < requiredMinSdk -> {
+                getString(R.string.kr_sdk_too_low) to getString(R.string.kr_sdk_message).format(requiredMinSdk, requiredMaxSdk)
+            }
+            else -> null
+        }
+        lockedMessage?.let {
+            DialogHelper.openInfoAlert(
+                context = context ?: return true,
+                title = it.first,
+                message = it.second
             )
-            return false
-        } else if (currentSDK > clickableNode.maxSdkVersion) {
-            DialogHelper.openInfoAlert(requireContext(),
-                    getString(R.string.kr_sdk_overtop),
-                    getString(R.string.kr_sdk_message).format(clickableNode.minSdkVersion, clickableNode.maxSdkVersion)
-            )
-            return false
-        } else if (currentSDK < clickableNode.minSdkVersion) {
-            DialogHelper.openInfoAlert(requireContext(),
-                    getString(R.string.kr_sdk_too_low),
-                    getString(R.string.kr_sdk_message).format(clickableNode.minSdkVersion, clickableNode.maxSdkVersion)
-            )
-            return false
+            return true
         }
 
+        // Check with script
         var message = ""
-        val unlocked = (if (clickableNode.lockShell.isNotEmpty()) {
+        val locked = if (clickableNode.lockShell.isNotEmpty()) {
             message = ScriptEnvironment.executeResultRoot(requireContext(), clickableNode.lockShell, clickableNode)
-            message == "unlock" || message == "unlocked" || message == "false" || message == "0"
+            message !in setOf("unlock", "unlocked", "false", "0")
         } else {
-            !clickableNode.locked
-        })
-        if (!unlocked) {
-            Toast.makeText(context, message.ifEmpty {
-                getString(R.string.kr_lock_message)
-            }, Toast.LENGTH_LONG).show()
+            clickableNode.locked
         }
-        return unlocked
-    }
 
-    /**
-     * 当switch项被点击
-     */
-    override fun onSwitchClick(item: SwitchNode, onCompleted: Runnable) {
-        if (nodeUnlocked(item)) {
-            val toValue = !item.checked
-            if (item.confirm) {
-                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.desc) {
-                    switchExecute(item, toValue, onCompleted)
-                }
-            } else if (item.warning.isNotEmpty()) {
-                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.warning) {
-                    switchExecute(item, toValue, onCompleted)
-                }
-            } else {
-                switchExecute(item, toValue, onCompleted)
-            }
+        if (locked) {
+            Toast.makeText(context, message.ifEmpty { getString(R.string.kr_lock_message) }, Toast.LENGTH_SHORT).show()
         }
+        return locked
     }
-
-    /**
-     * 执行switch的操作
-     */
-    private fun switchExecute(switchNode: SwitchNode, toValue: Boolean, onExit: Runnable) {
-        val script = switchNode.setState ?: return
-
-        actionExecute(switchNode, script, onExit, object : java.util.HashMap<String, String>() {
-            init {
-                put("state", if (toValue) "1" else "0")
-            }
-        })
-    }
-
 
     override fun onPageClick(item: PageNode, onCompleted: Runnable) {
-        if (nodeUnlocked(item)) {
-            if (context != null && item.link.isNotEmpty()) {
-                try {
-                    val intent = Intent(Intent.ACTION_VIEW, item.link.toUri())
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    context?.startActivity(intent)
-                } catch (_: Exception) {
-                    Toast.makeText(context, context?.getString(R.string.kr_slice_activity_fail), Toast.LENGTH_SHORT).show()
-                }
-            } else if (context != null && item.activity.isNotEmpty()) {
-                TryOpenActivity(requireContext(), item.activity).tryOpen()
-            } else {
-                krScriptActionHandler?.onSubPageClick(item)
+        val locked = checkNodeLocked(item)
+        if (locked) return
+
+        if (context != null && item.link.isNotEmpty()) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW, item.link.toUri())
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context?.startActivity(intent)
+            } catch (_: Exception) {
+                Toast.makeText(context, context?.getString(R.string.kr_slice_activity_fail), Toast.LENGTH_SHORT).show()
             }
+        } else if (context != null && item.activity.isNotEmpty()) {
+            TryOpenActivity(requireContext(), item.activity).tryOpen()
+        } else {
+            krScriptActionHandler?.onSubPageClick(item)
         }
     }
 
@@ -280,23 +253,27 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
         }
     }
 
-    /**
-     * Picker点击
-     */
-    override fun onPickerClick(item: PickerNode, onCompleted: Runnable) {
-        if (nodeUnlocked(item)) {
-            if (item.confirm) {
-                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.desc) {
-                    pickerExecute(item, onCompleted)
-                }
-            } else if (item.warning.isNotEmpty()) {
-                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.warning) {
-                    pickerExecute(item, onCompleted)
-                }
-            } else {
-                pickerExecute(item, onCompleted)
+    // Switch
+
+    override fun onSwitchClick(item: SwitchNode, onCompleted: Runnable) {
+        val toValue = !item.checked
+        onRunnableItemClick(item) { switchExecute(item, toValue, onCompleted) }
+    }
+
+    private fun switchExecute(switchNode: SwitchNode, toValue: Boolean, onExit: Runnable) {
+        val script = switchNode.setState ?: return
+
+        actionExecute(switchNode, script, onExit, object : java.util.HashMap<String, String>() {
+            init {
+                put("state", if (toValue) "1" else "0")
             }
-        }
+        })
+    }
+
+    // Picker
+
+    override fun onPickerClick(item: PickerNode, onCompleted: Runnable) {
+        onRunnableItemClick(item) { pickerExecute(item, onCompleted) }
     }
 
     private fun pickerExecute(item: PickerNode, onCompleted: Runnable) {
@@ -334,14 +311,14 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                                 status: BooleanArray
                             ) {
                                 if (item.multiple) {
-                                    pickerExecute(
+                                    pickerOnConfirm(
                                         item,
                                         (selected.map { it.value }).joinToString(item.separator),
                                         onCompleted
                                     )
                                 } else {
                                     if (selected.isNotEmpty()) {
-                                        pickerExecute(
+                                        pickerOnConfirm(
                                             item,
                                             selected[0].value.toString(),
                                             onCompleted
@@ -363,10 +340,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
         }.start()
     }
 
-    /**
-     * 执行picker的操作
-     */
-    private fun pickerExecute(pickerNode: PickerNode, toValue: String, onExit: Runnable) {
+    private fun pickerOnConfirm(pickerNode: PickerNode, toValue: String, onExit: Runnable) {
         val script = pickerNode.setState ?: return
 
         actionExecute(pickerNode, script, onExit, object : java.util.HashMap<String, String>() {
@@ -376,28 +350,13 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
         })
     }
 
-    /**
-     * 列表项点击时（如果需要确认界面，则显示确认界面，否则直接准备执行）
-     */
+    // Action
+
     override fun onActionClick(item: ActionNode, onCompleted: Runnable) {
-        if (nodeUnlocked(item)) {
-            if (item.confirm) {
-                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.desc) {
-                    actionExecute(item, onCompleted)
-                }
-            } else if (item.warning.isNotEmpty() && (item.params == null || item.params?.size == 0)) {
-                DialogHelper.openConfirmAlert(requireActivity(), item.title, item.warning) {
-                    actionExecute(item, onCompleted)
-                }
-            } else {
-                actionExecute(item, onCompleted)
-            }
-        }
+        val ignoreWarning = !item.params.isNullOrEmpty()
+        onRunnableItemClick(item, ignoreWarning) { actionExecute(item, onCompleted) }
     }
 
-    /**
-     * action执行参数界面
-     */
     private fun actionExecute(action: ActionNode, onExit: Runnable) {
         val script = action.setState ?: return
 
@@ -526,6 +485,42 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
             }
         }
         actionExecute(action, script, onExit, null)
+    }
+
+    // Common on runnable click
+
+    private fun onRunnableItemClick(
+        item: RunnableNode,
+        ignoreWarning: Boolean = false,
+        onExecute: () -> Unit
+    ) {
+        val isLocked = checkNodeLocked(item)
+        if (isLocked) return
+
+        when {
+            item.confirm -> {
+                DialogHelper.openConfirmAlert(
+                    context = requireActivity(),
+                    title = item.title,
+                    message = item.desc,
+                    onConfirm = { onExecute() }
+                )
+            }
+
+            item.warning.isNotEmpty() && !ignoreWarning -> {
+                // May change in days, keep
+                DialogHelper.openConfirmAlert(
+                    context = requireActivity(),
+                    title = item.title,
+                    message = item.warning,
+                    onConfirm = { onExecute() }
+                )
+            }
+
+            else -> {
+                onExecute()
+            }
+        }
     }
 
     /**

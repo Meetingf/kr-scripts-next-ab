@@ -83,6 +83,12 @@
                 echo '文本为：' $input_text
             </set>
         </action>
+        <action warning="不许输入喵">
+            <title>描述和警告</title>
+            <desc>描述和警告将内嵌在弹窗中</desc>
+            <param name="input_text" placeholder="请输入文本"/>
+            <set>echo 可恶</set>
+        </action>
     </group>
 
     <group title="文件选择">

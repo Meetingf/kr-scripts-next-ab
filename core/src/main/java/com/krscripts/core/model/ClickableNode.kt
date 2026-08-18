@@ -10,7 +10,7 @@ open class ClickableNode(currentPageConfigPath: String) : NodeInfoBase(currentPa
     var logoPath = ""
 
     // 是否允许添加快捷方式（非false，且具有key则默认允许）
-    var allowShortcut:Boolean? = null
+    var allowShortcut: Boolean? = null
 
     // 是否锁定
     var locked: Boolean = false
@@ -18,7 +18,7 @@ open class ClickableNode(currentPageConfigPath: String) : NodeInfoBase(currentPa
     var lockShell: String = ""
 
     // 此功能的Android SDK版本要求
-    var targetSdkVersion = 0
-    var minSdkVersion = 0
-    var maxSdkVersion = 100
+    var targetSdkVersion: Int? = null
+    var minSdkVersion: Int? = null
+    var maxSdkVersion: Int? = null
 }
