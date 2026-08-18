@@ -29,7 +29,7 @@
     <string name="kr_download_completed">文件下载成功</string>
     <string name="kr_download_downloading">文件下载中</string>
     <string name="kr_color_picker">请选择颜色</string>
-    <string name="kr_invalid_color">输入的色值无效，仅支持类似 #ff88aa00 的格式</string>
+    <string name="kr_invalid_color">输入的色值无效，仅支持类似 #FFFFFFFF 的格式</string>
 
 
     <string name="kr_shortcut_create_fail">快捷方式创建失败</string>
