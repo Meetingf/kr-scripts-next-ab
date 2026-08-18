@@ -27,7 +27,7 @@
                 <option value="9">选项 9</option>
             </param>
 
-            <!-- separator 属性设置输出用户选择的项目的分隔符号, 默认为 "|", 输出为 "A|B|C" -->
+            <!-- separator 属性设置输出用户选择的项目的分隔符号, 默认为 " ", 输出为 "A B C" -->
             <param name="multi" title="多选" multiple="multiple" separator="|">
                 <option value="1">选项 1</option>
                 <option value="2">选项 2</option>

@@ -2,36 +2,27 @@
 <config>
     <group>
         <picker>
-            <title>测试单选界面</title>
-            <summary sh="echo -n '当前选中：'; getprop xxx.xxx.xxx" />
+            <title>单选</title>
+            <summary sh="echo -n '当前选中：'; getprop kr.picker.1" />
             <options>
-                <option value="123">测试123</option>
-                <option value="234">测试234</option>
+                <option value="1">选项 1</option>
+                <option value="2">选项 2</option>
             </options>
-            <get>getprop xxx.xxx.xxx</get>
-            <set>setprop xxx.xxx.xxx $state</set>
+            <get>getprop kr.picker.1</get>
+            <set>setprop kr.picker.1 $state</set>
         </picker>
         <picker options-sh="echo 'a|选项A'; echo 'b|选项B'">
-            <title>单选测试（由脚本输出选项）</title>
-            <summary sh="echo -n '当前选中：'; getprop xxx.xxx.xxx3" />
-            <get>getprop xxx.xxx.xxx3</get>
-            <set>setprop xxx.xxx.xxx3 "$state"</set>
+            <title>单选（由脚本输出选项）</title>
+            <summary sh="echo -n '当前选中：'; getprop kr.picker.2" />
+            <get>getprop kr.picker.2</get>
+            <set>setprop kr.picker.2 "$state"</set>
         </picker>
 
-        <picker multiple="multiple" options-sh="echo 'a|选项A'; echo 'b|选项B'">
-            <title>测试多选界面</title>
-            <get>getprop xxx.xxx.xxx3</get>
-            <summary sh="echo -n '当前选中：'; getprop xxx.xxx.xxx3" />
-            <set>
-                echo '选中项：'
-
-                for item in $state; do
-                echo $item
-                done
-
-                echo ''
-                setprop xxx.xxx.xxx3 "$state"
-            </set>
+        <picker multiple="multiple" options-sh="echo 'a|选项A'; echo 'b|选项B'" separator="|">
+            <title>多选</title>
+            <get>getprop kr.picker.3</get>
+            <summary sh="echo -n '当前选中：'; getprop kr.picker.3" />
+            <set>setprop kr.picker.3 "$state"</set>
         </picker>
     </group>
 
