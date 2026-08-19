@@ -7,33 +7,47 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
-import android.os.Message
 import android.text.Spanned
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ScrollView
-import android.widget.TextView
 import android.widget.Toast
+import androidx.core.text.buildSpannedString
+import androidx.core.text.color
+import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.color.MaterialColors
-import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.krscripts.core.R
 import com.krscripts.core.databinding.KrDialogLogBinding
 import com.krscripts.core.executor.ShellExecutor
 import com.krscripts.core.model.RunnableNode
-import com.krscripts.core.model.ShellHandlerBase
-
+import com.krscripts.core.shell.ShellEvent
+import com.krscripts.core.shell.ShellEventSource
+import com.krscripts.core.shell.ShellLogType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 
 class DialogLogFragment : DialogFragment() {
     private var _binding: KrDialogLogBinding? = null
     private val binding get() = _binding!!
-
-    private var running = false
     private var nodeInfo: RunnableNode? = null
     private lateinit var onExit: Runnable
     private lateinit var script: String
     private var params: HashMap<String, String>? = null
+
+    fun getMaterialColor(attrIdRes: Int): Int {
+        return MaterialColors.getColor(context,attrIdRes, "Color not found")
+    }
+    private val colorOutputError by lazy { getMaterialColor(androidx.appcompat.R.attr.colorError) }
+    private val colorOutput by lazy { getMaterialColor(androidx.appcompat.R.attr.colorAccent) }
+    private val colorInput by lazy { getMaterialColor(androidx.appcompat.R.attr.colorPrimary) }
+
+    private val shellEventSource = ShellEventSource()
+    private var shellHasError: Boolean = false
+    private var shellOnStop: Runnable? = null
+    private var shellRunning = false
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = KrDialogLogBinding.inflate(inflater, container, false)
@@ -44,14 +58,11 @@ class DialogLogFragment : DialogFragment() {
             return binding.root
         }
 
-        if (info.reloadPage) {
-            binding.btnHide.visibility = View.GONE
-        }
+        initView(info)
+        createCollector(shellEventSource.events, lifecycleScope, info.interruptable)
 
-        val shellHandler = openExecutor(info)
-        val hostActivity = activity
-        if (hostActivity != null) {
-            ShellExecutor().execute(hostActivity, info, script, onExit, params, shellHandler)
+        if (activity != null) {
+            ShellExecutor().execute(activity, info, script, onExit, params, shellEventSource)
         } else {
             dismiss()
         }
@@ -59,26 +70,108 @@ class DialogLogFragment : DialogFragment() {
         return binding.root
     }
 
+    private fun createCollector(
+        events: Flow<ShellEvent>,
+        scope: CoroutineScope,
+        interruptable: Boolean
+    ) {
+        val outputView = binding.shellOutput
+        val scrollView = binding.logContainter
+        val shellProgress = binding.actionProgress
+        scope.launch {
+            events.collect { event ->
+                when(event) {
+                    is ShellEvent.Started -> {
+                        shellOnStop = event.forceStop
+                        shellRunning = true
+                        binding.btnExit.isVisible = interruptable && event.forceStop != null
+                    }
+                    is ShellEvent.Log -> {
+                        if (event.type == ShellLogType.OUTPUT_ERROR) { shellHasError = true }
+                        if (event.type != ShellLogType.INPUT) {
+                            val spanned = event.toLogSpanned()
+                            outputView.append(spanned)
+                            scrollView.fullScroll(View.FOCUS_DOWN)
+                        }
+                    }
+                    is ShellEvent.Exited -> {
+                        context?.getString(R.string.kr_shell_completed)?.let {
+                            val str = buildSpannedString {
+                                color(colorInput) { append(it) }
+                            }
+                            outputView.append(str)
+                        }
+
+                        binding.btnExit.visibility = View.VISIBLE
+                        binding.actionProgress.isIndeterminate = false
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            binding.actionProgress.setProgress(100, true)
+                        } else {
+                            binding.actionProgress.visibility = View.INVISIBLE
+                        }
+
+                        isCancelable = true
+
+                        if (!shellHasError) {
+                            if (nodeInfo?.autoOff == true) {
+                                dismiss()
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        scope.launch {
+            shellEventSource.progress.collect { progress ->
+                progress?.let {
+                    val current = progress.first
+                    val total = progress.second
+                    when (current) {
+                        -1 -> {
+                            shellProgress.visibility = View.VISIBLE
+                            shellProgress.isIndeterminate = true
+                        }
+
+                        else -> {
+                            shellProgress.visibility = View.VISIBLE
+                            shellProgress.isIndeterminate = false
+                            shellProgress.max = total
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                                shellProgress.setProgress(current, true)
+                            } else {
+                                shellProgress.progress = current
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        shellEventSource.destroy()
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return Dialog(requireActivity(), R.style.dialog_full_screen)
     }
 
-    private fun openExecutor(nodeInfo: RunnableNode): ShellHandlerBase {
-        var forceStopRunnable: Runnable? = null
+    private fun initView(nodeInfo: RunnableNode) {
 
         binding.btnHide.setOnClickListener {
-            closeView()
+            dismiss()
         }
         binding.btnExit.setOnClickListener {
-            if (running) {
-                forceStopRunnable?.run()
+            if (shellRunning) {
+                shellOnStop?.run()
             }
-            closeView()
+            dismiss()
         }
 
         binding.btnCopy.setOnClickListener {
@@ -92,13 +185,10 @@ class DialogLogFragment : DialogFragment() {
             }
         }
 
-        if (nodeInfo.interruptable) {
-            binding.btnHide.visibility = View.VISIBLE
-            binding.btnExit.visibility = View.VISIBLE
-        } else {
-            binding.btnHide.visibility = View.GONE
-            binding.btnExit.visibility = View.GONE
-        }
+        val interruptable = nodeInfo.interruptable
+        binding.btnHide.isVisible = interruptable && !nodeInfo.reloadPage
+        binding.btnExit.isVisible = interruptable
+
 
         if (nodeInfo.title.isNotEmpty()) {
             binding.title.text = nodeInfo.title
@@ -113,137 +203,6 @@ class DialogLogFragment : DialogFragment() {
         }
 
         binding.actionProgress.isIndeterminate = true
-        return MyShellHandler(object : IActionEventHandler {
-            override fun onCompleted() {
-                running = false
-
-                onExit.run()
-
-                if (_binding != null) {
-                    binding.btnExit.visibility = View.VISIBLE
-                    binding.actionProgress.isIndeterminate = false
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        binding.actionProgress.setProgress(100, true)
-                    } else {
-                        binding.actionProgress.visibility = View.INVISIBLE
-                    }
-                }
-
-                isCancelable = true
-            }
-
-            override fun onSuccess() {
-                if (nodeInfo.autoOff) {
-                    closeView()
-                }
-            }
-
-            override fun onStart(forceStop: Runnable?) {
-                running = true
-
-                if (_binding != null) {
-                    binding.btnExit.visibility =
-                        if (nodeInfo.interruptable && forceStop != null) View.VISIBLE else View.GONE
-                }
-                forceStopRunnable = forceStop
-            }
-
-        }, binding.shellOutput, binding.actionProgress)
-    }
-
-    @FunctionalInterface
-    interface IActionEventHandler {
-        fun onStart(forceStop: Runnable?)
-        fun onSuccess()
-        fun onCompleted()
-    }
-
-    class MyShellHandler(
-        private var actionEventHandler: IActionEventHandler,
-        private var logView: TextView,
-        private var shellProgress: LinearProgressIndicator
-    ) : ShellHandlerBase() {
-
-        private val context: Context = logView.context
-        private val errorColor = MaterialColors.getColor(logView, androidx.appcompat.R.attr.colorError)
-        private val basicColor = MaterialColors.getColor(logView,androidx.appcompat.R.attr.colorAccent)
-        private val scriptColor = MaterialColors.getColor(logView,androidx.appcompat.R.attr.colorAccent)
-        private val endColor = MaterialColors.getColor(logView,androidx.appcompat.R.attr.colorPrimary)
-
-        private var hasError = false // 执行过程是否出现错误
-
-        override fun handleMessage(msg: Message) {
-            when (msg.what) {
-                EVENT_EXIT -> onExit(msg.obj)
-                EVENT_START -> onStart(msg.obj)
-                EVENT_READ -> onReaderMsg(msg.obj)
-                EVENT_READ_ERROR -> onError(msg.obj)
-                EVENT_WRITE -> onWrite(msg.obj)
-            }
-        }
-
-        override fun onReader(msg: Any?) {
-            updateLog(msg, basicColor)
-        }
-
-        override fun onWrite(msg: Any?) {
-            updateLog(msg, scriptColor)
-        }
-
-        override fun onError(msg: Any?) {
-            hasError = true
-            updateLog(msg, errorColor)
-        }
-
-        override fun onStart(forceStop: Runnable?) {
-            actionEventHandler.onStart(forceStop)
-        }
-
-        override fun onProgress(current: Int, total: Int) {
-            when (current) {
-                -1 -> {
-                    shellProgress.visibility = View.VISIBLE
-                    shellProgress.isIndeterminate = true
-                }
-                else -> {
-                    shellProgress.visibility = View.VISIBLE
-                    shellProgress.isIndeterminate = false
-                    shellProgress.max = total
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                        shellProgress.setProgress(current, true)
-                    } else {
-                        shellProgress.progress = current
-                    }
-                }
-            }
-        }
-
-        override fun onStart(msg: Any?) {
-            logView.text = ""
-        }
-
-        override fun onExit(msg: Any?) {
-            updateLog(context.getString(R.string.kr_shell_completed), endColor)
-            actionEventHandler.onCompleted()
-            if (!hasError) {
-                actionEventHandler.onSuccess()
-            }
-        }
-
-        override fun updateLog(msg: Spanned?) {
-            if (msg == null) return
-            logView.post {
-                logView.append(msg)
-                (logView.parent as? ScrollView)?.fullScroll(ScrollView.FOCUS_DOWN)
-            }
-        }
-    }
-
-    private fun closeView() {
-        try {
-            dismiss()
-        } catch (_: Exception) {
-        }
     }
 
     private var onDismissRunnable: Runnable? = null
@@ -251,6 +210,15 @@ class DialogLogFragment : DialogFragment() {
         super.onDismiss(dialog)
         onDismissRunnable?.run()
         onDismissRunnable = null
+    }
+
+    fun ShellEvent.Log.toLogSpanned(): Spanned = buildSpannedString {
+        val c = when (type) {
+            ShellLogType.OUTPUT -> colorOutput
+            ShellLogType.OUTPUT_ERROR -> colorOutputError
+            ShellLogType.INPUT -> colorInput
+        }
+        color(c) { append(text + "\n") }
     }
 
     companion object {

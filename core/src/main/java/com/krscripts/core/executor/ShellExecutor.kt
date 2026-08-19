@@ -6,7 +6,7 @@ import android.util.Log
 import android.widget.Toast
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.model.RunnableNode.Companion.shellModeBgTask
-import com.krscripts.core.model.ShellHandlerBase
+import com.krscripts.core.shell.ShellEventSource
 import java.io.DataOutputStream
 import java.util.UUID
 
@@ -32,7 +32,7 @@ class ShellExecutor {
         cmd: String?,
         onExit: Runnable?,
         params: HashMap<String, String>?,
-        shellHandlerBase: ShellHandlerBase
+        shellEventSource: ShellEventSource
     ): Process? {
         if (started) {
             return null
@@ -62,25 +62,13 @@ class ShellExecutor {
                         }
                     }
                 else null
-            SimpleShellWatcher().setHandler(context!!, process, shellHandlerBase, onExit)
+            ShellLogWatcher.setWatcher(context!!, process, shellEventSource, onExit)
 
             val outputStream = process.outputStream
             val dataOutputStream = DataOutputStream(outputStream)
             try {
-                shellHandlerBase.sendMessage(
-                    shellHandlerBase.obtainMessage(
-                        ShellHandlerBase.EVENT_START,
-                        "shell@android:\n"
-                    )
-                )
-                shellHandlerBase.sendMessage(
-                    shellHandlerBase.obtainMessage(
-                        ShellHandlerBase.EVENT_START,
-                        cmd + "\n\n"
-                    )
-                )
-
-                shellHandlerBase.onStart(forceStopRunnable)
+                shellEventSource.postStart(forceStopRunnable)
+                shellEventSource.postWrite(cmd + "\n")
 
                 ScriptEnvironment.executeShell(
                     context,

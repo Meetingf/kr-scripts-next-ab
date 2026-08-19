@@ -1,4 +1,4 @@
-package com.krscripts.core
+package com.krscripts.core.shell
 
 import android.app.Notification
 import android.app.NotificationChannel
@@ -10,30 +10,33 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
 import android.os.Bundle
-import android.text.Spanned
 import androidx.core.app.NotificationCompat
+import com.krscripts.core.R
 import com.krscripts.core.executor.ShellExecutor
 import com.krscripts.core.model.RunnableNode
-import com.krscripts.core.model.ShellHandlerBase
 import com.krscripts.core.ui.dialog.DialogHelper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import java.util.concurrent.CopyOnWriteArrayList
 
-class BgTaskThread(private var process: Process) : Thread() {
-    override fun run() {
-        try {
-            process.waitFor()
-        } catch (_: java.lang.Exception) {
+class ShellBackground {
 
-        }
-    }
-
-    class ServiceShellHandler(private val context: Context, private val runnableNode: RunnableNode, private val notificationID: Int) : ShellHandlerBase() {
+    class TaskNotificationController(
+        private val context: Context,
+        private val shellEventSource: ShellEventSource,
+        private val runnableNode: RunnableNode,
+        private val notificationID: Int
+    ) {
         private var notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         private val notificationTitle = runnableNode.title
         private var logEntries = CopyOnWriteArrayList<String>()
         private var notificationMShortMsg = ""
-        private var progressCurrent = 0
-        private var progressTotal = 0
+        var progressCurrent = 0
+        var progressTotal = 0
         private var someIgnored = false
         private var forceStop: Runnable? = null
         private var isFinished = false
@@ -62,7 +65,7 @@ class BgTaskThread(private var process: Process) : Thread() {
             }
         }
 
-        private fun updateNotification() {
+        fun updateNotification() {
             if (logEntries.size > 6) {
                 val removed = logEntries.removeFirstOrNull()
                 if (removed != null) someIgnored = true
@@ -124,61 +127,61 @@ class BgTaskThread(private var process: Process) : Thread() {
             notificationManager.notify(notificationID, notification) // 发送通知
         }
 
-        override fun updateLog(msg: Spanned?) {
-        }
+        suspend fun collectEvents(
+            events: Flow<ShellEvent>,
+            scope: CoroutineScope
+        ) {
+            events.collect { event ->
+                when(event) {
+                    is ShellEvent.Started -> {
+                        notificationMShortMsg = context.getString(R.string.kr_script_task_running)
+                        forceStop = event.forceStop
 
-        override fun onReader(msg: Any?) {
-            logEntries.add("" + msg?.toString())
-            updateNotification()
-        }
+                        val intentFilter = IntentFilter(stopActionName)
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            context.registerReceiver(receiver, intentFilter, Context.RECEIVER_NOT_EXPORTED)
+                        } else {
+                            context.registerReceiver(receiver, intentFilter)
+                        }
 
-        override fun onError(msg: Any?) {
-            notificationMShortMsg = context.getString(R.string.kr_script_task_has_error)
-            logEntries.add("" + msg?.toString())
-            updateNotification()
-        }
+                        updateNotification()
+                    }
+                    is ShellEvent.Log -> {
+                        when(event.type) {
+                            ShellLogType.OUTPUT -> {
+                                logEntries.add(event.text + "\n")
+                                updateNotification()
+                            }
+                            ShellLogType.OUTPUT_ERROR -> {
+                                notificationMShortMsg = context.getString(R.string.kr_script_task_has_error)
+                                logEntries.add(event.text + "\n")
+                                updateNotification()
+                            }
+                            else -> { }
+                        }
+                    }
+                    is ShellEvent.Exited -> {
+                        try {
+                            //context.unregisterReceiver(receiver)
+                        } catch (_: Exception) {
 
-        override fun onWrite(msg: Any?) {
-        }
+                        }
+                        isFinished = true
+                        notificationMShortMsg = context.getString(R.string.kr_script_task_finished)
 
-        override fun onExit(msg: Any?) {
-            try {
-                //context.unregisterReceiver(receiver)
-            } catch (_: Exception) {
+                        if (event.payload == 0) {
+                            logEntries.add("\n" + context.getString(R.string.kr_shell_completed))
+                        } else {
+                            logEntries.add("\n" + context.getString(R.string.kr_shell_finish_error) + " " + event.payload?.toString())
+                        }
+                        updateNotification()
 
+                        forceStop = null
+                        shellEventSource.destroy()
+                        scope.cancel()
+                    }
+                }
             }
-            isFinished = true
-            notificationMShortMsg = context.getString(R.string.kr_script_task_finished)
-
-            if (msg == 0) {
-                logEntries.add("\n" + context.getString(R.string.kr_shell_completed))
-            } else {
-                logEntries.add("\n" + context.getString(R.string.kr_shell_finish_error) + " " + msg?.toString())
-            }
-            updateNotification()
-        }
-
-        override fun onStart(forceStop: Runnable?) {
-            this.forceStop = forceStop
-
-            val intentFilter = IntentFilter(stopActionName)
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                context.registerReceiver(receiver, intentFilter, Context.RECEIVER_NOT_EXPORTED)
-            } else {
-                context.registerReceiver(receiver, intentFilter)
-            }
-
-            updateNotification()
-        }
-
-        override fun onStart(msg: Any?) {
-            notificationMShortMsg = context.getString(R.string.kr_script_task_running)
-        }
-
-        override fun onProgress(current: Int, total: Int) {
-            progressCurrent = current
-            progressTotal = total
-            updateNotification()
         }
     }
 
@@ -190,27 +193,48 @@ class BgTaskThread(private var process: Process) : Thread() {
         fun startTask(context: Context, script: String, params: HashMap<String, String>?, nodeInfo: RunnableNode, onExit: Runnable, onDismiss: Runnable) {
             val applicationContext = context.applicationContext
             notificationCounter += 1
+            val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-            val handler = ServiceShellHandler(applicationContext, nodeInfo, notificationCounter)
+            val shellEventSource = ShellEventSource()
+            val controller =
+                TaskNotificationController(applicationContext, shellEventSource, nodeInfo, notificationCounter)
+
+            scope.launch {
+                controller.collectEvents(shellEventSource.events, scope)
+            }
+
+            scope.launch {
+                shellEventSource.progress.collect { progress ->
+                    progress?.let {
+                        val current = progress.first
+                        val total = progress.second
+                        controller.progressCurrent = current
+                        controller.progressTotal = total
+                        controller.updateNotification()
+                    }
+                }
+            }
+
             ShellExecutor().execute(
-                    context,
-                    nodeInfo,
-                    script,
-                    {
-                        /*
-                        try {
-                            process.destroy()
-                        } catch (ex: java.lang.Exception) {
-                        }
-                        */
-                        try {
-                            onExit.run()
-                            onDismiss.run()
-                        } catch (_: Exception) {
-                        }
-                    },
-                    params,
-                    handler)
+                context,
+                nodeInfo,
+                script,
+                {
+                    /*
+                    try {
+                        process.destroy()
+                    } catch (ex: java.lang.Exception) {
+                    }
+                    */
+                    try {
+                        onExit.run()
+                        onDismiss.run()
+                    } catch (_: Exception) {
+                    }
+                },
+                params,
+                shellEventSource
+            )
 
             val bundle = Bundle()
             params?.run {

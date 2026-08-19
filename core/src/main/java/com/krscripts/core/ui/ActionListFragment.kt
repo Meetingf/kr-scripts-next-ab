@@ -14,8 +14,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.krscripts.core.BgTaskThread
-import com.krscripts.core.HiddenTaskThread
 import com.krscripts.core.R
 import com.krscripts.core.TryOpenActivity
 import com.krscripts.core.config.IconPathAnalysis
@@ -32,6 +30,8 @@ import com.krscripts.core.model.PickerNode
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.model.SelectItem
 import com.krscripts.core.model.SwitchNode
+import com.krscripts.core.shell.ShellBackground
+import com.krscripts.core.shell.ShellHiddenTask
 import com.krscripts.core.shortcut.ActionShortcutManager
 import com.krscripts.core.ui.dialog.DialogHelper
 import com.krscripts.core.ui.dialog.DialogItemChooser
@@ -555,7 +555,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                 val onDismiss = Runnable {
                     krScriptActionHandler?.onActionCompleted(nodeInfo)
                 }
-                BgTaskThread.startTask(context, script, params, nodeInfo, onExit, onDismiss)
+                ShellBackground.startTask(context, script, params, nodeInfo, onExit, onDismiss)
             }
 
             RunnableNode.shellModeHidden -> {
@@ -568,7 +568,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                         runningTasks.remove(index)
                         krScriptActionHandler?.onActionCompleted(nodeInfo)
                     }
-                    HiddenTaskThread.startTask(context, script, params, nodeInfo, onExit, onDismiss)
+                    ShellHiddenTask.startTask(context, script, params, nodeInfo, onExit, onDismiss)
                 }
             }
 

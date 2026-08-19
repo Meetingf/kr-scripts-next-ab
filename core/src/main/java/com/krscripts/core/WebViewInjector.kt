@@ -12,11 +12,18 @@ import com.krscripts.core.executor.AssetsExtractor
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.executor.ScriptEnvironment.executeResultRoot
 import com.krscripts.core.model.NodeInfoBase
-import com.krscripts.core.model.ShellHandlerBase
 import com.krscripts.core.shell.KeepShellPublic.checkRoot
+import com.krscripts.core.shell.ShellEvent
+import com.krscripts.core.shell.ShellEventSource
 import com.krscripts.core.shell.ShellExecutor
+import com.krscripts.core.shell.ShellLogType
 import com.krscripts.core.ui.dialog.DialogHelper
 import com.krscripts.core.util.PermissionUtil
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import org.json.JSONObject
 import java.io.DataOutputStream
 import java.io.IOException
@@ -111,8 +118,9 @@ class WebViewInjector(
             if (process != null) {
                 val outputStream = process.outputStream
                 val dataOutputStream = DataOutputStream(outputStream)
+                val shellEventSource = ShellEventSource()
 
-                setHandler(process, callbackFunction) { }
+                setHandler(process, callbackFunction, shellEventSource) { }
 
                 ScriptEnvironment.executeShell(
                     context,
@@ -139,29 +147,24 @@ class WebViewInjector(
             return AssetsExtractor(context).extractResource(assets)
         }
 
-        fun setHandler(process: Process, callbackFunction: String?, onExit: Runnable?) {
-
-            fun readStream(stream: InputStream, eventType: Int): Thread = Thread {
+        fun setHandler(
+            process: Process,
+            callbackFunction: String?,
+            shellEventSource: ShellEventSource,
+            onExit: Runnable?
+        ) {
+            val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+            fun readStream(stream: InputStream, onLine: (String) -> Unit): Thread = Thread {
                 stream.bufferedReader().use { reader ->
                     var line: String?
                     try {
                         while (true) {
                             try {
-                                line = reader.readLine()
-                                if (line == null) break
+                                line = reader.readLine() ?: break
                             } catch (e: IOException) {
                                 break
                             }
-
-                            val json = JSONObject().apply {
-                                put("type", eventType)
-                                put("message", "$line\n")
-                            }
-                            webView.post {
-                                webView.evaluateJavascript(
-                                    "$callbackFunction($json)"
-                                ) { }
-                            }
+                            onLine(line)
                         }
                     } catch (e: IOException) {
                         e.printStackTrace()
@@ -169,8 +172,8 @@ class WebViewInjector(
                 }
             }
 
-            val reader = readStream(process.inputStream, ShellHandlerBase.EVENT_READ)
-            val readerError = readStream(process.errorStream, ShellHandlerBase.EVENT_READ_ERROR)
+            val reader = readStream(process.inputStream, shellEventSource::postRead)
+            val readerError = readStream(process.errorStream, shellEventSource::postReadError)
 
             val waitExit = Thread {
                 val status = try {
@@ -179,7 +182,7 @@ class WebViewInjector(
                     -1
                 }
                 val json = JSONObject().apply {
-                    put("type", ShellHandlerBase.EVENT_EXIT)
+                    put("type", -2)
                     put("message", status.toString())
                 }
                 webView.post {
@@ -195,6 +198,36 @@ class WebViewInjector(
                     readerError.interrupt()
                 }
                 onExit?.run()
+            }
+
+            scope.launch {
+                shellEventSource.events.collect { events ->
+                    when (events) {
+                        is ShellEvent.Log -> {
+                            val eventTypeInt = when(events.type) {
+                                ShellLogType.OUTPUT -> 2
+                                ShellLogType.OUTPUT_ERROR -> 4
+                                ShellLogType.INPUT -> 6
+                            }
+                            val json = JSONObject().apply {
+                                put("type", eventTypeInt)
+                                put("message", "${events.text}\n")
+                            }
+                            webView.post {
+                                webView.evaluateJavascript(
+                                    "$callbackFunction($json)"
+                                ) { }
+                            }
+                        }
+
+                        is ShellEvent.Exited -> {
+                            shellEventSource.destroy()
+                            scope.cancel()
+                        }
+
+                        else -> {}
+                    }
+                }
             }
 
             reader.start()
