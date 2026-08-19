@@ -22,4 +22,5 @@
     <string name="app_author"><![CDATA[应用作者: <名称>]]></string>
     <string name="title_about">关于</string>
     <string name="downloader_title">下载</string>
+    <string name="page_load_failed">页面%1$d 加载失败</string>
 </resources>

@@ -78,7 +78,7 @@ class ActionPageOnline : KrActivity() {
 
         pageConfigCompat?.let { node ->
             PageMenuLoader(applicationContext, node).load()?.let {
-                createMenu(binding.toolbar.menu, binding.floatingActionButton, it)
+                createOptionsMenu(binding.toolbar.menu, binding.floatingActionButton, it)
             }
         }
     }

@@ -9,7 +9,6 @@ import android.view.MenuItem
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.get
@@ -21,12 +20,9 @@ import androidx.viewpager2.widget.ViewPager2
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.app.databinding.ActivityMainBinding
 import com.krscripts.app.util.chooseFilePath
-import com.krscripts.core.config.PageConfigReader
-import com.krscripts.core.config.PageConfigSh
 import com.krscripts.core.model.ClickableNode
 import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.KrScriptActionHandler
-import com.krscripts.core.model.NavNode
 import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.ui.ActionListFragment
@@ -37,7 +33,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class MainActivity : KrActivity() {
-
+    private val context = this
     private var krScriptConfig = KrScriptConfig()
     lateinit var binding: ActivityMainBinding
     private val pageConfigCache = mutableMapOf<PageNode, ConfigNode>()
@@ -72,43 +68,39 @@ class MainActivity : KrActivity() {
 
             krScriptConfig = KrScriptConfig()
             val pageConfigs = krScriptConfig.pageListConfig
-            buildNavgationMenu(pageConfigs)
+            buildPages(pageConfigs)
 
             progressBarDialog.hideDialog()
         }
     }
 
-    private suspend fun buildNavgationMenu(pageConfigs: List<PageNode>) = withContext(Dispatchers.Main) {
-
-        val menu = binding.bottomNavView.menu
-        menu.clear()
+    private suspend fun buildPages(
+        pageConfigs: List<PageNode>
+    ) {
+        val navMenu = binding.bottomNavView.menu
+        navMenu.clear()
 
         pageConfigs.forEachIndexed { index, page ->
+            val config = page.getConfig(context)
 
-            val config = getConfig(page) ?: return@forEachIndexed
+            config?.let {
+                config.pageHandlerSh?.let { menuHandler = it }
+                pageConfigCache[page] = config
+                createOptionsMenu(binding.toolbar.menu, binding.fab, config.pageMenuOptions)
 
-            pageConfigCache[page] = config
-
-            config.pageHandlerSh.takeIf { it.isNotEmpty() }?.let {
-                menuHandler = it
-            }
-
-            createMenu(binding.toolbar.menu, binding.fab, config.pageMenuOptions)
-
-            val menuName =
-                config.content.lastOrNull()?.title?.takeIf { it.isNotEmpty() && config.content.last() is NavNode }
-                    ?: page.pageConfigPath.substringAfterLast('/')
-
-            menu.add(menuName).apply {
-                icon = ContextCompat.getDrawable(
-                    this@MainActivity,
-                    R.drawable.baseline_bookmark_24
-                )!!
-                setOnMenuItemClickListener {
-                    binding.viewPager.setCurrentItem(index, true)
-                    false
+                val menuName = config.title ?: page.pageConfigPath.substringAfterLast('/')
+                navMenu.add(menuName).apply {
+                    setIcon(R.drawable.baseline_bookmark_24)
+                    setOnMenuItemClickListener {
+                        binding.viewPager.setCurrentItem(index, true)
+                        false
+                    }
                 }
-            }
+            } ?: Toast.makeText(
+                context,
+                getString(R.string.page_load_failed, index),
+                Toast.LENGTH_SHORT
+            ).show()
         }
 
         binding.viewPager.apply {
@@ -123,22 +115,9 @@ class MainActivity : KrActivity() {
         })
     }
 
-    private fun getConfig(pageNode: PageNode): ConfigNode? {
-        var config: ConfigNode? = null
-
-        if (pageNode.pageConfigSh.isNotEmpty()) {
-            config = PageConfigSh(this, pageNode.pageConfigSh, null).execute()
-        }
-        if (config == null && pageNode.pageConfigPath.isNotEmpty()) {
-            config = PageConfigReader(this.applicationContext, pageNode.pageConfigPath, null).readConfigXml()
-        }
-
-        return config
-    }
-
     private fun reloadTab(pageNode: PageNode, index: Int) {
-        lifecycleScope.launch(Dispatchers.IO) {
-            val items = getConfig(pageNode)
+        lifecycleScope.launch {
+            val items = pageNode.getConfig(this@MainActivity)
             withContext(Dispatchers.Main) {
                 items?.let { newItems ->
                     val itemId = (binding.viewPager.adapter as? PageFragmentAdapter)?.getItemId(index) ?: return@withContext
@@ -247,7 +226,7 @@ class MainActivity : KrActivity() {
 
         override fun createFragment(position: Int): Fragment {
             val page = pages[position]
-            val items = configCache[page] ?: getConfig(page) ?: ConfigNode()
+            val items = configCache[page] ?: ConfigNode()
             return ActionListFragment.create(items.content, getKrScriptActionHandler(page, position), null, false)
         }
     }

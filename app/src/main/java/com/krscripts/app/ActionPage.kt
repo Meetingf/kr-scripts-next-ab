@@ -14,12 +14,9 @@ import com.krscripts.app.databinding.ActivityActionPageBinding
 import com.krscripts.app.util.chooseFilePath
 import com.krscripts.core.R
 import com.krscripts.core.TryOpenActivity
-import com.krscripts.core.config.PageConfigReader
-import com.krscripts.core.config.PageConfigSh
 import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.model.AutoRunTask
 import com.krscripts.core.model.ClickableNode
-import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.KrScriptActionHandler
 import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.PageNode
@@ -202,19 +199,7 @@ open class ActionPage : KrActivity() {
 
                 showDialog(getString(R.string.kr_page_loading))
 
-                var config: ConfigNode? = null
-
-                if (pageConfigSh.isNotEmpty()) {
-                    config = PageConfigSh(this@ActionPage, pageConfigSh, this).execute()
-                }
-
-                if (config == null && pageConfigPath.isNotEmpty()) {
-                    config = PageConfigReader(
-                        applicationContext,
-                        pageConfigPath,
-                        pageConfigDir
-                    ).readConfigXml()
-                }
+                val config = getConfig(this@ActionPage, this)
 
                 if (afterRead.isNotEmpty()) {
                     showDialog(getString(R.string.kr_page_after_load))
@@ -251,9 +236,9 @@ open class ActionPage : KrActivity() {
                             menuOptions.addAll(it)
                         }
 
-                        createMenu(binding.toolbar.menu, binding.actionPageFab, menuOptions)
+                        createOptionsMenu(binding.toolbar.menu, binding.actionPageFab, menuOptions)
 
-                        menuHandler = if (config.pageHandlerSh.isEmpty()) {
+                        menuHandler = if (config.pageHandlerSh.isNullOrEmpty()) {
                             pageConfigCompat.pageHandlerSh
                         } else {
                             (if (pageConfigCompat.pageHandlerSh.isNotEmpty()) "echo 已忽略引用处handler" else "") + config.pageHandlerSh

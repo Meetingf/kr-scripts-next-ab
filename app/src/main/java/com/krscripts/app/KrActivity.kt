@@ -1,5 +1,6 @@
 package com.krscripts.app
 
+import android.app.Activity
 import android.content.Intent
 import android.view.Menu
 import android.view.View
@@ -11,7 +12,11 @@ import com.krscripts.app.util.chooseFilePath
 import com.krscripts.app.util.handleFileSelectorResult
 import com.krscripts.core.R
 import com.krscripts.core.config.IconPathAnalysis
+import com.krscripts.core.config.PageConfigReader
+import com.krscripts.core.config.PageConfigSh
+import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.PageMenuOption
+import com.krscripts.core.model.PageNode
 import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.shell.ShellHiddenTask
 import com.krscripts.core.ui.dialog.DialogHelper
@@ -20,6 +25,7 @@ import com.krscripts.core.ui.dialog.ProgressBarDialog
 import com.krscripts.core.ui.param.FileChooserRender
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 open class KrActivity: AppCompatActivity() {
 
@@ -27,6 +33,22 @@ open class KrActivity: AppCompatActivity() {
     protected var menuExtra: MutableMap<Int, PageMenuOption> = mutableMapOf()
     protected var menuHandler: String? = null
     protected var fileSelectorInterface: FileChooserRender.FileSelectedInterface? = null
+
+    protected suspend fun PageNode.getConfig(context: Activity, parent: PageNode? = null): ConfigNode? {
+        return withContext(Dispatchers.IO) {
+            when {
+                pageConfigSh.isNotEmpty() -> {
+                    PageConfigSh(context, pageConfigSh, parent).getConfig()
+                }
+
+                pageConfigPath.isNotEmpty() -> {
+                    PageConfigReader(context.applicationContext, pageConfigPath, parent?.pageConfigDir).readConfigXml()
+                }
+
+                else -> null
+            }
+        }
+    }
 
     protected fun onMenuItemClick(
         menuOption: PageMenuOption
@@ -125,7 +147,7 @@ open class KrActivity: AppCompatActivity() {
         fileSelectorInterface?.let { chooseFilePath(it) }
     }
 
-    protected fun createMenu(
+    protected fun createOptionsMenu(
         menu: Menu,
         fab: FloatingActionButton,
         items: List<PageMenuOption>

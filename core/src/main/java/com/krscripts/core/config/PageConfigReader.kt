@@ -17,7 +17,6 @@ import com.krscripts.core.model.ClickableNode
 import com.krscripts.core.model.ConfigNode
 import com.krscripts.core.model.GroupNode
 import com.krscripts.core.model.ImageNode
-import com.krscripts.core.model.NavNode
 import com.krscripts.core.model.NodeInfoBase
 import com.krscripts.core.model.PageMenuOption
 import com.krscripts.core.model.PageNode
@@ -41,7 +40,11 @@ class PageConfigReader {
     private var pageConfigStream: InputStream? = null
     private var parentDir: String = ""
 
-    constructor(context: Context, pageConfig: String, parentDir: String?) {
+    constructor(
+        context: Context,
+        pageConfig: String,
+        parentDir: String? = null
+    ) {
         this.context = context
         this.pageConfig = pageConfig
         this.parentDir = parentDir ?: ""
@@ -87,13 +90,11 @@ class PageConfigReader {
 
             val config = ConfigNode()
             var currentGroup: GroupNode? = null
-            var currentNav: NavNode? = null
             var current: MainNode? = null
 
             fun addFinishedNode(node: NodeInfoBase) {
                 when {
                     currentGroup != null -> currentGroup!!.children.add(node)
-                    currentNav != null -> currentNav!!.children.add(node)
                     else -> config.content.add(node)
                 }
             }
@@ -103,7 +104,7 @@ class PageConfigReader {
                         val name = parser.name
                         when {
                             name == "nav" -> {
-                               currentNav = navNode(parser)
+                               config.title = navNode(parser)
                             }
                             name == "group" -> {
                                 currentGroup?.let { if (it.supported) addFinishedNode(it) }
@@ -158,10 +159,6 @@ class PageConfigReader {
                     }
                     XmlPullParser.END_TAG -> {
                         when (parser.name) {
-                            "nav" -> {
-                                currentNav?.let { config.content.add(it) }
-                                currentNav = null
-                            }
                             "group" -> {
                                 currentGroup?.let { if (it.supported) config.content.add(it) }
                                 currentGroup = null
@@ -516,11 +513,8 @@ class PageConfigReader {
         textNode.rows.add(textRow)
     }
 
-    private fun navNode(parser: XmlPullParser): NavNode {
-        val groupInfo = NavNode(pageConfigAbsPath)
-        parser.attrAny("key", "index", "id")?.let { groupInfo.key = it.trim() }
-        parser.attr("title")?.let { groupInfo.title = it }
-        return groupInfo
+    private fun navNode(parser: XmlPullParser): String? {
+        return parser.attr("title")
     }
 
     private fun groupNode(parser: XmlPullParser): GroupNode {
