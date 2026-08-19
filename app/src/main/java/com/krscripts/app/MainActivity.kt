@@ -78,7 +78,6 @@ class MainActivity : KrActivity() {
         pageConfigs: List<PageNode>
     ) {
         val navMenu = binding.bottomNavView.menu
-        navMenu.clear()
 
         var effectIndex = -1
         pageConfigs.forEachIndexed { index, page ->
