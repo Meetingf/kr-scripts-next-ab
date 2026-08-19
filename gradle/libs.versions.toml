@@ -3,7 +3,9 @@ agp = "9.3.1"
 appcompat = "1.7.1"
 coil = "3.5.0"
 constraintlayout = "2.2.1"
+junit = "4.13.2"
 kotlin = "2.4.10"
+kotlinxCoroutinesTest = "1.11.0"
 material = "1.14.0"
 activityKtx = "1.13.0"
 
@@ -13,6 +15,8 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 coil = { module = "io.coil-kt.coil3:coil", version.ref = "coil" }
 coil-gif = { module = "io.coil-kt.coil3:coil-gif", version.ref = "coil" }
 coil-network-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
+junit = { module = "junit:junit", version.ref = "junit" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 androidx-activity-ktx = { group = "androidx.activity", name = "activity-ktx", version.ref = "activityKtx" }
 

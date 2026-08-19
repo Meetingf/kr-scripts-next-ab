@@ -36,4 +36,7 @@ dependencies {
     implementation(libs.coil.network.okhttp)
     implementation(libs.coil.gif)
     implementation(libs.material)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
