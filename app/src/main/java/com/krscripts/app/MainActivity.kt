@@ -36,7 +36,7 @@ class MainActivity : KrActivity() {
     private val context = this
     private var krScriptConfig = KrScriptConfig()
     lateinit var binding: ActivityMainBinding
-    private val pageConfigCache = mutableMapOf<PageNode, ConfigNode>()
+    private val pageConfigCache = mutableMapOf<Int, Pair<PageNode, ConfigNode>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,19 +80,22 @@ class MainActivity : KrActivity() {
         val navMenu = binding.bottomNavView.menu
         navMenu.clear()
 
+        var effectIndex = -1
         pageConfigs.forEachIndexed { index, page ->
             val config = page.getConfig(context)
 
             config?.let {
+                effectIndex += 1
+                val effectIndex = effectIndex
                 config.pageHandlerSh?.let { menuHandler = it }
-                pageConfigCache[page] = config
+                pageConfigCache[effectIndex] = Pair(page, config)
                 createOptionsMenu(binding.toolbar.menu, binding.fab, config.pageMenuOptions)
 
                 val menuName = config.title ?: page.pageConfigPath.substringAfterLast('/')
                 navMenu.add(menuName).apply {
                     setIcon(R.drawable.baseline_bookmark_24)
                     setOnMenuItemClickListener {
-                        binding.viewPager.setCurrentItem(index, true)
+                        binding.viewPager.setCurrentItem(effectIndex, true)
                         false
                     }
                 }
@@ -104,7 +107,7 @@ class MainActivity : KrActivity() {
         }
 
         binding.viewPager.apply {
-            adapter = PageFragmentAdapter(this@MainActivity, pageConfigs, pageConfigCache)
+            adapter = PageFragmentAdapter(this@MainActivity, pageConfigCache)
             offscreenPageLimit = 2
         }
 
@@ -208,25 +211,24 @@ class MainActivity : KrActivity() {
 
     inner class PageFragmentAdapter(
         activity: FragmentActivity,
-        private val pages: List<PageNode>,
-        private val configCache: Map<PageNode, ConfigNode>
+        private val configCache: Map<Int, Pair<PageNode, ConfigNode>>
     ) : FragmentStateAdapter(activity) {
 
         private val sessionId: Long = System.nanoTime()
 
-        override fun getItemCount() = pages.size
+        override fun getItemCount() = configCache.size
 
         override fun getItemId(position: Int): Long {
             return sessionId + position
         }
 
         override fun containsItem(itemId: Long): Boolean {
-            return itemId in sessionId until (sessionId + pages.size)
+            return itemId in sessionId until (sessionId + configCache.size)
         }
 
         override fun createFragment(position: Int): Fragment {
-            val page = pages[position]
-            val items = configCache[page] ?: ConfigNode()
+            val page = configCache[position]!!.first
+            val items = configCache[position]!!.second
             return ActionListFragment.create(items.content, getKrScriptActionHandler(page, position), null, false)
         }
     }
