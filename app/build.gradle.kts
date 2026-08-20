@@ -12,9 +12,9 @@ android {
         applicationId = "com.krscripts.app"
         minSdk = 23
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
-        buildConfigField("String", "FRAMEWORK_VERSION", "\"0.1.0\"")
+        versionCode = 2
+        versionName = "0.2.0"
+        buildConfigField("String", "FRAMEWORK_VERSION", "\"0.2.0\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
