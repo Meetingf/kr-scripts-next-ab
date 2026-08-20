@@ -59,6 +59,7 @@
         </activity>
         <activity
             android:name=".SplashActivity"
+            android:noHistory="true"
             android:configChanges="keyboardHidden|orientation|layoutDirection|screenLayout|colorMode|fontScale|smallestScreenSize|density|keyboard|screenSize|touchscreen"
             android:exported="true">
             <intent-filter>

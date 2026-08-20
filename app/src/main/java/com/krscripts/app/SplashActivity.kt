@@ -129,15 +129,12 @@ class SplashActivity : ComponentActivity() {
     }
 
     private fun gotoHome() {
-        if (intent.getBooleanExtra("JumpActionPage", false)) {
-            val actionPage = Intent(applicationContext, ActionPage::class.java)
-            actionPage.putExtras(intent)
-            startActivity(actionPage)
+        val intent = if (intent.getBooleanExtra("JumpActionPage", false)) {
+            Intent(this, ActionPage::class.java).putExtras(intent)
         } else {
-            val home = Intent(applicationContext, MainActivity::class.java)
-            startActivity(home)
+            Intent(this, MainActivity::class.java)
         }
-        finish()
+        startActivity(intent)
     }
 
     suspend fun onLogOutput(
