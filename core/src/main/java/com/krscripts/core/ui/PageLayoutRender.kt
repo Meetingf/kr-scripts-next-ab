@@ -104,11 +104,10 @@ class PageLayoutRender(
                     return
                 } else {
                     val switchNode = itemNode as SwitchNode
+
                     item.setEnabled(false)
-                    println("set")
                     val onComplete = {
                         item.setEnabled(true)
-                        println("rel")
                         getCommonOnExitRunnable(switchNode, item).run()
                     }
                     clickListener.onSwitchClick(switchNode, onComplete)

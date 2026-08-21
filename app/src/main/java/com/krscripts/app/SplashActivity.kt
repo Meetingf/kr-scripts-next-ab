@@ -7,9 +7,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
-import androidx.activity.ComponentActivity
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -30,7 +30,7 @@ import java.io.IOException
 import kotlin.coroutines.resume
 
 @SuppressLint("CustomSplashScreen")
-class SplashActivity : ComponentActivity() {
+class SplashActivity : AppCompatActivity() {
 
     lateinit var binding: ActivitySplashBinding
     private var logs = ArrayList<String>()
@@ -57,7 +57,7 @@ class SplashActivity : ComponentActivity() {
     }
 
     private fun checkPermissions() {
-        binding.startStateText.text = getString(R.string.pio_permission_checking)
+        binding.splashLogView.text = getString(R.string.pio_permission_checking)
         lifecycleScope.launch {
             checkRoot {
                 withContext(Dispatchers.Main) {
@@ -118,10 +118,10 @@ class SplashActivity : ComponentActivity() {
         lifecycleScope.launch {
             if (config.beforeStartSh.isNotEmpty()) {
                 runBeforeStart(this@SplashActivity, config) { log ->
-                    onLogOutput(binding.startStateText, log)
+                    onLogOutput(binding.splashLogView, log)
                 }
             } else {
-                binding.startStateText.text = getString(R.string.pop_started)
+                binding.splashLogView.text = getString(R.string.pop_started)
             }
             gotoHome()
         }

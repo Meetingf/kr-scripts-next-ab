@@ -1,41 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/splash"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_gravity="center"
     android:background="?colorSurface"
-    android:backgroundTintMode="screen"
-    android:clipToPadding="true"
     android:fitsSystemWindows="false"
     android:gravity="center"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/fullscreen_content"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50sp"
-        android:gravity="center"
-        android:keepScreenOn="true"
-        android:text="@string/pio_starting"
-        android:textColor="?colorPrimary"
-        android:textSize="35sp"
-        android:textStyle="bold" />
+    <ImageView
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:contentDescription="@null"
+        android:src="@drawable/baseline_auto_awesome_24"
+        app:tint="?colorPrimary" />
 
     <TextView
-        android:id="@+id/start_state_text"
+        android:id="@+id/splash_log_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_marginStart="20dp"
-        android:layout_marginTop="15sp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginBottom="40sp"
-        android:minLines="8"
+        android:layout_margin="16dp"
+        android:maxLines="8"
         android:text="@string/pop_before_start"
         android:textAlignment="center"
-        android:textColor="?colorPrimary"
-        android:textSize="13sp" />
+        android:textAppearance="@style/TextAppearance.Material3.BodySmall"
+        android:textColor="?colorPrimary" />
 
 </LinearLayout>
