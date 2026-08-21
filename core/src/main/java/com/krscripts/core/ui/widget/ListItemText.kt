@@ -32,6 +32,11 @@ class ListItemText(
     private val rowsView = layout.findViewById<TextView?>(R.id.kr_rows)
 
     init {
+        if (config.selectable) {
+            descView?.setTextIsSelectable(true)
+            rowsView?.setTextIsSelectable(true)
+            summaryView?.setTextIsSelectable(true)
+        }
         if (config.rows.isNotEmpty() && rowsView != null) {
             rowsView.movementMethod = LinkMovementMethod.getInstance() // 不设置 ClickableSpan 点击没反应
             rowsView.visibility = View.VISIBLE

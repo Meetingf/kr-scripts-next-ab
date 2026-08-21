@@ -104,15 +104,18 @@ class PageConfigReader {
                         val name = parser.name
                         when {
                             name == "nav" -> {
-                               config.title = navNode(parser)
+                                config.title = navNode(parser)
                             }
+
                             name == "group" -> {
                                 currentGroup?.let { if (it.supported) addFinishedNode(it) }
                                 currentGroup = groupNode(parser)
                             }
+
                             currentGroup?.supported == false -> {
                                 // 当前 group 不支持，跳过其内所有项
                             }
+
                             name == "page" -> {
                                 current = (clickableNode(
                                     PageNode(pageConfigAbsPath),
@@ -120,35 +123,62 @@ class PageConfigReader {
                                 ) as PageNode?)
                                     ?.let { MainNode.Page(pageNode(it, parser)) }
                             }
+
                             name == "action" -> {
-                                current = (runnableNode(ActionNode(pageConfigAbsPath), parser) as ActionNode?)
+                                current = (runnableNode(
+                                    ActionNode(pageConfigAbsPath),
+                                    parser
+                                ) as ActionNode?)
                                     ?.let { MainNode.Action(it) }
                             }
+
                             name == "image" -> {
-                                current = (runnableNode(ImageNode(pageConfigAbsPath), parser) as ImageNode?)
+                                current = (runnableNode(
+                                    ImageNode(pageConfigAbsPath),
+                                    parser
+                                ) as ImageNode?)
                                     ?.let { MainNode.Image(it) }
                             }
+
                             name == "switch" -> {
-                                current = (runnableNode(SwitchNode(pageConfigAbsPath), parser) as SwitchNode?)
+                                current = (runnableNode(
+                                    SwitchNode(pageConfigAbsPath),
+                                    parser
+                                ) as SwitchNode?)
                                     ?.let { MainNode.Switch(it) }
                             }
+
                             name == "picker" -> {
-                                current = (runnableNode(PickerNode(pageConfigAbsPath), parser) as PickerNode?)?.let {
+                                current = (runnableNode(
+                                    PickerNode(pageConfigAbsPath),
+                                    parser
+                                ) as PickerNode?)?.let {
                                     pickerNode(it, parser)
                                     MainNode.Picker(it)
                                 }
                             }
+
                             name == "text" -> {
-                                current = (mainNode(TextNode(pageConfigAbsPath), parser) as TextNode?)
-                                    ?.let { MainNode.Text(it) }
+                                current = (mainNode(
+                                    TextNode(pageConfigAbsPath),
+                                    parser
+                                ) as TextNode?)?.let {
+                                    textNode(it, parser)
+                                    MainNode.Text(it)
+                                }
                             }
+
                             name == "menu" -> {
                                 current = MainNode.Options(ArrayList())
                             }
+
                             else -> when (val c = current) {
                                 is MainNode.Page -> tagStartInPage(c.node, parser)
                                 is MainNode.Action -> tagStartInAction(c.node, parser)
-                                is MainNode.Image -> { tagStartInImageNode(c.node, parser) }
+                                is MainNode.Image -> {
+                                    tagStartInImageNode(c.node, parser)
+                                }
+
                                 is MainNode.Switch -> tagStartInSwitch(c.node, parser)
                                 is MainNode.Picker -> tagStartInPicker(c.node, parser)
                                 is MainNode.Text -> tagStartInText(c.node, parser)
@@ -157,41 +187,49 @@ class PageConfigReader {
                             }
                         }
                     }
+
                     XmlPullParser.END_TAG -> {
                         when (parser.name) {
                             "group" -> {
                                 currentGroup?.let { if (it.supported) config.content.add(it) }
                                 currentGroup = null
                             }
+
                             "page" -> (current as? MainNode.Page)?.let {
                                 tagEndInPage(it.node)
                                 addFinishedNode(it.node)
                                 current = null
                             }
+
                             "action" -> (current as? MainNode.Action)?.let {
                                 tagEndInAction(it.node)
                                 addFinishedNode(it.node)
                                 current = null
                             }
+
                             "image" -> (current as? MainNode.Image)?.let {
                                 it.node.allowShortcut = false
                                 addFinishedNode(it.node)
                                 current = null
                             }
+
                             "switch" -> (current as? MainNode.Switch)?.let {
                                 tagEndInSwitch(it.node)
                                 addFinishedNode(it.node)
                                 current = null
                             }
+
                             "picker" -> (current as? MainNode.Picker)?.let {
                                 tagEndInPicker(it.node)
                                 addFinishedNode(it.node)
                                 current = null
                             }
+
                             "text" -> (current as? MainNode.Text)?.let {
                                 addFinishedNode(it.node)
                                 current = null
                             }
+
                             "menu" -> (current as? MainNode.Options)?.let { opts ->
                                 config.pageMenuOptions.addAll(opts.node)
                                 current = null
@@ -464,6 +502,15 @@ class PageConfigReader {
             pickerNode.value = executeResultRootCached(getState)
         }
         if (pickerNode.setState == null) pickerNode.setState = ""
+    }
+
+    private fun textNode(
+        node: TextNode,
+        parser: XmlPullParser
+    ) {
+        parser.attr("selectable")?.let {
+            node.selectable = isTruthy(it, "selectable")
+        }
     }
 
     private fun tagStartInText(textNode: TextNode, parser: XmlPullParser) {

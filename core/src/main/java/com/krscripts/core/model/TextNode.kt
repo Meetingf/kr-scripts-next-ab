@@ -3,6 +3,7 @@ package com.krscripts.core.model
 import android.text.Layout
 
 class TextNode(currentPageConfigPath: String) : NodeInfoBase(currentPageConfigPath) {
+    var selectable: Boolean = false
     val rows = ArrayList<TextRow>()
 
     class TextRow {
