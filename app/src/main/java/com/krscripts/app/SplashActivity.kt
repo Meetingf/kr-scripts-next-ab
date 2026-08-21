@@ -2,6 +2,7 @@ package com.krscripts.app
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.app.ActivityOptions
 import android.app.Dialog
 import android.content.Context
 import android.content.Intent
@@ -134,7 +135,14 @@ class SplashActivity : AppCompatActivity() {
         } else {
             Intent(this, MainActivity::class.java)
         }
-        startActivity(intent)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        val options = ActivityOptions.makeCustomAnimation(
+            this,
+            R.anim.fade_in_fast,
+            0
+        )
+        startActivity(intent, options.toBundle())
+        finish()
     }
 
     suspend fun onLogOutput(
