@@ -3,7 +3,7 @@ package com.krscripts.core.ui.widget
 import android.content.Context
 import android.graphics.Typeface
 import android.text.Layout
-import android.text.SpannableString
+import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.TextPaint
 import android.text.method.LinkMovementMethod
@@ -34,94 +34,106 @@ class ListItemText(
     init {
         if (config.rows.isNotEmpty() && rowsView != null) {
             rowsView.movementMethod = LinkMovementMethod.getInstance() // 不设置 ClickableSpan 点击没反应
-            // rowsView.setOnClickListener {}
-
             rowsView.visibility = View.VISIBLE
+
+            val builder = SpannableStringBuilder()
             for (row in config.rows) {
-                if (row.breakRow || row.align != Layout.Alignment.ALIGN_NORMAL) {
-                    rowsView.append("\n")
-                }
-                val text = row.text
-                val length = text.length
-                val spannableString = SpannableString(text)
+                builder.apply {
+                    if (row.breakRow || row.align != Layout.Alignment.ALIGN_NORMAL) {
+                        appendLine()
+                    }
 
+                    val start = length
+                    append(row.text)
+                    val end = length
 
-                if (row.underline) {
-                    spannableString.setSpan(UnderlineSpan(), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
+                    fun setSpan(span: Any) {
+                        builder.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
 
-                if (row.link.isNotEmpty()) {
-                    spannableString.setSpan(object : ClickableSpan() {
-                        override fun onClick(widget: View) {
-                            if (row.link.isNotEmpty()) {
-                                context.startActivityLink(row.link)
+                    fun updateDrawState(ds: TextPaint) {
+                        ds.color = if (row.color != 1) ds.linkColor else row.color
+                        ds.isUnderlineText = row.underline
+                    }
+
+                    if (row.underline) {
+                        setSpan(UnderlineSpan())
+                    }
+
+                    if (row.link.isNotEmpty()) {
+                        setSpan(object : ClickableSpan() {
+                            override fun onClick(widget: View) {
+                                if (row.link.isNotEmpty()) {
+                                    context.startActivityLink(row.link)
+                                }
                             }
-                        }
 
-                        override fun updateDrawState(ds: TextPaint) {
-                            ds.color = if (row.color != 1) ds.linkColor else row.color
-                            ds.isUnderlineText = row.underline
-                        }
-                    }, 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-
-                if (row.activity.isNotEmpty()) {
-                    spannableString.setSpan(object : ClickableSpan() {
-                        override fun onClick(widget: View) {
-                            TryOpenActivity(context, row.activity).tryOpen()
-                        }
-
-                        override fun updateDrawState(ds: TextPaint) {
-                            ds.color = if (row.color != 1) ds.linkColor else row.color
-                            ds.isUnderlineText = row.underline
-                        }
-                    }, 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-
-                if (row.onClickScript.isNotEmpty()) {
-                    spannableString.setSpan(object : ClickableSpan() {
-                        override fun onClick(widget: View) {
-                            val result = ScriptEnvironment.executeResultRoot(context, row.onClickScript, config)
-                            if (result.trim().isNotEmpty()) {
-                                DialogHelper.openInfoAlert(context, context.getString(R.string.kr_slice_script_result), result)
+                            override fun updateDrawState(ds: TextPaint) {
+                                updateDrawState(ds)
                             }
-                        }
+                        })
+                    }
 
-                        override fun updateDrawState(ds: TextPaint) {
-                            ds.color = if (row.color != 1) ds.linkColor else row.color
-                            ds.isUnderlineText = row.underline
-                        }
-                    }, 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
+                    if (row.activity.isNotEmpty()) {
+                        setSpan(object : ClickableSpan() {
+                            override fun onClick(widget: View) {
+                                TryOpenActivity(context, row.activity).tryOpen()
+                            }
+
+                            override fun updateDrawState(ds: TextPaint) {
+                                updateDrawState(ds)
+                            }
+                        })
+                    }
+
+                    if (row.onClickScript.isNotEmpty()) {
+                        setSpan(object : ClickableSpan() {
+                            override fun onClick(widget: View) {
+                                val result = ScriptEnvironment.executeResultRoot(
+                                    context,
+                                    row.onClickScript,
+                                    config
+                                )
+                                if (result.trim().isNotEmpty()) {
+                                    DialogHelper.openInfoAlert(context, context.getString(R.string.kr_slice_script_result), result)
+                                }
+                            }
+
+                            override fun updateDrawState(ds: TextPaint) {
+                                updateDrawState(ds)
+                            }
+                        })
+                    }
+
+                    if (row.color != -1) {
+                        setSpan(ForegroundColorSpan(row.color))
+                    }
+
+                    if (row.bgColor != -1) {
+                        setSpan(BackgroundColorSpan(row.bgColor))
+                    }
+
+                    val textStyle = when {
+                        row.bold && row.italic -> Typeface.BOLD_ITALIC
+                        row.bold -> Typeface.BOLD
+                        row.italic -> Typeface.ITALIC
+                        else -> null
+                    }
+
+                    textStyle?.let {
+                        setSpan(StyleSpan(it))
+                    }
+
+                    if (row.size != -1) {
+                        setSpan(AbsoluteSizeSpan(row.size, true))
+                    }
+
+                    setSpan(AlignmentSpan.Standard(row.align))
                 }
-
-                if (row.color != -1) {
-                    spannableString.setSpan(ForegroundColorSpan(row.color), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-
-                if (row.bgColor != -1) {
-                    spannableString.setSpan(BackgroundColorSpan(row.bgColor), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-
-                if (row.bold && row.italic) {
-                    spannableString.setSpan(StyleSpan(Typeface.BOLD_ITALIC), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                } else if (row.bold) {
-                    spannableString.setSpan(StyleSpan(Typeface.BOLD), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                } else if (row.italic) {
-                    spannableString.setSpan(StyleSpan(Typeface.ITALIC), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-
-                if (row.size != -1) {
-                    spannableString.setSpan(AbsoluteSizeSpan(row.size, true), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                }
-
-                spannableString.setSpan(AlignmentSpan.Standard(row.align), 0, length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-
-                rowsView.append(spannableString)
             }
+            rowsView.append(builder)
             // NOTE: 修补 android.widget.Editor.touchPositionIsInSelection(Editor.java:1363) 导致的奔溃
-            rowsView.setOnLongClickListener {
-                true
-            }
+            rowsView.setOnLongClickListener { true }
         } else {
             rowsView?.visibility = View.GONE
         }
