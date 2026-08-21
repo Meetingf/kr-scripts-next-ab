@@ -54,8 +54,8 @@
         <page config="samples/icons.xml" title="图标与图片" />
     </group>
 
-    <group title="Web引擎">
-        <page config="samples/web.xml" title="网页引擎测试" />
+    <group title="Web">
+        <page config="samples/web.xml" title="网页和下载" />
     </group>
 
 </nav>

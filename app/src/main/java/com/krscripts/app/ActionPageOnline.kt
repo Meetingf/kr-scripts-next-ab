@@ -170,16 +170,15 @@ class ActionPageOnline : KrActivity() {
                 message: String?,
                 result: JsResult?
             ): Boolean {
-                DialogHelper.animDialog(
-                    this@ActionPageOnline,
-                    MaterialAlertDialogBuilder(this@ActionPageOnline)
-                        .setMessage(message)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.btn_confirm) { _, _ -> }
-                        .setOnDismissListener {
-                            result?.confirm()
-                        }
-                )
+                val dialog = MaterialAlertDialogBuilder(this@ActionPageOnline)
+                    .setTitle("此网页显示")
+                    .setMessage(message)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.btn_confirm) { _, _ ->
+                        result?.confirm()
+                    }
+
+                DialogHelper.animDialog(this@ActionPageOnline, dialog)
                 return true
             }
 
@@ -189,18 +188,18 @@ class ActionPageOnline : KrActivity() {
                 message: String?,
                 result: JsResult?
             ): Boolean {
-                DialogHelper.animDialog(
-                    this@ActionPageOnline,
-                    MaterialAlertDialogBuilder(this@ActionPageOnline)
-                        .setMessage(message)
-                        .setCancelable(false)
-                        .setPositiveButton(R.string.btn_confirm) { _, _ ->
-                            result?.confirm()
-                        }
-                        .setNeutralButton(R.string.btn_cancel) { _, _ ->
-                            result?.cancel()
-                        }
-                )
+                val dialog = MaterialAlertDialogBuilder(this@ActionPageOnline)
+                    .setTitle("此网页显示")
+                    .setMessage(message)
+                    .setCancelable(false)
+                    .setPositiveButton(R.string.btn_confirm) { _, _ ->
+                        result?.confirm()
+                    }
+                    .setNeutralButton(R.string.btn_cancel) { _, _ ->
+                        result?.cancel()
+                    }
+
+                DialogHelper.animDialog(this@ActionPageOnline, dialog)
                 return true
             }
 

@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="utf-8">
+    <meta content="width=device-width,initial-scale=1.0" name="viewport">
+    <title>KrScript</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 24px;
+            padding: 16px 16px 16px;
+        }
+
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            padding: 24px;
+            width: 100%;
+            max-width: 560px;
+        }
+
+        #infoContainer {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: #fafafa;
+            border-radius: 10px;
+        }
+
+        .info-label {
+            color: #666;
+            font-size: 14px;
+            white-space: nowrap;
+            padding-right: 32px;
+        }
+
+        .info-value {
+            color: #222;
+            font-size: 14px;
+            font-weight: 500;
+            text-align: right;
+            word-break: break-all;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        button {
+            border: none;
+            background: #5a7fcb;
+            color: #fff;
+            padding: 12px 28px;
+            border-radius: 30px;
+            font-size: 15px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            outline: none;
+        }
+
+        .output-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        #asyncOutput {
+            text-align: left;
+            margin: 0;
+            padding: 16px;
+            background: #f7f8fa;
+            border-radius: 12px;
+            white-space: pre-wrap;
+            font-size: 13px;
+            line-height: 1.5;
+            color: #333;
+            min-height: 80px;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div id="infoContainer">
+        <div class="info-row">
+            <span class="info-label">Android 版本</span>
+            <span class="info-value" id="androidVersion">获取中...</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Kernel 版本</span>
+            <span class="info-value" id="kernelVersion">获取中...</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Root 状态</span>
+            <span class="info-value" id="rootStatus">获取中...</span>
+        </div>
+    </div>
+</div>
+
+<div class="card button-group">
+    <button onclick="alert('Ciallo~')" type="button">显示弹窗</button>
+    <button onclick="document.getElementById('fileInput').click()" type="button">文件选择</button>
+    <button onclick="runScript()" type="button">执行命令</button>
+    <button onclick="runAsyncScript()" type="button">异步执行命令</button>
+</div>
+
+<input type="file" id="fileInput" accept="*/*" style="display:none;">
+
+<div class="card">
+    <div class="output-title">输出</div>
+    <pre id="asyncOutput"></pre>
+</div>
+
+<script>
+    document.getElementById('fileInput').addEventListener('change', function (e) {
+        const file = e.target.files[0];
+        if (file) {
+            alert('选中文件：' + file.name);
+        } else {
+            alert('文件已丢失');
+        }
+    });
+
+    function runScript() {
+        try {
+            const result = KrWebBridge.executeShell('echo "喵喵喵"');
+            alert(result);
+        } catch (e) {
+            alert('执行失败：' + e.message);
+        }
+    }
+
+    function onAsyncResult(result) {
+        const outputDiv = document.getElementById('asyncOutput');
+        if (result && result.message === '0') {
+            outputDiv.textContent += '脚本运行结束\n';
+        } else {
+           outputDiv.textContent += result.message;
+        }
+    }
+
+    function runAsyncScript() {
+        const outputDiv = document.getElementById('asyncOutput');
+        outputDiv.textContent = '开始煮面...\n';
+        KrWebBridge.executeShellAsync(
+            'echo "开火~"; sleep 1; ' +
+            'echo "放入面条..."; sleep 1; ' +
+            'echo "加亿点魔法..."; sleep 2; ' +
+            'echo "偷偷尝一口..."; sleep 1; ' +
+            'echo "煮好啦~"',
+            'onAsyncResult',
+            null
+        );
+    }
+
+    function loadDeviceInfo() {
+        try {
+            const android = KrWebBridge.executeShell('getprop ro.build.version.release');
+            document.getElementById('androidVersion').textContent = String(android).trim() || '未知';
+        } catch (e) {
+            document.getElementById('androidVersion').textContent = '获取失败';
+        }
+
+        try {
+            const kernel = KrWebBridge.executeShell('uname -r');
+            document.getElementById('kernelVersion').textContent = String(kernel).trim() || '未知';
+        } catch (e) {
+            document.getElementById('kernelVersion').textContent = '获取失败';
+        }
+
+        try {
+            const isRooted = KrWebBridge.rootCheck();
+            const rootStatusEl = document.getElementById('rootStatus');
+            if (isRooted) {
+                rootStatusEl.textContent = '已 Root';
+                rootStatusEl.style.color = '#27ae60';
+            } else {
+                rootStatusEl.textContent = '未 Root';
+                rootStatusEl.style.color = '#e74c3c';
+            }
+        } catch (e) {
+            document.getElementById('rootStatus').textContent = '获取失败';
+            document.getElementById('rootStatus').style.color = '#999';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadDeviceInfo);
+</script>
+</body>
+</html>

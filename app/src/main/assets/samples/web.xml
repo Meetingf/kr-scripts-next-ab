@@ -1,32 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <config>
+
     <group>
-        <page html="https://www.example.com" title="远程网页加载测试" />
-        <!--html属性不支持省略file:///android_asset/前缀-->
-        <page html="file:///android_asset/samples/html-test/index.html" title="本地网页加载测试" />
+        <text>
+            <title>简介</title>
+            <desc>Kr scripts 实现了网页接口，以在网页内执行 Shell 脚本 (请不要添加不信任的网页)</desc>
+        </text>
     </group>
 
-    <group>
+    <group title="网页">
+        <page html="https://www.example.com" title="在线网页" />
+        <!--html属性不支持省略file:///android_asset/前缀-->
+        <page html="file:///android_asset/samples/web/index.html" title="内置网页" />
         <action>
-            <title>调用内置的网页浏览界面</title>
-            <desc>am start -a android.intent.action.MAIN -n "$activity" --es url "$url"</desc>
+            <title>从命令行启动</title>
+            <desc>ActionPageOnline</desc>
             <script>
-                # 使用am start启动activity的说明
-                # 添加Extras
-                # --ei 整数参数【extra integer】
-                # --es 字符串参数【extra string】
-                # --ez Boolean【extra boolean】
-
                 url="https://www.example.com"
                 activity="$PACKAGE_NAME/com.krscripts.app.ActionPageOnline"
                 am start -a android.intent.action.MAIN -n "$activity" --es url "$url"
-
-                # 对应到Java中取出参数的过程
-                # Intent intent = getIntent();
-                # String webPage = intent.getStringExtra("url");
             </script>
         </action>
+    </group>
 
+    <group title="下载">
         <action>
             <title>下载文件</title>
             <desc>内置下载器</desc>
