@@ -36,7 +36,7 @@ class MainActivity : KrActivity() {
     private val context = this
     private var krScriptConfig = KrScriptConfig()
     lateinit var binding: ActivityMainBinding
-    private val pageConfigCache = mutableMapOf<Int, Pair<PageNode, ConfigNode>>()
+    private val pageConfigCache = mutableListOf<Pair<PageNode, ConfigNode>>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -77,15 +77,12 @@ class MainActivity : KrActivity() {
     private suspend fun buildPages(
         pageConfigs: List<PageNode>
     ) {
-        var effectIndex = -1
         pageConfigs.forEachIndexed { index, page ->
             val config = page.getConfig(context)
 
             config?.let {
-                effectIndex += 1
-                val effectIndex = effectIndex
                 config.pageHandlerSh?.let { menuHandler = it }
-                pageConfigCache[effectIndex] = Pair(page, config)
+                pageConfigCache.add(Pair(page, config))
             } ?: Toast.makeText(
                 context,
                 getString(R.string.page_load_failed, index),
@@ -96,15 +93,13 @@ class MainActivity : KrActivity() {
         val navMenu = binding.bottomNavView.menu
         navMenu.clear()
 
-        for (entry in pageConfigCache) {
-            val config = entry.value.second
-            val page = entry.value.first
+        pageConfigCache.forEachIndexed { index, (page, config) ->
             createOptionsMenu(binding.toolbar.menu, binding.fab, config.pageMenuOptions)
             val menuName = config.title ?: page.pageConfigPath.substringAfterLast('/')
             navMenu.add(menuName).apply {
                 setIcon(R.drawable.baseline_bookmark_24)
                 setOnMenuItemClickListener {
-                    binding.viewPager.setCurrentItem(entry.key, true)
+                    binding.viewPager.setCurrentItem(index, true)
                     false
                 }
             }
@@ -215,7 +210,7 @@ class MainActivity : KrActivity() {
 
     inner class PageFragmentAdapter(
         activity: FragmentActivity,
-        private val configCache: Map<Int, Pair<PageNode, ConfigNode>>
+        private val configCache: List<Pair<PageNode, ConfigNode>>
     ) : FragmentStateAdapter(activity) {
 
         private val sessionId: Long = System.nanoTime()
@@ -231,8 +226,8 @@ class MainActivity : KrActivity() {
         }
 
         override fun createFragment(position: Int): Fragment {
-            val page = configCache[position]!!.first
-            val items = configCache[position]!!.second
+            val page = configCache[position].first
+            val items = configCache[position].second
             return ActionListFragment.create(items.content, getKrScriptActionHandler(page, position), null, false)
         }
     }
