@@ -136,8 +136,10 @@ class PageConfigReader {
                                 current = (runnableNode(
                                     ImageNode(pageConfigAbsPath),
                                     parser
-                                ) as ImageNode?)
-                                    ?.let { MainNode.Image(it) }
+                                ) as ImageNode?)?.let {
+                                    imageNode(it, parser)
+                                    MainNode.Image(it)
+                                }
                             }
 
                             name == "switch" -> {
@@ -175,10 +177,7 @@ class PageConfigReader {
                             else -> when (val c = current) {
                                 is MainNode.Page -> tagStartInPage(c.node, parser)
                                 is MainNode.Action -> tagStartInAction(c.node, parser)
-                                is MainNode.Image -> {
-                                    tagStartInImageNode(c.node, parser)
-                                }
-
+                                is MainNode.Image -> { /* Placeholder */ }
                                 is MainNode.Switch -> tagStartInSwitch(c.node, parser)
                                 is MainNode.Picker -> tagStartInPicker(c.node, parser)
                                 is MainNode.Text -> tagStartInText(c.node, parser)
@@ -596,14 +595,15 @@ class PageConfigReader {
         return base
     }
 
-    private fun tagStartInImageNode(imageNode: ImageNode, parser: XmlPullParser) {
-        when(parser.name) {
-            "src" -> imageNode.image = parser.nextText()
-            "clip" -> imageNode.iconClip = parser.nextText()
-            "scale" -> imageNode.scale = parser.nextText()
-            "width" -> imageNode.width = parser.nextText()
-            "height" -> imageNode.height = parser.nextText()
-        }
+    private fun imageNode(
+        imageNode: ImageNode,
+        parser: XmlPullParser
+    ) {
+        parser.attr("src")?.let { imageNode.image = it }
+        parser.attr("clip")?.let { imageNode.iconClip = it }
+        parser.attr("scale")?.let { imageNode.scale = it }
+        parser.attr("width")?.let { imageNode.width = it }
+        parser.attr("height")?.let { imageNode.height = it }
     }
 
     private fun runnableNode(node: RunnableNode, parser: XmlPullParser): RunnableNode? {

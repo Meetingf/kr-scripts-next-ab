@@ -13,18 +13,14 @@
         <action id="web_ic" clip="30" icon="https://cdn-icons-png.flaticon.com/128/6422/6422199.png">
             <title>图标喵</title>
         </action>
-        <image>
-            <src>https://www.dmoe.cc/random.php</src>
-            <!--所有内容都在里面-->
-            <scale>centerInside</scale>
-            <clip>64</clip>
-        </image>
-        <image>
-            <src>https://www.dmoe.cc/random.php</src>
-            <!--裁剪到匹配高度-->
-            <scale>centerCrop</scale>
-            <height>2560</height>
-            <clip>128</clip>
-        </image>
+        <image
+            src="https://www.dmoe.cc/random.php"
+            scale="centerInside"
+            clip="64" />
+        <image
+            src="https://www.dmoe.cc/random.php"
+            scale="centerCrop"
+            height="2560"
+            clip="128" />
     </group>
 </config>
