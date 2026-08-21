@@ -77,8 +77,6 @@ class MainActivity : KrActivity() {
     private suspend fun buildPages(
         pageConfigs: List<PageNode>
     ) {
-        val navMenu = binding.bottomNavView.menu
-
         var effectIndex = -1
         pageConfigs.forEachIndexed { index, page ->
             val config = page.getConfig(context)
@@ -88,21 +86,28 @@ class MainActivity : KrActivity() {
                 val effectIndex = effectIndex
                 config.pageHandlerSh?.let { menuHandler = it }
                 pageConfigCache[effectIndex] = Pair(page, config)
-                createOptionsMenu(binding.toolbar.menu, binding.fab, config.pageMenuOptions)
-
-                val menuName = config.title ?: page.pageConfigPath.substringAfterLast('/')
-                navMenu.add(menuName).apply {
-                    setIcon(R.drawable.baseline_bookmark_24)
-                    setOnMenuItemClickListener {
-                        binding.viewPager.setCurrentItem(effectIndex, true)
-                        false
-                    }
-                }
             } ?: Toast.makeText(
                 context,
                 getString(R.string.page_load_failed, index),
                 Toast.LENGTH_SHORT
             ).show()
+        }
+
+        val navMenu = binding.bottomNavView.menu
+        navMenu.clear()
+
+        for (entry in pageConfigCache) {
+            val config = entry.value.second
+            val page = entry.value.first
+            createOptionsMenu(binding.toolbar.menu, binding.fab, config.pageMenuOptions)
+            val menuName = config.title ?: page.pageConfigPath.substringAfterLast('/')
+            navMenu.add(menuName).apply {
+                setIcon(R.drawable.baseline_bookmark_24)
+                setOnMenuItemClickListener {
+                    binding.viewPager.setCurrentItem(entry.key, true)
+                    false
+                }
+            }
         }
 
         binding.viewPager.apply {
