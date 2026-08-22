@@ -93,34 +93,35 @@ class ParamLayoutRender(
     fun renderList(actionParamInfos: ArrayList<ActionParamInfo>, fileChooser: FileChooserRender.FileChooserInterface?) {
         for (actionParamInfo in actionParamInfos) {
             val options = actionParamInfo.optionsFromShell
-            val render: ParamRenderer = when(actionParamInfo.type) {
-                // CheckBox
-                "bool", "checkbox" -> CheckboxRender(actionParamInfo, context)
-                // Switch
-                "switch" -> SwitchRender(actionParamInfo, context)
-                // SeekBar
-                "seekbar" -> SliderRender(actionParamInfo, context)
-                // FileSelector
-                "file", "folder" -> FileChooserRender(actionParamInfo, context, fileChooser)
-                // AppsSelector
-                "app", "packages" -> AppChooserRender(actionParamInfo, context)
-                // ColorPicker
-                "color" -> ColorPickerRender(actionParamInfo, context)
-
-                else -> {
-                    if (options != null) {
-                        // Selector
-                        if (actionParamInfo.multiple) {
-                            MultipleSelectRender(actionParamInfo, context)
-                        } else {
-                            SingleSelectRender(actionParamInfo, context)
-                        }
+            val render: ParamRenderer =
+                if (!options.isNullOrEmpty()) {
+                    // Picker
+                    if (actionParamInfo.multiple) {
+                        MultipleSelectRender(actionParamInfo, context)
                     } else {
-                        // EditText
-                        EditTextRender(actionParamInfo, context)
+                        SingleSelectRender(actionParamInfo, context)
+                    }
+                } else {
+                    when (actionParamInfo.type) {
+                        // CheckBox
+                        "bool", "checkbox" -> CheckboxRender(actionParamInfo, context)
+                        // Switch
+                        "switch" -> SwitchRender(actionParamInfo, context)
+                        // SeekBar
+                        "seekbar" -> SliderRender(actionParamInfo, context)
+                        // FileSelector
+                        "file", "folder" -> FileChooserRender(actionParamInfo, context, fileChooser)
+                        // AppsSelector
+                        "app", "packages" -> AppChooserRender(actionParamInfo, context)
+                        // ColorPicker
+                        "color" -> ColorPickerRender(actionParamInfo, context)
+
+                        else -> {
+                            // EditText
+                            EditTextRender(actionParamInfo, context)
+                        }
                     }
                 }
-            }
 
             addRender(actionParamInfo, render)
         }
