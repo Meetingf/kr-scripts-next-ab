@@ -3,26 +3,26 @@
     <group>
         <picker>
             <title>单选</title>
-            <summary sh="echo -n '当前选中：'; getprop kr.picker.1" />
+            <summary sh="echo -n '当前选中：'; pref_get picker_a" />
             <options>
                 <option value="1">选项 1</option>
                 <option value="2">选项 2</option>
             </options>
-            <get>getprop kr.picker.1</get>
-            <set>setprop kr.picker.1 $state</set>
+            <get>pref_get picker_a</get>
+            <set>pref_set picker_a $state</set>
         </picker>
         <picker options-sh="echo 'a|选项A'; echo 'b|选项B'">
             <title>单选（由脚本输出选项）</title>
-            <summary sh="echo -n '当前选中：'; getprop kr.picker.2" />
-            <get>getprop kr.picker.2</get>
-            <set>setprop kr.picker.2 "$state"</set>
+            <summary sh="echo -n '当前选中：'; pref_get picker_b" />
+            <get>pref_get picker_b</get>
+            <set>pref_set picker_b "$state"</set>
         </picker>
 
         <picker multiple="multiple" options-sh="echo 'a|选项A'; echo 'b|选项B'" separator="|">
             <title>多选</title>
-            <get>getprop kr.picker.3</get>
-            <summary sh="echo -n '当前选中：'; getprop kr.picker.3" />
-            <set>setprop kr.picker.3 "$state"</set>
+            <get>pref_get picker_c</get>
+            <summary sh="echo -n '当前选中：'; pref_get picker_c" />
+            <set>pref_set picker_c "$state"</set>
         </picker>
     </group>
 

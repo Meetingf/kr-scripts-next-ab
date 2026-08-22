@@ -14,12 +14,12 @@
             <title>reload 属性测试</title>
             <desc>会刷新当前界面喵</desc>
             <script>
-                setprop kr.time.date "$(date)"
+                pref_set app_time "$(date)"
             </script>
         </action>
         <text>
-            <title>kr.time.date 当前值</title>
-            <desc sh="getprop kr.time.date" />
+            <title>app_time 当前值</title>
+            <desc sh="pref_get app_time" />
         </text>
         <text>
             <slices>
@@ -32,18 +32,18 @@
     <group title="指定节点刷新" id="group-1">
         <text id="node-1">
             <title>我是个要被刷新的节点</title>
-            <summary sh="getprop kr.time.date" />
+            <summary sh="pref_get app_time" />
         </text>
         <action id="@node-2">
             <title>我也是要被刷新的节点</title>
-            <summary sh="getprop kr.time.date" />
+            <summary sh="pref_get app_time" />
         </action>
 
         <action reload="node-1" shell="hidden">
             <title>刷新第一项</title>
             <desc>执行以刷新 node-1</desc>
             <script>
-                setprop kr.time.date "$(date)"
+                pref_set app_time "$(date)"
             </script>
         </action>
 
@@ -51,7 +51,7 @@
             <title>刷新第二项</title>
             <desc>执行以刷新 @node-2</desc>
             <script>
-                setprop kr.time.date "$(date)"
+                pref_set app_time "$(date)"
             </script>
         </action>
     </group>
@@ -61,7 +61,7 @@
             <title>reload 属性测试</title>
             <desc>执行以刷新上面一组</desc>
             <script>
-                setprop kr.time.date "$(date)~"
+                pref_set app_time "$(date)~"
             </script>
         </action>
     </group>

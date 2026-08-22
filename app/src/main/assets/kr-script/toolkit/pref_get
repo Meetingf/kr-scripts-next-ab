@@ -1,0 +1,5 @@
+#!/system/bin/sh
+
+if [ -d "$PREF_PATH" ]; then
+  cat "$PREF_PATH/$1.pref"
+fi

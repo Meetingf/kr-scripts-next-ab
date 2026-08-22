@@ -4,8 +4,8 @@
         <switch>
             <title>测试开关</title>
             <desc>测试开关功能</desc>
-            <get>getprop app.switch.a</get>
-            <set>setprop app.switch.a $state</set>
+            <get>pref_get switch_a</get>
+            <set>pref_set switch_a $state</set>
         </switch>
     </group>
 
@@ -17,36 +17,36 @@
         <switch shell="hidden">
             <title>隐藏日志</title>
             <desc>测试开关功能（设置 shell="hidden" 不显示日志输出界面）</desc>
-            <get>getprop app.switch.b</get>
-            <set>setprop app.switch.b $state</set>
+            <get>pref_get switch_b</get>
+            <set>pref_set switch_b $state</set>
         </switch>
 
         <switch shell="hidden">
             <title>输出错误内容</title>
             <desc>设置shell="hidden"后，错误信息依然会被提示</desc>
-            <get>getprop app.switch.c</get>
+            <get>pref_get switch_c</get>
             <set>
-                setprop app.switch.c $state
+                pref_set switch_c $state
                 echo '我就是想显示个错误，咋的' 1>&amp;2</set>
         </switch>
 
         <switch shell="hidden">
             <title>耗时操作</title>
             <desc>开关将会在命令运行期间禁用</desc>
-            <get>getprop app.switch.d</get>
+            <get>pref_get switch_d</get>
             <set>
                 sleep 2
-                setprop app.switch.d $state
+                pref_set switch_d $state
             </set>
         </switch>
 
         <switch shell="hidden">
             <title>自动关闭</title>
             <desc>好玩儿</desc>
-            <get>getprop app.switch.e</get>
+            <get>pref_get switch_e</get>
             <set>
                 sleep 0.1
-                setprop app.switch.e 0
+                pref_set switch_e 0
             </set>
         </switch>
 

@@ -1,0 +1,6 @@
+#!/system/bin/sh
+
+if [ ! -d "$PREF_PATH" ]; then
+    mkdir "$PREF_PATH"
+fi
+echo "$2">"$PREF_PATH/$1.pref"

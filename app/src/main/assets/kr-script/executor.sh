@@ -24,6 +24,7 @@ export APP_USER_ID="{APP_USER_ID}"
 export ROOT_PERMISSION="{ROOT_PERMISSION}"
 export TOOLKIT="{TOOLKIT}"
 export TMPDIR="$TEMP_DIR"
+export PREF_PATH="$START_DIR/pref"
 
 # 添加toolkit添加为应用程序目录
 if [ ! "$TOOLKIT" = "" ]; then
