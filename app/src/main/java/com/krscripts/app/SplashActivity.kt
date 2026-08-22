@@ -58,7 +58,7 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun checkPermissions() {
-        binding.splashLogView.text = getString(R.string.pio_permission_checking)
+        binding.splashLogView.text = getString(R.string.pop_permission_checking)
         lifecycleScope.launch {
             checkRoot {
                 withContext(Dispatchers.Main) {

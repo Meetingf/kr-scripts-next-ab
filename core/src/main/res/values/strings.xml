@@ -1,15 +1,11 @@
 <resources>
     <string name="btn_confirm">确定</string>
-    <string name="shell_executor">脚本执行器</string>
     <string name="btn_cancel">取消</string>
     <string name="btn_skip">跳过</string>
     <string name="btn_exit">退出</string>
-    <string name="btn_hide">隐藏</string>
-    <string name="btn_execute">执行</string>
     <string name="onloading">正在加载数据…</string>
     <string name="kr_shell_completed">脚本运行结束</string>
     <string name="kr_shell_finish_error">运行结束，但出现错误</string>
-    <string name="script_losted">脚本资源丢失\n</string>
     <string name="btn_copy_output">复制输出</string>
     <string name="copy_success">输出日志已复制到剪贴板</string>
     <string name="copy_fail">复制失败</string>
@@ -22,7 +18,6 @@
     <string name="kr_please_choose_app">请选择应用</string>
     <string name="kr_please_input_color">请输入颜色</string>
     <string name="kr_please_select">请选择</string>
-    <string name="kr_write_external_storage">需要读写外置存储权限！</string>
     <string name="kr_download_create_fail">创建下载任务失败</string>
     <string name="kr_download_create_success">开始下载文件</string>
     <string name="kr_download_confirm">是否下载文件</string>
@@ -49,8 +44,6 @@
     <string name="kr_page_before_load">准备解析配置</string>
     <string name="kr_page_loading">解析配置中</string>
     <string name="kr_page_after_load">配置解析完成</string>
-    <string name="kr_page_sh_invalid">无效的页面配置输出</string>
-    <string name="kr_page_sh_file_permission">指定的配置文件不存在或无读取权限</string>
     <string name="kr_page_load_fail">页面加载失败</string>
     <string name="kr_page_load_success">页面加载成功</string>
     <string name="kr_auto_run_item_losted">指定项已丢失</string>
@@ -64,12 +57,6 @@
     <string name="picker_not_item">暂无可用选项！</string>
     <string name="picker_select_none">未选中任何一项！</string>
     <string name="kr_stop">停止</string>
-
-    <string name="execute_success">执行成功</string>
-    <string name="execute_fail">执行失败</string>
     <string name="execute_wait">正在执行，请稍等…</string>
-    <string name="app_chooser_search_hint">输入应用名/包名进行搜索</string>
-    <string name="item_chooser_search_hint">搜索可选择项</string>
-    <string name="select_all">全选</string>
-    <string name="help_title">说明提示</string>
+    <string name="item_chooser_search_hint">搜索</string>
 </resources>
