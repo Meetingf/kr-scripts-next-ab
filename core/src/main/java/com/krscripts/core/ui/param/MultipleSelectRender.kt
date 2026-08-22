@@ -77,13 +77,11 @@ class MultipleSelectRender(
                 })
             }
 
-            DialogItemChooser(ArrayList(items), true, object : DialogItemChooser.Callback {
-                override fun onConfirm(selected: List<SelectItem>, status: BooleanArray) {
-                    status.forEachIndexed { index, value ->
-                        this@MultipleSelectRender.status[index] = value
-                    }
-                    setView(countView)
+            DialogItemChooser(ArrayList(items), true, onConfirm = { _, status ->
+                status.forEachIndexed { index, value ->
+                    this@MultipleSelectRender.status[index] = value
                 }
+                setView(countView)
             }).show(context.supportFragmentManager, "params-multi-select")
         }
     }

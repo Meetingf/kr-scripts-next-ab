@@ -79,15 +79,13 @@ class SingleSelectRender(
     private fun openSingleSelectDialog(
         onConfirm: (Int) -> Unit
     ) {
-        DialogItemChooser(ArrayList(options.mapIndexed { index, item ->
+        DialogItemChooser(ArrayList(options.mapIndexed { _, item ->
             SelectItem().apply {
                 title = item.title
                 selected = item.value == autoCompleteTextView?.selectedValue
             }
-        }), false, object : DialogItemChooser.Callback {
-            override fun onConfirm(selected: List<SelectItem>, status: BooleanArray) {
-                onConfirm(status.indexOf(true))
-            }
+        }), false, onConfirm = { _, status ->
+            onConfirm(status.indexOf(true))
         }).show(context.supportFragmentManager, "params-single-select")
     }
 }

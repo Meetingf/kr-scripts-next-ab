@@ -288,37 +288,29 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
                 progressBarDialog.hideDialog()
 
                 if (optionsSorted != null) {
-                    DialogItemChooser(
-                        optionsSorted,
-                        item.multiple,
-                        object : DialogItemChooser.Callback {
-                            override fun onConfirm(
-                                selected: List<SelectItem>,
-                                status: BooleanArray
-                            ) {
-                                if (item.multiple) {
-                                    pickerOnConfirm(
-                                        item,
-                                        (selected.map { it.value }).joinToString(item.separator),
-                                        onCompleted
-                                    )
-                                } else {
-                                    if (selected.isNotEmpty()) {
-                                        pickerOnConfirm(
-                                            item,
-                                            selected[0].value.toString(),
-                                            onCompleted
-                                        )
-                                    } else {
-                                        Toast.makeText(
-                                            context,
-                                            getString(R.string.picker_select_none),
-                                            Toast.LENGTH_SHORT
-                                        ).show()
-                                    }
-                                }
+                    DialogItemChooser(optionsSorted, item.multiple, onConfirm = { items, _ ->
+                        if (item.multiple) {
+                            pickerOnConfirm(
+                                item,
+                                (items.map { it.value }).joinToString(item.separator),
+                                onCompleted
+                            )
+                        } else {
+                            if (items.isNotEmpty()) {
+                                pickerOnConfirm(
+                                    item,
+                                    items[0].value.toString(),
+                                    onCompleted
+                                )
+                            } else {
+                                Toast.makeText(
+                                    context,
+                                    getString(R.string.picker_select_none),
+                                    Toast.LENGTH_SHORT
+                                ).show()
                             }
-                        }).show(requireActivity().supportFragmentManager, "picker-item-chooser")
+                        }
+                    }).show(requireActivity().supportFragmentManager, "picker-item-chooser")
                 } else {
                     Toast.makeText(context, getString(R.string.picker_not_item), Toast.LENGTH_SHORT).show()
                 }

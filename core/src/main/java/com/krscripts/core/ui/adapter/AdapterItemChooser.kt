@@ -1,21 +1,27 @@
 package com.krscripts.core.ui.adapter
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.CheckBox
 import android.widget.Filter
 import android.widget.Filterable
 import android.widget.RadioButton
 import android.widget.TextView
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.imageview.ShapeableImageView
 import com.krscripts.core.R
 import com.krscripts.core.model.SelectItem
 import java.util.Locale
 
-class AdapterItemChooser(private val context: Context, private var items: ArrayList<SelectItem>, private val multiple: Boolean) : BaseAdapter(), Filterable {
+class AdapterItemChooser(
+    private val context: Context,
+    private var items: ArrayList<SelectItem>,
+    private val multiple: Boolean
+) : RecyclerView.Adapter<AdapterItemChooser.ViewHolder>(), Filterable {
     interface SelectStateListener {
         fun onSelectChange(selected: List<SelectItem>)
     }
@@ -23,118 +29,74 @@ class AdapterItemChooser(private val context: Context, private var items: ArrayL
     private var selectStateListener: SelectStateListener? = null
     private var filter: Filter? = null
     internal var filterItems: ArrayList<SelectItem> = items
-    private val mLock = Any()
-
-    private class ArrayFilter(private var adapter: AdapterItemChooser) : Filter() {
-        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-            @Suppress("UNCHECKED_CAST")
-            adapter.filterItems = results!!.values as ArrayList<SelectItem>
-            if (results.count > 0) {
-                adapter.notifyDataSetChanged()
-            } else {
-                adapter.notifyDataSetInvalidated()
-            }
-        }
-
-        override fun performFiltering(constraint: CharSequence?): FilterResults {
-            val results = FilterResults()
-            val prefix: String = constraint?.toString() ?: ""
-
-            if (prefix.isEmpty()) {
-                val list: ArrayList<SelectItem>
-                synchronized(adapter.mLock) {
-                    list = ArrayList<SelectItem>(adapter.items)
-                }
-                results.values = list
-                results.count = list.size
-            } else {
-                val prefixString = prefix.lowercase(Locale.getDefault())
-
-                val values: ArrayList<SelectItem>
-                synchronized(adapter.mLock) {
-                    values = ArrayList<SelectItem>(adapter.items)
-                }
-                val selected = adapter.getSelectedItems()
-
-                val count = values.size
-                val newValues = ArrayList<SelectItem>()
-
-                for (i in 0 until count) {
-                    val value = values[i]
-                    if (selected.contains(value)) {
-                        newValues.add(value)
-                    } else {
-                        val valueText = value.title?.lowercase(Locale.getDefault())
-
-                        if (valueText?.contains(prefixString) == true) {
-                            newValues.add(value)
-                        }
-                    }
-                }
-
-                results.values = newValues
-                results.count = newValues.size
-            }
-
-            return results
-        }
-    }
 
     override fun getFilter(): Filter {
         if (filter == null) {
-            filter = ArrayFilter(this)
+            filter = object : Filter() {
+
+                @SuppressLint("NotifyDataSetChanged")
+                @Suppress("UNCHECKED_CAST")
+                override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                    filterItems = results?.values as ArrayList<SelectItem>
+                    notifyDataSetChanged()
+                }
+
+                override fun performFiltering(constraint: CharSequence?): FilterResults {
+                    val results = FilterResults()
+                    val query = constraint?.toString()?.trim() ?: ""
+
+                    val filteredList = if (query.isEmpty()) {
+                        items
+                    } else {
+                        val lowerQuery = query.lowercase(Locale.getDefault())
+                        items.filter { item ->
+                            item.selected || item.title?.lowercase(Locale.getDefault())?.contains(lowerQuery) == true
+                        }
+                    }
+
+                    results.values = filteredList
+                    results.count = filteredList.size
+                    return results
+                }
+            }
         }
         return filter!!
     }
 
-    override fun getCount(): Int {
+    override fun getItemCount(): Int {
         return filterItems.size
     }
 
-    override fun getItem(position: Int): SelectItem {
-        return filterItems[position]
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewHolder {
+        val view: View = LayoutInflater.from(context).inflate(R.layout.layout_chooser_item, parent, false)
+        val holder = ViewHolder(view)
+
+        holder.checkBox?.isVisible = multiple
+        holder.radioButton?.isVisible = !multiple
+
+        return holder
     }
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = filterItems[position]
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val view: View
-        val holder: ViewHolder
-
-        if (convertView == null) {
-            view = LayoutInflater.from(context).inflate(R.layout.layout_chooser_item, parent, false)
-            holder = ViewHolder(view)
-            view.tag = holder
-        } else {
-            view = convertView
-            holder = view.tag as ViewHolder
-        }
-
-        holder.checkBox?.visibility = if (multiple) View.VISIBLE else View.GONE
-        holder.radioButton?.visibility = if (multiple) View.GONE else View.VISIBLE
-
-        updateRow(position, view, holder)
-        return view
-    }
-
-    fun updateRow(position: Int, convertView: View, holder: ViewHolder) {
-        val item = getItem(position)
-
-        convertView.setOnClickListener {
+        holder.itemView.setOnClickListener {
             if (multiple) {
                 item.selected = !item.selected
                 holder.checkBox?.isChecked = item.selected
             } else {
-                if (item.selected) {
-                    return@setOnClickListener
-                } else {
-                    val current = items.find { it.selected }
-                    current?.selected = false
-                    item.selected = true
-                    notifyDataSetChanged()
+                if (item.selected) return@setOnClickListener
+                val oldIndex = filterItems.indexOfFirst { it.selected }
+                if (oldIndex != -1) {
+                    filterItems[oldIndex].selected = false
+                    notifyItemChanged(oldIndex)
                 }
+
+                item.selected = true
+                holder.radioButton?.isChecked = item.selected
             }
             selectStateListener?.onSelectChange(getSelectedItems())
         }
@@ -155,10 +117,8 @@ class AdapterItemChooser(private val context: Context, private var items: ArrayL
     }
 
     fun setSelectAllState(allSelected: Boolean) {
-        items.forEach {
-            it.selected = allSelected
-        }
-        notifyDataSetChanged()
+        items.forEach { it.selected = allSelected }
+        notifyItemRangeChanged(0, items.size)
     }
 
     fun setSelectStateListener(selectStateListener: SelectStateListener?) {
@@ -169,11 +129,11 @@ class AdapterItemChooser(private val context: Context, private var items: ArrayL
         return items.filter { it.selected }
     }
 
-    fun getSelectStatus (): BooleanArray {
+    fun getSelectStatus(): BooleanArray {
         return items.map { it.selected }.toBooleanArray()
     }
 
-    class ViewHolder(view: View) {
+    class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         internal var imgView: ShapeableImageView? = view.findViewById(R.id.ItemIcon)
         internal var itemTitle: TextView? = view.findViewById(R.id.ItemTitle)
         internal var itemDesc: TextView? = view.findViewById(R.id.ItemDesc)
