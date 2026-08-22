@@ -2,9 +2,9 @@
 <config>
     <group title="相对路径测试">
         <action>
-            <title>【配置文件】路径信息</title>
+            <title>打印路径信息</title>
             <desc>查看当前配置文件XML提取路径和提取目录</desc>
-            <set>samples/relative_path/relative_path.sh config_path</set>
+            <set>samples/env/config_path.sh</set>
         </action>
     </group>
 </config>
