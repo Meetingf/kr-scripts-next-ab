@@ -507,19 +507,20 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
         }
 
         if (!(shellResult == "error" || shellResult == "null" || shellResult.isEmpty())) {
-            for (item in shellResult.split("\n".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()) {
-                if (item.contains("|")) {
-                    val itemSplit = item.split("\\|".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                    options.add(SelectItem().apply {
-                        val descText: String = itemSplit[1]
-                        title = descText
-                        value = itemSplit[0]
-                    })
+            for (item in shellResult.split("\n")) {
+                if (item.contains('|')) {
+                    val data = item.split('|')
+                    val item = SelectItem().apply {
+                        title = data[1]
+                        value = data[0]
+                    }
+                    options.add(item)
                 } else {
-                    options.add(SelectItem().apply {
+                    val item = SelectItem().apply {
                         title = item
                         value = item
-                    })
+                    }
+                    options.add(item)
                 }
             }
         } else if (actionParamInfo.options != null) {
