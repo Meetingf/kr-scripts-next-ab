@@ -1,30 +1,32 @@
 package com.krscripts.core.ui.adapter
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.drawable.Drawable
 import android.util.LruCache
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.BaseAdapter
 import android.widget.CheckBox
 import android.widget.Filter
 import android.widget.Filterable
 import android.widget.ImageView
 import android.widget.RadioButton
 import android.widget.TextView
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.RecyclerView
 import com.krscripts.core.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale.getDefault
+import java.util.Locale
 
 class AdapterAppChooser(
         private val context: Context,
         private var apps: ArrayList<AppInfo>,
         private val multiple: Boolean
-) : BaseAdapter(), Filterable {
+) : RecyclerView.Adapter<AdapterAppChooser.ViewHolder>(), Filterable {
     interface SelectStateListener {
         fun onSelectChange(selected: List<AppInfo>)
     }
@@ -39,68 +41,38 @@ class AdapterAppChooser(
     private var selectStateListener: SelectStateListener? = null
     private var filter: Filter? = null
     internal var filterApps: ArrayList<AppInfo> = apps
-    private val mLock = Any()
-
-    private class ArrayFilter(private var adapter: AdapterAppChooser) : Filter() {
-        override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
-            @Suppress("UNCHECKED_CAST")
-            adapter.filterApps = results!!.values as ArrayList<AppInfo>
-            if (results.count > 0) {
-                adapter.notifyDataSetChanged()
-            } else {
-                adapter.notifyDataSetInvalidated()
-            }
-        }
-
-        override fun performFiltering(constraint: CharSequence?): FilterResults {
-            val results = FilterResults()
-            val prefix: String = constraint?.toString() ?: ""
-
-            if (prefix.isEmpty()) {
-                val list: ArrayList<AppInfo>
-                synchronized(adapter.mLock) {
-                    list = ArrayList<AppInfo>(adapter.apps)
-                }
-                results.values = list
-                results.count = list.size
-            } else {
-                val prefixString = prefix.lowercase(getDefault())
-
-                val values: ArrayList<AppInfo>
-                synchronized(adapter.mLock) {
-                    values = ArrayList<AppInfo>(adapter.apps)
-                }
-                val selected = adapter.getSelectedItems()
-
-                val count = values.size
-                val newValues = ArrayList<AppInfo>()
-
-                for (i in 0 until count) {
-                    val value = values[i]
-                    if (selected.contains(value)) {
-                        newValues.add(value)
-                    } else {
-                        val labelText = value.appName.lowercase(getDefault())
-                        val valueText = value.packageName.lowercase(getDefault())
-                        if (labelText.contains(prefixString)) {
-                            newValues.add(value)
-                        } else if (valueText.contains(prefixString)) {
-                            newValues.add(value)
-                        }
-                    }
-                }
-
-                results.values = newValues
-                results.count = newValues.size
-            }
-
-            return results
-        }
-    }
 
     override fun getFilter(): Filter {
         if (filter == null) {
-            filter = ArrayFilter(this)
+            filter = object : Filter() {
+
+                @SuppressLint("NotifyDataSetChanged")
+                @Suppress("UNCHECKED_CAST")
+                override fun publishResults(constraint: CharSequence?, results: FilterResults?) {
+                    filterApps = results?.values as ArrayList<AppInfo>
+                    notifyDataSetChanged()
+                }
+
+                override fun performFiltering(constraint: CharSequence?): FilterResults {
+                    val results = FilterResults()
+                    val query = constraint?.toString()?.trim() ?: ""
+
+                    val filteredList = if (query.isEmpty()) {
+                        apps
+                    } else {
+                        val lowerQuery = query.lowercase(Locale.getDefault())
+                        apps.filter { item ->
+                            item.selected || item.appName.lowercase(Locale.getDefault())
+                                .contains(lowerQuery) || item.packageName.lowercase(Locale.getDefault())
+                                .contains(lowerQuery)
+                        }
+                    }
+
+                    results.values = filteredList
+                    results.count = filteredList.size
+                    return results
+                }
+            }
         }
         return filter!!
     }
@@ -111,12 +83,8 @@ class AdapterAppChooser(
         filterApps.sortBy { !it.selected }
     }
 
-    override fun getCount(): Int {
+    override fun getItemCount(): Int {
         return filterApps.size
-    }
-
-    override fun getItem(position: Int): AppInfo {
-        return filterApps[position]
     }
 
     override fun getItemId(position: Int): Long {
@@ -143,44 +111,39 @@ class AdapterAppChooser(
         }
     }
 
-    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-        val view: View
-        val holder: ViewHolder
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): ViewHolder {
+        val view = LayoutInflater.from(context).inflate(R.layout.layout_chooser_item, parent, false)
+        val holder = ViewHolder(view)
+        holder.checkBox?.isVisible = multiple
+        holder.radioButton?.isVisible = !multiple
+        holder.imgView?.isVisible = true
 
-        if (convertView == null) {
-            view = LayoutInflater.from(context).inflate(R.layout.layout_chooser_item, parent, false)
-            holder = ViewHolder(view)
-            view.tag = holder
-        } else {
-            view = convertView
-            holder = view.tag as ViewHolder
-        }
-
-        holder.checkBox?.visibility = if (multiple) View.VISIBLE else View.GONE
-        holder.radioButton?.visibility = if (multiple) View.GONE else View.VISIBLE
-        holder.imgView?.visibility = View.VISIBLE
-
-        updateRow(position, view, holder)
-        return view
+        return holder
     }
 
-    fun updateRow(position: Int, convertView: View, holder: ViewHolder) {
-        val item = getItem(position)
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = filterApps[position]
 
         val packageName = item.packageName
         holder.packageName = packageName
 
-        convertView.setOnClickListener {
-            if (multiple || item.selected) {
-                if (multiple) {
-                    item.selected = !item.selected
-                    holder.checkBox?.isChecked = item.selected
-                }
+        holder.itemView.setOnClickListener {
+            if (multiple) {
+                item.selected = !item.selected
+                holder.checkBox?.isChecked = item.selected
             } else {
-                val current = apps.find { it.selected }
-                current?.selected = false
+                if (item.selected) return@setOnClickListener
+                val oldIndex = filterApps.indexOfFirst { it.selected }
+                if (oldIndex != -1) {
+                    filterApps[oldIndex].selected = false
+                    notifyItemChanged(oldIndex)
+                }
+
                 item.selected = true
-                notifyDataSetChanged()
+                holder.radioButton?.isChecked = item.selected
             }
             selectStateListener?.onSelectChange(getSelectedItems())
         }
@@ -191,12 +154,10 @@ class AdapterAppChooser(
             checkBox?.isChecked = item.selected
             radioButton?.isChecked = item.selected
 
-            val imgView = imgView!!
-            imgView.tag = packageName
             scope.launch(Dispatchers.Main) {
                 val icon = loadIcon(item)
-                if (icon != null && imgView.tag == packageName) {
-                    imgView.setImageDrawable(icon)
+                icon?.let {
+                    holder.imgView?.setImageDrawable(icon)
                 }
             }
         }
@@ -206,7 +167,7 @@ class AdapterAppChooser(
         apps.forEach {
             it.selected = allSelected
         }
-        notifyDataSetChanged()
+        notifyItemRangeChanged(0, apps.size)
     }
 
     fun setSelectStateListener(selectStateListener: SelectStateListener?) {
@@ -217,7 +178,7 @@ class AdapterAppChooser(
         return apps.filter { it.selected }
     }
 
-    class ViewHolder(view: View) {
+    class ViewHolder(view: View): RecyclerView.ViewHolder(view) {
         internal val scope = MainScope()
         internal var packageName: String? = null
         internal var itemTitle: TextView? = view.findViewById(R.id.ItemTitle)

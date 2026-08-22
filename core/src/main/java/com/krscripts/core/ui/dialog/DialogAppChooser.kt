@@ -2,13 +2,15 @@ package com.krscripts.core.ui.dialog
 
 import android.content.DialogInterface
 import android.os.Bundle
-import android.util.Log
 import android.view.View
-import android.widget.AbsListView
-import android.widget.CompoundButton
+import android.widget.CheckBox
 import android.widget.Filterable
 import android.widget.RelativeLayout
 import androidx.appcompat.widget.SearchView
+import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DefaultItemAnimator
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.krscripts.core.R
 import com.krscripts.core.ui.adapter.AdapterAppChooser
 
@@ -18,32 +20,32 @@ class DialogAppChooser(
     private var onConfirm: ((List<AdapterAppChooser.AppInfo>) -> Unit)? = null
 ) : DialogFullScreen(R.layout.dialog_item_chooser) {
 
-    private var allowAllSelect = true
-    private var excludeApps: Array<String> = arrayOf()
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val absListView = view.findViewById<AbsListView>(R.id.item_list)
-        setup(absListView)
+        val recyclerView = view.findViewById<RecyclerView>(R.id.item_list)
+        val filterResult = ArrayList<AdapterAppChooser.AppInfo>(packages)
+        recyclerView.layoutManager = LinearLayoutManager(recyclerView.context)
+        recyclerView.adapter = AdapterAppChooser(recyclerView.context, filterResult, multiple)
+        (recyclerView.itemAnimator as? DefaultItemAnimator)?.supportsChangeAnimations = false
 
         view.findViewById<View>(R.id.btn_cancel).setOnClickListener {
             dismiss()
         }
         view.findViewById<View>(R.id.btn_confirm).setOnClickListener {
-            this.onConfirm(absListView)
+            this.onConfirm(recyclerView)
         }
 
         // 全选功能
-        val selectAll = view.findViewById<CompoundButton?>(R.id.select_all)
+        val selectAll = view.findViewById<CheckBox>(R.id.select_all)
         val selectAllGroup = view.findViewById<RelativeLayout>(R.id.select_all_block)
-        if (selectAll != null) {
+        selectAllGroup.isVisible = multiple
+        selectAll?.let {
             if (multiple) {
-                val adapter = (absListView.adapter as AdapterAppChooser?)
-                selectAllGroup.visibility = View.VISIBLE
+                val adapter = (recyclerView.adapter as AdapterAppChooser?)
                 selectAll.isChecked = packages.filter { it.selected }.size == packages.size
                 selectAll.setOnClickListener {
-                    adapter?.setSelectAllState((it as CompoundButton).isChecked)
+                    adapter?.setSelectAllState((it as CheckBox).isChecked)
                 }
                 adapter?.run {
                     setSelectStateListener(object : AdapterAppChooser.SelectStateListener {
@@ -52,11 +54,6 @@ class DialogAppChooser(
                         }
                     })
                 }
-                if (!allowAllSelect) {
-                    selectAllGroup.visibility = View.GONE
-                }
-            } else {
-                selectAllGroup.visibility = View.GONE
             }
         }
 
@@ -64,35 +61,14 @@ class DialogAppChooser(
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(query: String?) = false
             override fun onQueryTextChange(newText: String?): Boolean {
-                (absListView.adapter as Filterable).filter.filter(newText ?: "")
+                (recyclerView.adapter as Filterable).filter.filter(newText ?: "")
                 return true
             }
         })
     }
 
-    private fun setup(gridView: AbsListView) {
-        val filterResult = ArrayList<AdapterAppChooser.AppInfo>(packages.filter { !excludeApps.contains(it.packageName) })
-        gridView.adapter = AdapterAppChooser(gridView.context, filterResult, multiple)
-    }
-
-    fun setExcludeApps(apps: Array<String>): DialogAppChooser {
-        this.excludeApps = apps
-        if (this.view != null) {
-            Log.e("@DialogAppChooser", "Unable to set the exclusion list, The list has been loaded")
-        }
-
-        return this
-    }
-
-    fun setAllowAllSelect(allow: Boolean): DialogAppChooser {
-        this.allowAllSelect = allow
-        view?.findViewById<CompoundButton?>(R.id.select_all_block)?.visibility = if (allow) View.VISIBLE else View.GONE
-
-        return this
-    }
-
-    private fun onConfirm(gridView: AbsListView) {
-        val apps = (gridView.adapter as AdapterAppChooser).getSelectedItems()
+    private fun onConfirm(recyclerView: RecyclerView) {
+        val apps = (recyclerView.adapter as AdapterAppChooser).getSelectedItems()
 
         onConfirm?.invoke(apps)
 
