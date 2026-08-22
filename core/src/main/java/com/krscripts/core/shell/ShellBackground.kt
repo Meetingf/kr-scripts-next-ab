@@ -1,6 +1,5 @@
 package com.krscripts.core.shell
 
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -9,7 +8,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import android.os.Bundle
 import androidx.core.app.NotificationCompat
 import com.krscripts.core.R
 import com.krscripts.core.executor.ShellExecutor
@@ -34,13 +32,12 @@ class ShellBackground {
         private var notificationManager: NotificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         private val notificationTitle = runnableNode.title
         private var logEntries = CopyOnWriteArrayList<String>()
-        private var notificationMShortMsg = ""
         var progressCurrent = 0
         var progressTotal = 0
         private var someIgnored = false
         private var forceStop: Runnable? = null
         private var isFinished = false
-        private var stopActionName = context.packageName + ".TaskStop." + "N" + notificationID
+        private var stopActionName = context.packageName + ".backgroundTask." + notificationID + ".stop"
 
         private val stopIntent by lazy {
             val intent = Intent(stopActionName).apply {
@@ -72,11 +69,9 @@ class ShellBackground {
             }
 
             val notificationBuilder = NotificationCompat.Builder(context, CHANNEL_ID).apply {
-                setContentTitle("$notificationTitle($notificationID)")
-                setContentText(notificationMShortMsg + " >> " + logEntries.lastOrNull())
+                setContentTitle(notificationTitle)
+                setContentText(logEntries.lastOrNull())
                 setSmallIcon(R.drawable.baseline_build_24)
-                setAutoCancel(true)
-                setWhen(System.currentTimeMillis())
 
                 if (progressTotal != progressCurrent) {
                     setProgress(progressTotal, progressCurrent, progressTotal < 0)
@@ -94,7 +89,7 @@ class ShellBackground {
 
                 if (logEntries.isNotEmpty()) {
                     setStyle(NotificationCompat.BigTextStyle().bigText(
-                        (if (someIgnored) "……\n" else "") + logEntries.joinToString("")
+                        (if (someIgnored) "……\n" else "") + logEntries.joinToString("\n")
                     ))
                 }
 
@@ -121,7 +116,7 @@ class ShellBackground {
             val notification = notificationBuilder.build()
 
             if (!isFinished) {
-                notification.flags = Notification.FLAG_NO_CLEAR or Notification.FLAG_ONGOING_EVENT
+                notification.flags = NotificationCompat.FLAG_NO_CLEAR or NotificationCompat.FLAG_ONGOING_EVENT
             }
 
             notificationManager.notify(notificationID, notification) // 发送通知
@@ -134,7 +129,6 @@ class ShellBackground {
             events.collect { event ->
                 when(event) {
                     is ShellEvent.Started -> {
-                        notificationMShortMsg = context.getString(R.string.kr_script_task_running)
                         forceStop = event.forceStop
 
                         val intentFilter = IntentFilter(stopActionName)
@@ -147,32 +141,20 @@ class ShellBackground {
                         updateNotification()
                     }
                     is ShellEvent.Log -> {
-                        when(event.type) {
-                            ShellLogType.OUTPUT -> {
-                                logEntries.add(event.text + "\n")
-                                updateNotification()
-                            }
-                            ShellLogType.OUTPUT_ERROR -> {
-                                notificationMShortMsg = context.getString(R.string.kr_script_task_has_error)
-                                logEntries.add(event.text + "\n")
-                                updateNotification()
-                            }
-                            else -> { }
+                        if (event.type != ShellLogType.INPUT) {
+                            logEntries.add(event.text)
+                            updateNotification()
                         }
                     }
                     is ShellEvent.Exited -> {
-                        try {
-                            //context.unregisterReceiver(receiver)
-                        } catch (_: Exception) {
+                        runCatching { context.unregisterReceiver(receiver) }
 
-                        }
                         isFinished = true
-                        notificationMShortMsg = context.getString(R.string.kr_script_task_finished)
 
                         if (event.payload == 0) {
-                            logEntries.add("\n" + context.getString(R.string.kr_shell_completed))
+                            logEntries.add(context.getString(R.string.kr_shell_completed))
                         } else {
-                            logEntries.add("\n" + context.getString(R.string.kr_shell_finish_error) + " " + event.payload?.toString())
+                            logEntries.add(context.getString(R.string.kr_shell_finish_error) + " " + event.payload?.toString())
                         }
                         updateNotification()
 
@@ -188,7 +170,7 @@ class ShellBackground {
     companion object {
         private var channelCreated = false
         private const val CHANNEL_ID = "kr_script_task_notification"
-        private var notificationCounter = 34050
+        private var notificationCounter = 0
 
         fun startTask(context: Context, script: String, params: HashMap<String, String>?, nodeInfo: RunnableNode, onExit: Runnable, onDismiss: Runnable) {
             val applicationContext = context.applicationContext
@@ -220,12 +202,6 @@ class ShellBackground {
                 nodeInfo,
                 script,
                 {
-                    /*
-                    try {
-                        process.destroy()
-                    } catch (ex: java.lang.Exception) {
-                    }
-                    */
                     try {
                         onExit.run()
                         onDismiss.run()
@@ -236,13 +212,8 @@ class ShellBackground {
                 shellEventSource
             )
 
-            val bundle = Bundle()
-            params?.run {
-                bundle.putSerializable("params", params)
-            }
             DialogHelper.openInfoAlert(context, context.getString(R.string.kr_bg_task_start), context.getString(
                 R.string.kr_bg_task_start_desc))
-            // Toast.makeText(applicationContext, applicationContext.getString(R.string.kr_bg_task_start), Toast.LENGTH_SHORT).show()
         }
     }
 }
