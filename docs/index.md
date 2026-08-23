@@ -4,7 +4,7 @@ layout: home
 
 hero:
   name: "Kr Scripts Next"
-  text: "A Xml-Based UI Engine with Shell-binding Logic"
+  text: "Make Apps with Xml-UI and Shell"
   tagline: 
   actions:
     - theme: brand

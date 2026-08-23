@@ -4,7 +4,7 @@ import { defineConfig } from 'vitepress'
 export default defineConfig({
   base: '/kr-scripts-next/',
   title: "Kr Scripts Next",
-  description: "A Xml-Based UI Engine with Shell-binding Logic",
+  description: "Make Apps with Xml-UI and Shell",
   themeConfig: {
     // https://vitepress.dev/reference/default-theme-config
     nav: [
@@ -21,42 +21,42 @@ export default defineConfig({
         ]
       },
       {
+        text: 'Configuration',
+        items: [
+          { text: 'Config', link: '/Config.md' },
+          { text: 'Navigation', link: '/Navigation.md' }
+        ]
+      },
+      {
         text: 'Feature Node',
         items: [
-          { text: 'page', link: '/Page.md' },
-          { text: 'action', link: '/Action.md' },
-          { text: 'switch', link: '/Switch.md' },
-          { text: 'picker', link: '/Picker.md' }
+          { text: 'Action', link: '/Action.md' },
+          { text: 'Switch', link: '/Switch.md' },
+          { text: 'Picker', link: '/Picker.md' },
+          { text: 'Page', link: '/Page.md' },
+          { text: 'Common', link: '/NodeCommon.md' },
         ]
       },
       {
         text: 'Appearance Node',
         items: [
-          { text: 'text', link: '/Text.md' },
-          { text: 'group', link: '/Group.md' }
-        ]
-      },
-      {
-        text: 'Suggestion',
-        items: [
-          { text: 'scripts', link: '/Script.md' },
-          { text: 'resources', link: '/Resource.md' },
-          { text: 'property', link: '/Property_Other.md' },
-          { text: 'extra', link: '/Extra.md' },
+          { text: 'Text', link: '/Text.md' },
+          { text: 'Group', link: '/Group.md' }
         ]
       },
       {
         text: 'Other',
         items: [
-          { text: 'other', link: '/Other.md' },
-          { text: 'bootstrap', link: '/Bootstrap.md' },
-          { text: 'web', link: '/Web.md' }
+          { text: 'Scripts', link: '/Script.md' },
+          { text: 'Resources', link: '/Resource.md' },
+          { text: 'Compatibility', link: '/Compatibility.md' },
+          { text: 'Web Engine', link: '/WebEngine.md' }
         ]
       },
     ],
 
     socialLinks: [
-      { icon: 'github', link: 'https://github.com/vuejs/vitepress' }
+      { icon: 'github', link: 'https://github.com/buylan01/kr-scripts-next' }
     ],
 
     footer: {

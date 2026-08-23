@@ -1,47 +1,39 @@
 # Action
-- 点击后执行一段代码
-- 允许通过参数定义，在执行代码前，让用户进行一些选择
 
-## 入门
-- 先从最简单的开始
-- 点击后执行一段脚本（输出Hello world！）
+此节点在用户点击后执行一段脚本，且允许在执行前要求填写参数
+
+## 用法
+
+在任意页面添加以下代码后，将会创建一个点击后输出 "Hello World!" 的控件
 
 ```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<page>
-    <action>
-        <title>Hello world！</title>
-        <desc>点击我，用脚本输出Hello world！</desc>
-        <set>
-            echo 'Hello world！'
-        </set>
-    </action>
-</page>
+<action>
+	<title>Click This</title>
+    <set>echo 'Hello world!'</set>
+</action>
 ```
+
+其中 `<set>` 表示在这个控件被点击后要执行的命令
 
 ## 属性
 
-- 公共属性（Action、Switch、Picker共有）
 
 
+## 要求用户填写参数
 
-> `id` 属性建议配合 `auto-off`、`auto-finish`、`logo` 使用
+添加以下代码任意页面，将会在用户点击此控件时弹出参数选择弹窗，并在用户点击确认时运行一段脚本
 
-> `logo`和`icon`除了支持assets文件路径，也支持磁盘文件路径
+```xml
+<action>
+    <title>Click And Read Input</title>
+    <set>echo "$foo"</set>
+    <params>
+        <param name="foo" type="text" />
+    </params>
+</action>
+```
 
-### Action 定义参数
-- 用于需要用户“输入内容” 或 “作出选择”的场景
-
-#### param 属性
-
-<!-- @include: ./common-props.md -->
-
-- type设为`file` `folder` 时，用户只能调用路径选择器进行选择，
-- 此时你可以通过将`editable`属性设为`true`来允许用户手动输入路径，
-- 但这就意味着用户可能输入无效或并不存在的路径，你需要自行校验！
-
-
-> param 的`type`列举如下：
+其中  `<param>` 声明了一个参数输入框，属性 `name` 表示该输入框存储用户输入的结果值在 `<set>` 中作为变量的名称，而 `type` 声明了该参数的类型，可用的类型如下。
 
 | 类型 | 描述 | 取值 |
 | - | :- | - |
@@ -50,46 +42,29 @@
 | checkbox | 勾选框 | `1`或`0` |
 | switch | 开关 | `1`或`0` |
 | seekbar | 滑块，**必需**配合`min`、`max`属性使用 | `min`和`max`之间的整数 |
-| file | 文件路径选择器，建议配合`suffix`或`mime`属性使用 | 选中文件的绝对路径 |
+| file | 文件路径选择器，可配合`suffix`或`mime`属性使用 | 选中文件的绝对路径 |
 | folder | 目录选择器 | 选中目录的绝对路径 |
-| color | 颜色输入和选择界面 | 输入形如`#445566`或`#ff445566`的色值 |
-| app | 应用选择器（可配置为多选） | 选取的应用包名 |
-| text | 任意文本输入（默认） | 任意自定义输入的文本 |
+| color | 颜色选择器 | 如`#FFFFFFFF`的色值 |
+| app | 应用选择器 | 选取的应用包名 |
+| text | 任意文本输入（未定义 type 时默认使用） | 任意自定义输入的文本 |
 
-> param的type设为`seekbar`时，必需设置`min`和`max`属性！！
 
-- 基本示例：
 
-```xml
-<action>
-    <title>自定义DPI</title>
-    <desc>允许你自定义手机DPI，1080P屏幕推荐DPI为400~480，设置太高或太低可能导致界面崩溃！</desc>
-    <set>wm density $dpi;</set>
-    <!--通过params定义脚本执行参数-->
-    <params>
-        <param name="dpi" desc="请输入DPI" type="int" max="96" min="160" value="480" />
-    </params>
-</action>
-```
-
-#### param 的 value-sh属性
-- 例如，你需要在用户输入前动态获取当前已设置的值
+#### 动态获取参数默认值
 
 ```xml
 <action>
-    <title>自定义DPI</title>
-    <desc>允许你自定义手机DPI，1080P屏幕推荐DPI为400~480，设置太高或太低可能导致界面崩溃！</desc>
-    <set>wm density $dpi;</set>
-    <!--通过params定义脚本执行参数-->
+    <title>Click And Read Input</title>
+    <set>echo "$foo"</set>
     <params>
-        <param name="dpi" desc="请输入DPI" type="int" value-sh="echo '480'" />
+        <param name="foo" type="text" value-sh="echo 'Hi' " />
     </params>
 </action>
 ```
 
 
-#### param > option
-- 通过在param 下定义 option，实现下拉框候选列表
+
+#### 显示下拉菜单
 
 ```xml
 <action>
@@ -117,6 +92,7 @@
 ```
 
 
+
 #### param 输入长度限制
 
 ```xml
@@ -135,9 +111,10 @@
 </action>
 ```
 
-#### param > option 动态列表
-- 现在允许更灵活的定义Param的option列表了，通过使用脚本代码输出内，即可实现
-- 脚本的执行过程中的输出内容，每一个each将作为一个选项，如 echo '很小'; echo '适中';
+
+
+#### 显示动态列表
+
 - 如果你需要将选项的value（值）和label（显示文字）分开
 - 用“|”分隔value和label即可，如：echo '380|很小'
 
@@ -156,7 +133,10 @@
 </action>
 ```
 
-#### param 多选列表
+
+
+#### 显示多选列表
+
 - 设置了`option`或`option-sh`的情况下，在`param`节点添加`multiple="true"`属性
 - 即可将原来的单选模式切换为多选模式，例如：
 
@@ -191,8 +171,9 @@
     </action>
     ```
 
-#### param 选择应用
-- 参数类型`type=app`是在3.9版本中新增加的类型
+
+
+#### 选择应用
 
 - 像下面这个例子，是它最简单的用法：
     ```xml
@@ -232,17 +213,3 @@
         <set>echo '包名为：' $package_name</set>
     </action>
     ```
-
-
-
----
-
-> 相关说明
-
-- 由于在xml中写大量的shell代码非常不方便，也不美观，
-- 建议参考 [`脚本使用`](./Script.md) 中的说明，
-- 将`visible`属性需要执行的代码，写在一个单独的文件中。
-
-> 文件选择器的类型限制说明
-- 通过`suffix(后缀)`限制文件选择类型，并不是Android原生的机制，因此为了实现该目的，PIO自带了文件选择器来实现此目的。
-- 而通过`mime`类型限制选择文件类型则符合Android本身的设定，但遗憾一般的文件浏览器只识别极少的`mime`类型。

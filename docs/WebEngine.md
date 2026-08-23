@@ -1,20 +1,7 @@
-# Web
+# Web Engine
 
-### 插入网页作为Page
-- 为了实现更加丰富的界面，在`3.3`版本中，新加入了HTML页面支持
-- 通过类似于下面例子的方式，即可定义一个网络地址作为一个页面在软件里打开
+## 网页接口
 
-```xml
-<page title="在线页面测试" html="https://www.example.com/" />
-```
-
-- 当然，你也可以直接将html文件放入assets中，通过`file:///android_asset/`来访问
-
-```xml
-<page title="在线页面测试" html="file:///android_asset/example/index.html" />
-```
-
-#### 用于网页的api
 - 在网页中，你可以通过以下接口来执行`shell`脚本，并获取结果
 - 就像执行`visible` `desc-sh` `option-sh` 部分的脚本一样
 - 会按调用的先后顺序在同一个进程中执行
@@ -50,6 +37,7 @@ if (hasRoot) {
 ```
 
 ##### KrScriptCore.executeShell
+
 - 执行脚本，获取输出日志（不包括错误信息）
 - 例如：
 
@@ -112,28 +100,12 @@ if (successful == true) {
 }
 ```
 
-##### KrScriptCore.fileChooser
-- 调用文件路径选择器
 
-```javascript
-
-window.fileChooserCallback = function (result) {
-if (result.absPath) {
-    alert('选中文件：' + result.absPath)
-} else {
-    alert('文件已丢失')
-}
-}
-function chooseFile() {
-KrScriptCore.fileChooser('window.fileChooserCallback')
-}
-```
 
 ##### 其它说明
-> 通过 `executor.sh`
+
 - `KrScriptCore`在底层依然会通过`executor.sh`执行脚本代码
 
-> 支持 `file:///android_asset`
 - `executeShell`和`executeShellAsync`除了执行正常的脚本代码，也支持调用assets中定义的脚本文件
 - 如：
 
@@ -143,10 +115,10 @@ var result = KrScriptCore.executeShell(shellFile)
 alert('输出内容：' + result)
 ```
 
-##### 代码迁移
+##### 使用迁移
 - 举个例子来看看，如何在网页中还原`action`的`set`执行过程
 
-> 通过`action`定义调用
+通过`action`定义调用
 
 ```xml
 <action>
@@ -158,7 +130,7 @@ alert('输出内容：' + result)
 </action>
 ```
 
-> 通过网页调用
+通过网页调用
 
 ```javascript
 var shellFile = "file:///android_asset/kr-script/test/var.sh"

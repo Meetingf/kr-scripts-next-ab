@@ -1,37 +1,21 @@
 # Page
-- 指定一个配置文件 `[config]` 或网页 `[html]` 作为一个子页面入口
+点击后跳转到一个页面
 
-## 示例
+## 用法
+
 ```xml
-<?xml version="1.0" encoding="UTF-8" ?>
-<config>
-    <page title="原生专属"
-        desc="越接近AOSP越适用的选项"
-        config="file:///android_asset/config_xml/for_aosp.xml" />
-    <page title="Flyme专属"
-        desc="用于Meizu Flyme系统的选项"
-        html="https://www.lanzous.com/b838135" />
-</config>
+<page 
+      title="Click This"
+      config="file:///android_asset/samples/page.xml" />
 ```
 
+::: warning
+
+config只能指定应用assets下的文件，其中`file:///android_asset/`是固定前缀，可以省略不写
+
+:::
+
 ## 属性
-- 公共属性（大部分与功能节点共有）
-
-| 属性 | 作用 | 有效值 | 示例 |
-| - | - | - | :- |
-| id | 如果允许长按添加到桌面快捷，必需设置ID | 在同一配置文件中不重复的id | `a0001` |
-| desc | 描述 | 文本内容 | 显示在标题下的小字，可以不设置 |
-| desc-sh | 动态设置desc内容的脚本 | `脚本代码` | `echo '自定义的说明信息'` |
-| summary | 高亮显示的摘要信息 | 文本内容 | `这是摘要` |
-| summary-sh | 动态设置summary内容的脚本 | `脚本代码` | `echo '自定义的摘要信息'` |
-| visible | 自定义脚本，输出1或0，决定该功能项是否显示 | 脚本代码 | `echo '1'` |
-| logo | 作为快捷方式添加到桌面时使用的图标 | 文件路径 |  |
-| icon | 显示在功能左侧的图标。如果未设置logo属性，它也同时会被作为logo使用 | 文件路径 |  |
-
-
-> `logo`和`icon`除了支持assets文件路径，也支持磁盘文件路径
-
-- 特有属性
 
 | 属性 | 名称 | 用途 |
 | :-: | :-: | :- |
@@ -43,13 +27,7 @@
 | before-load | 读取配置前 | 指定在加载配置文件前要执行的代码（仅限使用config、config-sh的page定义有效） |
 | after-load | 读取配置后 | 指定配置文件读取完成后要执行的代码（仅限使用config、config-sh的page定义有效） |
 
-- **注意：** config只能指定应用assets下的文件，其中`file:///android_asset/`是固定前缀，可以省略不写，就像这样：
 
-```xml
-<page title="标题文本"
-    desc="描述文本"
-    config="config_xml/for_aosp.xml" />
-```
 
 - **config-sh** 属性需设置为一段脚本，通过`echo`输出配置文件所在位置，或直接输出配置文件完整内容
 
@@ -143,7 +121,7 @@
 | file | 点击后需要用户选取文件，再将文件路径和menu的id传给handler |
 
 ### handler 处理菜单点击事件
-> PIO做了一些语法兼容，所以下面几种写法都可以识别且没有区别
+> 框架做了一些语法兼容，所以下面几种写法都可以识别且没有区别
 
 ```xml
 <handler>echo $menu_id</handler>
@@ -163,15 +141,4 @@
     echo '点击的菜单项' $menu_id
     echo '选择的文件' $file
 </handler>
-```
-
-
-## 补充说明
-- 为与action、switch定义语法保持一致，title、desc也可以作为page下的节点定义
-
-```xml
-<page config="file:///android_asset/config_xml/for_miui.xml">
-  <title>MIUI专属</title>
-  <desc>用于Xiaomi MIUI的选项</desc>
-</page>
 ```
