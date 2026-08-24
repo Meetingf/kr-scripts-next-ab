@@ -47,7 +47,7 @@ class MainActivity : KrActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
+            v.setPadding(systemBars.left, 0, systemBars.right, 0)
             insets
         }
 
@@ -228,7 +228,7 @@ class MainActivity : KrActivity() {
         override fun createFragment(position: Int): Fragment {
             val page = configCache[position].first
             val items = configCache[position].second
-            return ActionListFragment.create(items.content, getKrScriptActionHandler(page, position), null, false)
+            return ActionListFragment.create(items.content, getKrScriptActionHandler(page, position), null, true)
         }
     }
 }

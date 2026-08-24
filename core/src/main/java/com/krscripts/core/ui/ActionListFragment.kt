@@ -12,6 +12,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.NestedScrollView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.krscripts.core.R
@@ -118,7 +119,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
             PageLayoutRender(this.requireContext(), actionInfos!!, this, rootGroup)
             val layout = rootGroup.getView()
 
-            val rootView = (this.view?.findViewById<ScrollView?>(R.id.kr_content))
+            val rootView = (this.view?.findViewById<NestedScrollView?>(R.id.kr_content))
 
             if (fitNavigationBar) {
                 ViewCompat.setOnApplyWindowInsetsListener(rootView as View) { v, insets ->
