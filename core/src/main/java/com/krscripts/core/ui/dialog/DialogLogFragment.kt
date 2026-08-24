@@ -1,5 +1,6 @@
 package com.krscripts.core.ui.dialog
 
+import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -16,6 +17,7 @@ import androidx.core.text.buildSpannedString
 import androidx.core.text.color
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.color.MaterialColors
 import com.krscripts.core.R
@@ -103,11 +105,19 @@ class DialogLogFragment : DialogFragment() {
                         }
 
                         binding.btnExit.visibility = View.VISIBLE
-                        binding.actionProgress.isIndeterminate = false
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            binding.actionProgress.setProgress(100, true)
-                        } else {
-                            binding.actionProgress.visibility = View.INVISIBLE
+
+                        binding.actionProgress.let { view ->
+                            val initialHeight = view.trackThickness
+
+                            ValueAnimator.ofInt(initialHeight, 0).apply {
+                                duration = 220
+                                interpolator = FastOutSlowInInterpolator()
+                                addUpdateListener { valueAnimator ->
+                                    val animatedValue = valueAnimator.animatedValue as Int
+                                    view.trackThickness = animatedValue
+                                }
+                                start()
+                            }
                         }
 
                         isCancelable = true

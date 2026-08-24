@@ -57,7 +57,7 @@
         android:indeterminate="true"
         android:max="100"
         android:progress="0"
-        app:trackThickness="14dp"
+        app:trackThickness="12dp"
         app:trackStopIndicatorSize="0dp"
         app:indicatorColor="?colorPrimaryVariant" />
 

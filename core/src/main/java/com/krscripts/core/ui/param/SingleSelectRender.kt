@@ -39,12 +39,12 @@ class SingleSelectRender(
             }
 
             val initialIndex = getParamOptionsCurrentIndex(actionParamInfo, options)
-            if (initialIndex > -1 && initialIndex < options.size) {
-                val initialOption = options[initialIndex]
+            val initialOption =
+                options.getOrNull(if (initialIndex > -1 && initialIndex < options.size) initialIndex else 0)
+
+            initialOption?.let {
                 setText(initialOption.title, false)
                 selectedValue = initialOption.value
-            } else {
-                selectedValue = null
             }
 
             showMenuAsDialog = options.size >= 5
