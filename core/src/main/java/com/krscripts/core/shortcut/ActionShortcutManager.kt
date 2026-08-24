@@ -27,7 +27,9 @@ class ActionShortcutManager(private var context: Context) {
         }
     }
 
-    fun addShortcut(intent: Intent, drawable: Drawable, config: NodeInfoBase): Boolean {
+    fun addShortcut(intent: Intent, drawable: Drawable?, config: NodeInfoBase): Boolean {
+        drawable ?: return false
+
         // 因为添加快捷方式时无法处理SerializableExtra，所以不得不通过应用本身存储pageNode信息
         if (intent.hasExtra("page")) {
             val pageNode = intent.getSerializableExtraCompat<PageNode>("page") as PageNode

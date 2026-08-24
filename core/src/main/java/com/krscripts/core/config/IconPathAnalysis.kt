@@ -49,12 +49,15 @@ class IconPathAnalysis {
         clickableNode: ClickableNode,
         useDefault: Boolean = true
     ): Drawable? {
-        return if (clickableNode.logoPath.isNotEmpty())
-            loadDrawable(context, clickableNode.pageConfigDir, clickableNode.logoPath)
-        else if (clickableNode.iconPath.isNotEmpty())
-            loadDrawable(context, clickableNode.pageConfigDir, clickableNode.iconPath)
-        else if (useDefault)
-            AppCompatResources.getDrawable(context, R.drawable.ic_sortcut_icon_default)!!
-        else null
+        val result = loadDrawable(
+            context,
+            clickableNode.pageConfigDir,
+            clickableNode.logoPath.ifEmpty { clickableNode.iconPath }
+        )
+
+        return result ?: if (useDefault) AppCompatResources.getDrawable(
+            context,
+            R.drawable.ic_sortcut_icon_default
+        ) else null
     }
 }

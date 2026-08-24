@@ -210,25 +210,27 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
 
     // 长按 添加收藏
     override fun onItemLongClick(clickableNode: ClickableNode) {
+        val context = context ?: return
+
         if (clickableNode.key.isEmpty()) {
             DialogHelper.openConfirmAlert(
-                    this.requireActivity(),
-                    getString(R.string.kr_shortcut_create_fail),
-                    getString(R.string.kr_ushortcut_nsupported)
+                context,
+                getString(R.string.kr_shortcut_create_fail),
+                getString(R.string.kr_ushortcut_nsupported)
             )
         } else {
             krScriptActionHandler?.createShortcut(clickableNode, object : KrScriptActionHandler.CreateShortcutHandler {
                 override fun onCreateShortcut(clickableNode: ClickableNode, intent: Intent?) {
                     if (intent != null) {
-                        DialogHelper.openConfirmAlert(activity!!,
+                        DialogHelper.openConfirmAlert(context,
                                 getString(R.string.kr_shortcut_create),
                                 String.format(getString(R.string.kr_shortcut_create_desc), clickableNode.title)
                         ) {
                             lifecycleScope.launch {
-                                val result = ActionShortcutManager(context!!)
+                                val result = ActionShortcutManager(context)
                                     .addShortcut(
                                         intent,
-                                        IconPathAnalysis().loadLogo(context!!, clickableNode)!!,
+                                        IconPathAnalysis().loadLogo(context, clickableNode),
                                         clickableNode
                                     )
                                     Toast.makeText(
