@@ -14,12 +14,6 @@ class PathAnalysis(private var context: Context, private var parentDir: String =
         private const val ASSETS_FILE = "file:///android_asset/"
     }
 
-    init {
-        if (parentDir.isEmpty()) {
-            parentDir = ASSETS_FILE
-        }
-    }
-
     // 解析路径时自动获得
     private var currentAbsPath: String = ""
 
@@ -155,7 +149,7 @@ class PathAnalysis(private var context: Context, private var parentDir: String =
                 }
             } else {
                 // 如果当前配置文件来源于 assets，则查找依赖资源时也只去assets查找
-                if (parentDir.isNotEmpty() && parentDir.startsWith(ASSETS_FILE)) {
+                if (parentDir.startsWith(ASSETS_FILE)) {
                     return findAssetsResource(filePath)
                 } else {
                     return findDiskResource(filePath)
@@ -188,11 +182,13 @@ class PathAnalysis(private var context: Context, private var parentDir: String =
         if (filePath.startsWith("/")) {
             return filePath
         }
-        if (parentDir.startsWith(ASSETS_FILE)) {
-            return pathConcat(parentDir, filePath)
+        val relativePath = pathConcat(parentDir, filePath)
+        if (parentDir.startsWith(ASSETS_FILE) || parentDir.isNotEmpty()) {
+            return relativePath
         } else {
-            val relative = if (parentDir.isNotEmpty()) pathConcat(parentDir, filePath) else filePath
-            return relative
+
+            val privatePath = File(pathConcat(FileWrite.getPrivateFileDir(context), filePath)).absolutePath
+            return privatePath
         }
     }
 }
