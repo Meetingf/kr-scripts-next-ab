@@ -39,7 +39,7 @@ object IconHelper {
         view.load(icon) {
             crossfade(true)
             error { _ ->
-                val errImage = AppCompatResources.getDrawable(context, R.drawable.baseline_broken_image_24)
+                val errImage = AppCompatResources.getDrawable(context, R.drawable.baseline_image_24)
                 errImage?.let {
                     DrawableCompat.setTint(it, MaterialColors.getColor(view, com.google.android.material.R.attr.colorOnSurfaceVariant))
                     it
