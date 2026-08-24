@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.ViewCompat
@@ -79,7 +78,7 @@ class ActionListFragment : Fragment(), PageLayoutRender.OnItemClickListener {
         krScriptActionHandler = newHandler ?: this.krScriptActionHandler
         autoRunTask = newAutoRunTask ?: this.autoRunTask
 
-        val scrollView = view?.findViewById<ScrollView>(R.id.kr_content) ?: return
+        val scrollView = view?.findViewById<NestedScrollView>(R.id.kr_content) ?: return
 
         scrollView.removeAllViews()
         rootGroup = ListItemGroup(requireContext(), true, GroupNode(""))
