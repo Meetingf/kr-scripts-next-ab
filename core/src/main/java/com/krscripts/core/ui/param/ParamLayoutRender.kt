@@ -94,7 +94,7 @@ class ParamLayoutRender(
         for (actionParamInfo in actionParamInfos) {
             val options = actionParamInfo.optionsFromShell
             val render: ParamRenderer =
-                if (!options.isNullOrEmpty() && actionParamInfo.type !in setOf("app", "packages")) {
+                if (options != null && actionParamInfo.type !in setOf("app", "packages")) {
                     // Picker
                     if (actionParamInfo.multiple) {
                         MultipleSelectRender(actionParamInfo, context)
