@@ -1,88 +1,75 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
+<LinearLayout android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
     android:fitsSystemWindows="true"
-    android:paddingBottom="8dp">
+    android:paddingBottom="8dp"
+    xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <TextView
-        android:id="@+id/title"
-        style="@style/TextAppearance.Material3.TitleMedium"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:padding="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/desc"
-        app:layout_constraintEnd_toStartOf="@+id/btn_hide"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.5" />
+        android:orientation="horizontal"
+        android:paddingStart="18dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="16dp"
+        android:gravity="center_vertical">
 
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:minHeight="36dp"
+            android:gravity="center_vertical">
 
-    <TextView
-        android:id="@+id/desc"
-        style="@style/TextAppearance.Material3.BodySmall"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
-        android:padding="0dp"
-        app:layout_constraintBottom_toTopOf="@+id/action_progress"
-        app:layout_constraintEnd_toStartOf="@+id/btn_hide"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/title"
-        app:layout_constraintVertical_bias="0.5" />
+            <TextView
+                android:id="@+id/title"
+                style="@style/TextAppearance.Material3.TitleMedium"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
 
-    <ImageButton
-        android:id="@+id/btn_hide"
-        style="@style/Widget.AppCompat.ActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="16dp"
-        android:contentDescription="@null"
-        android:scaleType="centerInside"
-        android:src="@drawable/baseline_keyboard_arrow_down_24"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="?colorOnSurface" />
+            <TextView
+                android:id="@+id/desc"
+                style="@style/TextAppearance.Material3.BodySmall"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp" />
+        </LinearLayout>
 
-    <androidx.constraintlayout.widget.Barrier
-        android:id="@+id/top_barrier"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:barrierDirection="bottom"
-        app:barrierAllowsGoneWidgets="false"
-        app:constraint_referenced_ids="desc,btn_hide" />
+        <ImageButton
+            android:id="@+id/btn_hide"
+            style="@style/Widget.AppCompat.ActionButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@null"
+            android:scaleType="centerInside"
+            android:src="@drawable/baseline_keyboard_arrow_down_24"
+            app:tint="?colorOnSurface" />
+    </LinearLayout>
 
     <com.google.android.material.progressindicator.LinearProgressIndicator
         android:id="@+id/action_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="18dp"
-        android:paddingVertical="4dp"
+        android:layout_marginTop="8dp"
         android:indeterminate="true"
         android:max="100"
         android:progress="0"
         app:trackThickness="14dp"
         app:trackStopIndicatorSize="0dp"
-        app:indicatorColor="?colorPrimaryVariant"
-        app:layout_constraintTop_toBottomOf="@id/top_barrier" />
+        app:indicatorColor="?colorPrimaryVariant" />
 
     <ScrollView
         android:id="@+id/log_containter"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_weight="1"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
-        android:background="@drawable/krscript_item_bg"
-        app:layout_constraintBottom_toTopOf="@+id/btn_copy"
-        app:layout_constraintTop_toBottomOf="@+id/action_progress">
+        android:background="@drawable/krscript_item_bg">
 
         <TextView
             android:id="@+id/shell_output"
@@ -95,23 +82,26 @@
             android:textSize="12sp" />
     </ScrollView>
 
-    <Button
-        android:id="@+id/btn_copy"
-        style="@style/Widget.Material3.Button.TextButton.Dialog"
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/btn_copy_output"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/btn_exit" />
+        android:layout_gravity="end"
+        android:orientation="horizontal"
+        android:paddingEnd="16dp">
 
-    <Button
-        android:id="@+id/btn_exit"
-        style="@style/Widget.Material3.Button.TextButton.Dialog"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="@string/btn_exit"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        <Button
+            android:id="@+id/btn_copy"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_copy_output"
+            style="@style/Widget.Material3.Button.TextButton" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+            android:id="@+id/btn_exit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_exit"
+            android:minWidth="64dp"
+            style="@style/Widget.Material3.Button.TextButton" />
+    </LinearLayout>
+</LinearLayout>
