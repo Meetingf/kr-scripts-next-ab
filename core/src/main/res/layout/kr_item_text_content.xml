@@ -21,7 +21,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
-        android:textColor="?colorAccent"
+        android:textColor="@color/kr_summary_color"
         style="@style/TextAppearance.Material3.BodySmall"
         android:breakStrategy="simple" />
 

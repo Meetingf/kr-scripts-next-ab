@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="kr_shortcut_color">#CCCCCC</color>
+    <!-- summary 摘要（含 summary-sh 脚本输出）文字的天蓝配色 -->
+    <color name="kr_summary_color">#FF4FC3F7</color>
 </resources>
