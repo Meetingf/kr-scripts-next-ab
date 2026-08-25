@@ -8,7 +8,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.os.Build
 import android.os.Bundle
-import android.text.Spanned
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -92,8 +91,7 @@ class DialogLogFragment : DialogFragment() {
                     is ShellEvent.Log -> {
                         if (event.type == ShellLogType.OUTPUT_ERROR) { shellHasError = true }
                         if (event.type != ShellLogType.INPUT) {
-                            val spanned = event.toLogSpanned()
-                            outputView.append(spanned)
+                            appendLog(outputView, event)
                             scrollView.fullScroll(View.FOCUS_DOWN)
                         }
                     }
@@ -223,13 +221,21 @@ class DialogLogFragment : DialogFragment() {
         onDismissRunnable = null
     }
 
-    fun ShellEvent.Log.toLogSpanned(): Spanned {
-        val defaultColor = when (type) {
+    private fun appendLog(outputView: TextView, event: ShellEvent.Log) {
+        val defaultColor = when (event.type) {
             ShellLogType.OUTPUT -> colorOutput
             ShellLogType.OUTPUT_ERROR -> colorOutputError
             ShellLogType.INPUT -> colorInput
         }
-        return AnsiToSpannable.parse(text + "\n", defaultColor)
+        // 回车 \r 表示原地刷新（如进度百分比），需覆盖当前行而非追加新行
+        if (event.text.contains('\r')) {
+            val editable = outputView.editableText
+            val lineStart = editable.toString().lastIndexOf('\n') + 1
+            editable.delete(lineStart, editable.length)
+            outputView.append(AnsiToSpannable.parse(event.text.replace("\r", ""), defaultColor))
+        } else {
+            outputView.append(AnsiToSpannable.parse(event.text + "\n", defaultColor))
+        }
     }
 
     companion object {
