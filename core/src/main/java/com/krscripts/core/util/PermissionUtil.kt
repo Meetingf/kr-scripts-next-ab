@@ -3,7 +3,6 @@ package com.krscripts.core.util
 import android.Manifest
 import android.app.Activity
 import android.content.Context
-import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -20,19 +19,14 @@ object PermissionUtil {
     ) {
         val builder = MaterialAlertDialogBuilder(context)
             .setTitle("权限缺失")
-            .setMessage("请授予文件读写与应用列表等权限")
+            .setMessage("请授予文件读写权限")
             .setPositiveButton("授予") { _, _ ->
-                val requested = mutableListOf(
-                    Manifest.permission.READ_EXTERNAL_STORAGE,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                )
-                // API 33+ 读取已安装应用列表需声明该权限，API 34+ 起为运行时权限
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    requested += Manifest.permission.GET_INSTALLED_APPS
-                }
                 ActivityCompat.requestPermissions(
                     context,
-                    requested.toTypedArray(),
+                    arrayOf(
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    ),
                     REQUEST_CODE_FILE_ACCESS
                 )
             }
