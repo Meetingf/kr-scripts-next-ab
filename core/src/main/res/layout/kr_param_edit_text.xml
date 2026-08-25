@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:textSize="15sp"
         android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
-        android:inputType="text"
+        android:inputType="textMultiLine"
         android:maxLines="8"
         android:paddingStart="6dp"
         android:paddingTop="0dp"

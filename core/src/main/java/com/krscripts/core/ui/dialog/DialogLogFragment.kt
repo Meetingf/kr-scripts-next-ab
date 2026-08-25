@@ -1,5 +1,6 @@
 package com.krscripts.core.ui.dialog
 
+import android.animation.ValueAnimator
 import android.app.Dialog
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -16,6 +17,7 @@ import androidx.core.text.buildSpannedString
 import androidx.core.text.color
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.color.MaterialColors
 import com.krscripts.core.R
@@ -25,6 +27,7 @@ import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.shell.ShellEvent
 import com.krscripts.core.shell.ShellEventSource
 import com.krscripts.core.shell.ShellLogType
+import com.krscripts.core.util.AnsiToSpannable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -103,11 +106,19 @@ class DialogLogFragment : DialogFragment() {
                         }
 
                         binding.btnExit.visibility = View.VISIBLE
-                        binding.actionProgress.isIndeterminate = false
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                            binding.actionProgress.setProgress(100, true)
-                        } else {
-                            binding.actionProgress.visibility = View.INVISIBLE
+
+                        binding.actionProgress.let { view ->
+                            val initialHeight = view.trackThickness
+
+                            ValueAnimator.ofInt(initialHeight, 0).apply {
+                                duration = 220
+                                interpolator = FastOutSlowInInterpolator()
+                                addUpdateListener { valueAnimator ->
+                                    val animatedValue = valueAnimator.animatedValue as Int
+                                    view.trackThickness = animatedValue
+                                }
+                                start()
+                            }
                         }
 
                         isCancelable = true
@@ -212,13 +223,13 @@ class DialogLogFragment : DialogFragment() {
         onDismissRunnable = null
     }
 
-    fun ShellEvent.Log.toLogSpanned(): Spanned = buildSpannedString {
-        val c = when (type) {
+    fun ShellEvent.Log.toLogSpanned(): Spanned {
+        val defaultColor = when (type) {
             ShellLogType.OUTPUT -> colorOutput
             ShellLogType.OUTPUT_ERROR -> colorOutputError
             ShellLogType.INPUT -> colorInput
         }
-        color(c) { append(text + "\n") }
+        return AnsiToSpannable.parse(text + "\n", defaultColor)
     }
 
     companion object {

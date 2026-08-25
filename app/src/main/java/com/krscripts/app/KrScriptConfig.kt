@@ -12,7 +12,6 @@ class KrScriptConfig {
 
             configInfo = hashMapOf(
                 EXECUTOR_CORE to EXECUTOR_CORE_DEFAULT,
-                PAGE_LIST_CONFIG to PAGE_LIST_CONFIG_DEFAULT,
                 TOOLKIT_DIR to TOOLKIT_DIR_DEFAULT,
                 BEFORE_START_SH to BEFORE_START_SH_DEFAULT
             )
@@ -98,7 +97,6 @@ class KrScriptConfig {
         private const val BEFORE_START_SH_DEFAULT = "" // ASSETS_FILE_PREFIX + "kr-script/before_start.sh"
         private const val PAGE_LIST_CONFIG = "page_list_config"
         private const val PAGE_LIST_CONFIG_SH = "page_list_config_sh"
-        private const val PAGE_LIST_CONFIG_DEFAULT = ASSETS_FILE_PREFIX + "kr-script/pages/home.xml, " + ASSETS_FILE_PREFIX + "kr-script/pages/more.xml"
         var configInfo: HashMap<String, String>? = null
     }
 }
