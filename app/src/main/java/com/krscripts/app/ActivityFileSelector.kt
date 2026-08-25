@@ -6,6 +6,7 @@ import android.os.Environment
 import android.view.KeyEvent
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.ViewCompat
@@ -13,7 +14,8 @@ import androidx.core.view.WindowInsetsCompat
 import com.krscripts.app.databinding.ActivityFileSelectorBinding
 import com.krscripts.app.ui.AdapterFileSelector
 import com.krscripts.core.ui.dialog.ProgressBarDialog
-import com.krscripts.core.util.PermissionUtil
+import com.krscripts.core.util.PermissionUtil.checkAccessFiles
+import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
 import java.io.File
 
 class ActivityFileSelector : AppCompatActivity() {
@@ -30,15 +32,8 @@ class ActivityFileSelector : AppCompatActivity() {
 
     private lateinit var binding: ActivityFileSelectorBinding
 
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<out String>,
-        grantResults: IntArray
-    ) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == PermissionUtil.REQUEST_CODE_FILE_ACCESS) {
-            loadData()
-        }
+    private val manageFileRequester = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+        loadData()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -98,7 +93,7 @@ class ActivityFileSelector : AppCompatActivity() {
     }
 
     private fun loadData() {
-        if (PermissionUtil.checkAccessFiles(this)) {
+        if (checkAccessFiles(this)) {
             val sdcard = File(Environment.getExternalStorageDirectory().absolutePath)
             if (sdcard.exists() && sdcard.isDirectory) {
                 val list = sdcard.listFiles()
@@ -122,7 +117,7 @@ class ActivityFileSelector : AppCompatActivity() {
                 binding.fileSelectorList.adapter = adapterFileSelector
             }
         } else {
-            PermissionUtil.requestAccessFilesDialog(this) {
+            requestAccessFilesDialog(this, manageFileRequester) {
                 this.finish()
             }
         }
