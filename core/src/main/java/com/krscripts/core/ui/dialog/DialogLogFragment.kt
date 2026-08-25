@@ -229,15 +229,14 @@ class DialogLogFragment : DialogFragment() {
             ShellLogType.INPUT -> colorInput
         }
         val text = event.text
-        // 以换行提交的是普通日志行；不带换行的是 \r 回车刷新，需覆盖当前行实现原地刷新
-        if (text.endsWith('\n')) {
-            outputView.append(AnsiToSpannable.parse(text, defaultColor))
-        } else {
+        // \r 前缀表示这是进度刷新段：删除当前行再写入，实现原地覆盖；
+        // 普通行直接追加。文本内若带 \n 结尾，TextView 会自动换行。
+        if (text.startsWith('\r')) {
             val editable = outputView.editableText
             val lineStart = editable.toString().lastIndexOf('\n') + 1
             editable.delete(lineStart, editable.length)
-            outputView.append(AnsiToSpannable.parse(text, defaultColor))
         }
+        outputView.append(AnsiToSpannable.parse(text.removePrefix("\r"), defaultColor))
     }
 
     companion object {

@@ -22,37 +22,42 @@ object ShellLogWatcher {
             // 被拆成多个独立事件而无法原地刷新。这里逐字符读取，只以 \n 切行并保留 \r。
             val reader = stream.bufferedReader()
             try {
-                val buf = StringBuilder()
-                // flush：把当前累积的行发给上层。普通行以换行(\n)提交；\r 刷新行不带换行，供覆盖当前行。
-                fun flush(withNewline: Boolean) {
-                    if (buf.isEmpty() && !withNewline) return
-                    val line = buf.toString()
-                    buf.setLength(0)
-                    onLine(shellTranslation.resolveRow(if (withNewline) line + "\n" else line))
+                val line = StringBuilder()
+                var overwrite = false
+                // emit：把当前累积的行发给上层。\r 前缀表示"覆盖上一行"（进度刷新段），
+                // \n 后缀表示该行在此结束。这样每一段进度（1%…100%）都会覆盖当前行逐步更新。
+                fun emit(withNewline: Boolean) {
+                    if (line.isEmpty() && !withNewline) return
+                    val body = line.toString()
+                    line.setLength(0)
+                    val content = (if (overwrite) "\r" else "") + body + (if (withNewline) "\n" else "")
+                    overwrite = false
+                    onLine(shellTranslation.resolveRow(content))
                 }
                 while (true) {
                     val ch = reader.read()
                     if (ch == -1) break
                     when (val c = ch.toChar()) {
-                        '\n' -> flush(true)
-                        // \r\n 是换行；单独的 \r 是回车刷新——遇到即把当前行发出去覆盖，
-                        // 从而让进度百分比逐段刷新（1%、2%、…、100%）
+                        '\n' -> emit(true)
+                        // 单独的 \r 表示回车刷新：先发当前行，并标记后续内容为覆盖段。
+                        // \r\n 则只是 Windows 换行。
                         '\r' -> {
                             reader.mark(1)
                             val next = reader.read()
                             if (next == -1) {
-                                flush(false)
+                                emit(false)
                             } else if (next.toChar() == '\n') {
-                                flush(true)
+                                emit(true)
                             } else {
                                 reader.reset()
-                                flush(false)
+                                emit(false)
+                                overwrite = true
                             }
                         }
-                        else -> buf.append(c)
+                        else -> line.append(c)
                     }
                 }
-                flush(false)
+                emit(false)
             } catch (e: Exception) {
                 e.printStackTrace()
             }

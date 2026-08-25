@@ -37,8 +37,9 @@ class ShellEventSource {
     }
 
     fun postRead(rawLine: String) {
-        // 保留"是否以换行提交"的标记：\r 回车刷新行不带 \n，普通行带 \n。
-        val isNewline = rawLine.endsWith('\n')
+        // 保留语义标记：\r 前缀=覆盖上一行(进度刷新段)，\n 后缀=该行结束
+        val overwrite = rawLine.startsWith('\r')
+        val newline = rawLine.endsWith('\n')
         val log = rawLine.trim()
         val match = PROGRESS_PATTERN.matchEntire(log)
         if (match != null) {
@@ -46,7 +47,11 @@ class ShellEventSource {
             val total = match.groupValues[2].toIntOrNull() ?: return
             progress.value = current to total
         } else {
-            _events.trySend(ShellEvent.Log(ShellLogType.OUTPUT, if (isNewline) log + "\n" else log))
+            val sb = StringBuilder()
+            if (overwrite) sb.append('\r')
+            sb.append(log)
+            if (newline) sb.append('\n')
+            _events.trySend(ShellEvent.Log(ShellLogType.OUTPUT, sb.toString()))
         }
     }
 
