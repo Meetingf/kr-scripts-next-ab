@@ -228,16 +228,7 @@ class DialogLogFragment : DialogFragment() {
             ShellLogType.OUTPUT_ERROR -> colorOutputError
             ShellLogType.INPUT -> colorInput
         }
-        // 回车 \r 表示原地刷新（如进度百分比），需覆盖当前行而非追加新行
-        if (event.text.contains('\r')) {
-            val editable = outputView.editableText
-            val lineStart = editable.toString().lastIndexOf('\n') + 1
-            editable.delete(lineStart, editable.length)
-            // 只保留最后一次 \r 刷新后的内容
-            outputView.append(AnsiToSpannable.parse(event.text.substringAfterLast('\r'), defaultColor))
-        } else {
-            outputView.append(AnsiToSpannable.parse(event.text + "\n", defaultColor))
-        }
+        return AnsiToSpannable.parse(text + "\n", defaultColor)
     }
 
     companion object {
