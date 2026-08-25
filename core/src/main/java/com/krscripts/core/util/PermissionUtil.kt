@@ -28,7 +28,7 @@ object PermissionUtil {
                 )
                 // API 33+ 读取已安装应用列表需声明该权限，API 34+ 起为运行时权限
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    requested += "android.permission.GET_INSTALLED_APPS"
+                    requested += Manifest.permission.GET_INSTALLED_APPS
                 }
                 ActivityCompat.requestPermissions(
                     context,
