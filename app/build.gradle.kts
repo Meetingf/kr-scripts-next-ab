@@ -9,7 +9,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.krscripts.app"
+        applicationId = "com.dna.tools"
         minSdk = 23
         targetSdk = 37
         versionCode = 2
@@ -43,4 +43,17 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     implementation(libs.material)
     implementation(project(":core"))
+}
+
+// 去掉 Baseline Profile：排除 androidx.profileinstaller 运行时库
+configurations.all {
+    exclude(group = "androidx.profileinstaller", module = "profileinstaller")
+}
+
+// 停用 Baseline Profile / Startup Profile 生成任务，避免 assets/dexopt 被打进 APK
+tasks.configureEach {
+    val n = name.lowercase()
+    if (n.contains("artprofile") || n.contains("startupprofile")) {
+        enabled = false
+    }
 }

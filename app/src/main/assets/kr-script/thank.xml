@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<root>
+    <group title="特别鸣谢，不分先后，如有遗忘望提醒">
+        <page link="https://github.com/helloklf/kr-scripts">
+            <title>「kr-scripts」、Github：helloklf | 酷安：嘟嘟斯基</title>
+            <desc>本软件基于「kr-scripts」框架制作，原软件名：「PIO」</desc>
+        </page>
+        <page link="">
+            <title>TIK工具箱官方群</title>
+            <desc>感谢群里群友的测试与帮助，就不一一列举了</desc>
+        </page>
+        <page link="https://gitee.com/yeliqin666/TIK">
+            <title>TIK工具箱</title>
+            <desc>部分代码来自于TIK2源码，在此感谢</desc>
+        </page>
+        <page link="https://github.com/topjohnwu/Magisk">
+            <title>magiskboot</title>
+        </page>
+        <page link="https://github.com/xpirt">
+           <title>sdat2img and img2sdat</title>
+        </page>
+        <page link="https://github.com/sekaiacg/erofs-extract">
+           <title>erofs-extract</title>
+        </page>
+        <page link="https://gitee.com/sharpeter/DNA">
+           <title>DNA</title>
+           <desc>使用了@温柔的慈悲大佬的DNA工具箱名字，向大佬致敬！</desc>
+        </page>
+        <page link="">
+           <title>搞机助手</title>
+           <desc>搞机助手原作者@情非得已c，提取了搞机助手部分代码文件使用！</desc>
+        </page>
+        <page link="https://github.com/affggh/fspatch">
+           <title>affggh</title>
+           <desc>改用@affggh大佬的fspatch.py修补权限文件以及github开源的工具</desc>
+        </page>
+    </group>
+
+</root>

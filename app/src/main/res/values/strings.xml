@@ -1,6 +1,6 @@
 <resources>
     <string name="kr_script_config">kr-script.conf</string>
-    <string name="app_name">Kr Scripts</string>
+    <string name="app_name">DNA-Android</string>
     <string name="pop_before_start">准备中…</string>
     <string name="pop_started">启动完成！</string>
     <string name="pop_permission_checking">检查并获取必需权限…</string>
@@ -18,6 +18,6 @@
     <string name="framework_author">作者: 嘟嘟ski, buylan\n贡献者: MT启明星</string>
     <string name="framework_info">框架: Kr Script Next v%1$s</string>
     <string name="app_version">v%1$s</string>
-    <string name="app_author"><![CDATA[应用作者: <名称>]]></string>
+    <string name="app_author"><![CDATA[作者：相见即是缘]]></string>
     <string name="title_about">关于</string>
 </resources>

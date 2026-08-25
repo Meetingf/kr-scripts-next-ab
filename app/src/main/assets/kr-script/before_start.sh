@@ -1,1 +1,0 @@
-echo "Android 版本: $(getprop ro.build.version.release)"

@@ -1,44 +1,32 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <nav title="更多">
-    <group title="文档">
-        <page html="https://buylan01.github.io/kr-scripts-next" title="Kr Scripts Next 开发文档" />
-    </group>
+<group title="分区管理">
+    <action>
+        <title>提取镜像文件</title>
+        <set>samples/image.sh extract</set>
+        <param name="IMG" title="请选择分区支持多选：" multiple="true" options-sh="samples/image.sh name" required="true"/>
+    </action>
+    
+    <action>
+        <title>刷入镜像文件</title>
+        <set>samples/image.sh flash</set>
+        <param name="CQ" label="是否刷入成功自动重启系统" type="checkbox" />
+        <param name="CQ1" label="是否刷入成功自动重启至Recovery（恢复模式里）" type="checkbox" />
+        <param name="IMG" title="注：请确保你清楚知道刷入某些分区后，可能产生的问题" options-sh="samples/image.sh name" required="true"/>
+        <param name="Brush_in" type="file" suffix="img" editable="true" required="true" title="可输入img文件绝对路径，也可以使用文件选择器选择文件" desc="温馨提示：可用「MT管理器」长按目录或文件 -->点属性 -->点击目录即可复制目录绝对路径，长按目录或长按名称即可复制文件绝对路径" required="true"/>
+    </action>
+</group>
 
-    <group title="动态页面">
-        <resource dir="file:///android_asset/samples/thermal" />
-        <resource dir="file:///android_asset/samples/kt" />
+<group>
+    <action>
+        <title>脚本执行器</title>
+        <summary>自定义命令</summary>
+        <set>samples/shell.sh</set>
+        <param name="TO" placeholder="自定义命令" value-sh="cat $START_DIR/SHE.sh" requiret="true" />
+    </action>
+</group>
 
-        <page
-            before-load="samples/thermal/page-before-load.sh"
-            config-sh="samples/thermal/page-xml.sh"
-            desc="来看一个完全使用脚本动态构成的页面，感受一下config-sh的强大"
-            title="MIUI温控查看" />
-
-        <page config="samples/kt/kernel_tuner.xml" title="内核调谐器" />
-    </group>
-
-    <group title="路径测试">
-        <resource dir="samples/env" />
-        <resource dir="samples/relative_path" />
-        <resource dir="samples/relative_path2" />
-
-        <page title="相对路径测试1" config="samples/relative_path/relative_path.xml" />
-
-
-        <!--这里通过sh输出了一个磁盘文件的绝对路径，这会让子页面配置来源切换到磁盘上-->
-        <page
-            title="相对路径测试2"
-            config-sh="echo $START_DIR/samples/relative_path2/page.xml" />
-    </group>
-
-    <group title="其他">
-        <action>
-            <title>引用 Arsc 资源</title>
-            <desc sh="echo '@string:resource_reference_desc'" />
-            <set>
-                echo "格式：@string/xxx"
-                echo "输出：@string/app_name"
-            </set>
-        </action>
-    </group>
+<group title="关于工具">
+    <page title="特别鸣谢" config="file:///android_asset/kr-script/thank.xml" />
+</group>
 </nav>

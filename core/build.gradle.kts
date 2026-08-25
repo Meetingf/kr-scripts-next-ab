@@ -41,3 +41,8 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
 }
+
+// 排除 androidx.profileinstaller，避免其 assets/dexopt 随依赖打进 core 与 app
+configurations.configureEach {
+    exclude(group = "androidx.profileinstaller", module = "profileinstaller")
+}

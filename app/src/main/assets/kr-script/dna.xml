@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<resource dir="file:///android_asset/samples" />
+<resource dir="file:///android_asset/tools" />
+<group title="插件功能">
+    <page config-sh="samples/modun.sh" title="插件功能" desc="本地插件可以使用file.zip2导入">
+        <option type="file" style="fab" suffix="zip2" auto-off="true" reload="true"/>
+    <handler>
+        dna unzip $file $START_DIR/module
+    </handler>
+    </page>
+</group>
+
+<group title="分解菜单">
+    <page config-sh="samples/page-bin.sh" desc="支持本地分解以及云端分解" title="分解bin" />
+
+    <action interruptible="false">
+        <title>分解br</title>
+        <set>dna extract $BR --delete $silence</set>
+        <param name="silence" label="删除源文件" type="checkbox" />
+        <param name="BR" title="请选择BR文件支持多选：" separator="," options-sh="samples/findfile.sh br" desc="识别/sdcard/DNA工程路径下的文件" required="true" multiple="true"/>
+    </action>
+
+    <action interruptible="false">
+        <title>分解dat</title>
+        <set>dna extract $DAT --delete $silence</set>
+        <param name="silence" label="删除源文件" type="checkbox" />
+        <param name="DAT" title="请选择DAT文件支持多选：" separator="," options-sh="samples/findfile.sh dat" desc="识别/sdcard/DNA工程路径下的文件" required="true" multiple="true"/>
+    </action>
+
+    <action interruptible="false">
+        <title>分解img</title>
+        <set>dna extract $IMG --delete $silence</set>
+        <param name="silence" title="是否删除源文件" label="删除源文件" type="checkbox" />
+        <param name="IMG" title="请选择IMG文件支持多选：" separator="," options-sh="samples/findfile.sh img" desc="识别/sdcard/DNA工程路径下的文件，工具自动识别img格式进行分解，分解super时仅提取a分区文件" required="true" multiple="true"/>
+    </action>
+
+    <action interruptible="false">
+        <title>分解super</title>
+        <set>dna lpunpack --partition "$img" --delete $silence --auto $auto $DNA_PRO/super.img</set>
+        <param name="silence" label="删除源文件" type="checkbox" />
+        <param name="auto" label="自动分解提取的IMG" type="checkbox" />
+        <param name="img" title="请选择要提取的分区不选将提取所有：" separator="," options-sh="dna lpunpack --list $DNA_PRO/super.img" multiple="true"/>
+        <lock>
+            if [[ -f $DNA_PRO/super.img ]]; then
+                echo 'unlocked'
+            else
+                echo '未发现：super.img'
+            fi
+        </lock>
+    </action>
+</group>
+
+<group title="合成菜单">
+    <action interruptible="false">
+        <title>合成img-dat-br</title>
+        <set>dna repack $IMG_DIR --read $Read --auto $Pack --format $img_type --type $repack_from --br $brze --erofs $erofsze --mode $type --compress $test --delavb $test1 --convert $tool</set>
+        <param name="IMG_DIR" options-sh="samples/findfile.sh dir" desc="支持多个打包，工具自动识别镜像格式打包" separator="," required="true" multiple="true"/>
+        <param name="tool" label="打包方式" value="1">
+             <option value="0"> ext4 </option>
+             <option value="1"> erofs </option>
+             <option value="2"> f2fs </option>
+        </param>
+        <param name="Read" label="分区读写" desc="注：仅打包ext4时生效" value="1">
+             <option value="1">读写---rw</option>
+             <option value="0">只读---ro</option>
+        </param>
+        <param name="Pack" label="打包大小" desc="注：仅打包ext4时生效" value="1">
+             <option value="1" >自动计算大小</option>
+             <option value="0" >原img大小</option>
+        </param>
+        <param name="img_type" label="打包格式" desc="注：仅打包ext4,erofs时生效" value="0">
+             <option value="0" >卡刷格式---raw</option>
+             <option value="1" >线刷格式---sparse</option>
+        </param>
+        <param name="repack_from" label="打包类型" desc="注：仅打包ext4,erofs时生效" value="0">
+             <option value="0" >IMG</option>
+             <option value="1" >DAT</option>
+             <option value="2" >BR</option>
+        </param>
+        <param name="brze" label="br压缩等级" value="3" desc="注：仅打包到br时生效，数字越大打包越慢" type="seekbar" max="7" min="1"/>
+        <param name="erofsze" label="erofs-f2fs压缩等级" value="8" desc="注：仅打包erofs-f2fs时生效"  type="seekbar" max="9" min="0"/>
+        <param name="type" label="erofs压缩方式" desc="注：仅打包erofs时生效" value="lz4hc">
+             <option value="lz4hc" >lz4hc</option>
+             <option value="lz4" >lz4</option>
+             <option value="lzma" >lzma</option>
+        </param>
+        <param name="test" label="压缩ext4镜像空间" desc="注：该开关仅ext4镜像打包生效" type="switch" />
+        <param name="test1" label="去除avb,data加密" desc="注：该开关打开将修改fstab文件，可能不通用造成不开机" type="switch" />
+    </action>
+
+    <action interruptible="false">
+        <title>合成super.img</title>
+        <set>dna lpmake --type $type --format $from --super_size $size --super_group $super_group $IMG_NAME</set>
+        <param name="type" label="打包类型" value="A">
+             <option value="A"> a_only</option>
+             <option value="AB"> ab</option>
+             <option value="VAB"> virtual_ab</option>
+        </param>
+        <param name="from" label="打包格式" value="0">
+             <option value="1"> sparse </option>
+             <option value="0"> raw </option>
+        </param>
+        <param name="size" required="true" value="8.5" label="super.img总大小" desc="以G为单位填 默认8.5G" type="number"/>
+        <param name="super_group" required="true" value="qti_dynamic_partitions" label="动态分区簇名" desc="不知道的就用默认的吧" />
+        <param name="IMG_NAME" title="请选择要打包的IMG文件：" options-sh="samples/findfile.sh img" desc="识别/sdcard/DNA工程路径下的文件" separator="," required="true" multiple="true"/>
+    </action>
+</group>
+
+<group title="格式转换">
+    <action interruptible="false">
+        <title>img-simg互转</title>
+        <set>samples/img_ov_simg.sh</set>
+        <param name="IMG" title="请选择IMG文件支持多选：" separator=" " options-sh="samples/findfile.sh img" desc="识别/sdcard/DNA工程路径下的文件" required="true" multiple="true"/>
+    </action>
+
+    <action interruptible="false">
+        <title>img-dat-br转换</title>
+        <set>dna convert $IMG --delete $silence --type $from --br $brze</set>
+        <param name="silence" title="是否删除源文件" label="删除源文件" type="checkbox" />
+        <param name="from" label="转换类型" >
+             <option value="0" >DAT</option>
+             <option value="1" >BR</option>
+        </param>
+        <param name="brze" required="true" value="3" label="BR压缩等级" desc="注：数字越大压缩越慢，自行决定！" type="seekbar" max="7" min="1"/>
+        <param name="IMG" title="请选择IMG文件支持多选：" separator="," options-sh="samples/findfile.sh img" desc="识别/sdcard/DNA工程路径下的文件" required="true" multiple="true"/>
+    </action>
+
+    <action interruptible="false">
+        <title>zst-img互转</title>
+        <set>$START_DIR/samples/zstd_img.sh</set>
+        <param name="silence" label="删除源文件" type="checkbox" />
+        <param name="ZST" title="请选择文件:" 
+           options-sh="samples/findfile.sh zst_img" 
+           desc="识别/sdcard/DNA工程路径下的文件" 
+           required="true" multiple="true"/>
+        <param name="level" required="true" value="3" label="ZSTD压缩等级" desc="注：数字越大压缩越慢，自行决定！" type="seekbar" max="19" min="0"/>
+    </action>
+
+    <action>
+        <title>合并Sparse分段</title>
+        <set>$START_DIR/samples/merge_superchunk.sh</set>
+        <desc>将分段IMG合并为IMG</desc>
+        <param name="IMG" title="请选择分段IMG文件" 
+            options-sh="samples/findfile.sh split_sparse" 
+            desc="识别/sdcard/DNA工程路径下的文件" 
+            required="true" multiple="true"/>
+    </action>
+</group>
