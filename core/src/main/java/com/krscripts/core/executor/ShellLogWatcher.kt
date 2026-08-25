@@ -23,38 +23,36 @@ object ShellLogWatcher {
             val reader = stream.bufferedReader()
             try {
                 val buf = StringBuilder()
+                // flush：把当前累积的行发给上层。普通行以换行(\n)提交；\r 刷新行不带换行，供覆盖当前行。
+                fun flush(withNewline: Boolean) {
+                    if (buf.isEmpty() && !withNewline) return
+                    val line = buf.toString()
+                    buf.setLength(0)
+                    onLine(shellTranslation.resolveRow(if (withNewline) line + "\n" else line))
+                }
                 while (true) {
                     val ch = reader.read()
                     if (ch == -1) break
                     when (val c = ch.toChar()) {
-                        '\n' -> {
-                            if (buf.isNotEmpty()) {
-                                onLine(shellTranslation.resolveRow(buf.toString()))
-                                buf.setLength(0)
-                            }
-                        }
+                        '\n' -> flush(true)
+                        // \r\n 是换行；单独的 \r 是回车刷新——遇到即把当前行发出去覆盖，
+                        // 从而让进度百分比逐段刷新（1%、2%、…、100%）
                         '\r' -> {
-                            // \r\n 是换行；单独的 \r 是回车刷新（需保留到文本中）
                             reader.mark(1)
                             val next = reader.read()
                             if (next == -1) {
-                                // 行尾为 \r，直接结束
+                                flush(false)
                             } else if (next.toChar() == '\n') {
-                                if (buf.isNotEmpty()) {
-                                    onLine(shellTranslation.resolveRow(buf.toString()))
-                                    buf.setLength(0)
-                                }
+                                flush(true)
                             } else {
                                 reader.reset()
-                                buf.append('\r')
+                                flush(false)
                             }
                         }
                         else -> buf.append(c)
                     }
                 }
-                if (buf.isNotEmpty()) {
-                    onLine(shellTranslation.resolveRow(buf.toString()))
-                }
+                flush(false)
             } catch (e: Exception) {
                 e.printStackTrace()
             }
