@@ -7,6 +7,7 @@ import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
 import android.view.View
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.krscripts.core.R
@@ -121,6 +122,8 @@ class DialogHelper {
             dialog.setCanceledOnTouchOutside(cancelable)
 
             dialog.show()
+
+            dialog.findViewById<TextView>(android.R.id.message)?.setTextIsSelectable(true)
 
             if (context is Activity) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {

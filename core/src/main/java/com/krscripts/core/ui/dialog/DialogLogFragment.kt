@@ -27,6 +27,7 @@ import com.krscripts.core.model.RunnableNode
 import com.krscripts.core.shell.ShellEvent
 import com.krscripts.core.shell.ShellEventSource
 import com.krscripts.core.shell.ShellLogType
+import com.krscripts.core.util.AnsiToSpannable
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -222,13 +223,13 @@ class DialogLogFragment : DialogFragment() {
         onDismissRunnable = null
     }
 
-    fun ShellEvent.Log.toLogSpanned(): Spanned = buildSpannedString {
-        val c = when (type) {
+    fun ShellEvent.Log.toLogSpanned(): Spanned {
+        val defaultColor = when (type) {
             ShellLogType.OUTPUT -> colorOutput
             ShellLogType.OUTPUT_ERROR -> colorOutputError
             ShellLogType.INPUT -> colorInput
         }
-        color(c) { append(text + "\n") }
+        return AnsiToSpannable.parse(text + "\n", defaultColor)
     }
 
     companion object {
