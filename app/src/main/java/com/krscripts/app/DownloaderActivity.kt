@@ -17,8 +17,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.krscripts.app.databinding.ActivityDownloaderBinding
 import com.krscripts.core.downloader.Downloader
 import com.krscripts.core.shared.FilePathResolver
-import com.krscripts.core.util.PermissionUtil.checkAccessFiles
-import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
+import com.krscripts.core.util.PermissionUtil
 import java.util.Timer
 import java.util.TimerTask
 import java.util.UUID
@@ -61,9 +60,9 @@ class DownloaderActivity : AppCompatActivity() {
 
         val taskAliasId = taskId ?: UUID.randomUUID().toString()
 
-        if (!checkAccessFiles(this)) {
+        if (!PermissionUtil.checkAccessFiles(this)) {
             downloader.saveTaskStatus(taskAliasId, 0)
-            requestAccessFilesDialog(this)
+            PermissionUtil.requestAccessFilesDialog(this)
         } else {
             val downloadId = downloader.download(url, null, null, taskAliasId)
             if (downloadId != null) {
@@ -72,6 +71,23 @@ class DownloaderActivity : AppCompatActivity() {
                 watchDownloadProgress(downloadId, autoClose, taskAliasId)
             } else {
                 downloader.saveTaskStatus(taskAliasId, -1)
+            }
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PermissionUtil.REQUEST_CODE_FILE_ACCESS && PermissionUtil.checkAccessFiles(this)) {
+            intent.extras?.let {
+                initDownload(
+                    it.getString("downloadUrl")!!,
+                    it.getString("taskId"),
+                    it.getBoolean("autoClose")
+                )
             }
         }
     }

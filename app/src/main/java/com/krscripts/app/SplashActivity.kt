@@ -9,7 +9,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
@@ -19,8 +18,7 @@ import com.krscripts.core.executor.ScriptEnvironment
 import com.krscripts.core.shell.KeepShellPublic
 import com.krscripts.core.shell.ShellExecutor
 import com.krscripts.core.ui.dialog.DialogHelper
-import com.krscripts.core.util.PermissionUtil.checkAccessFiles
-import com.krscripts.core.util.PermissionUtil.requestAccessFilesDialog
+import com.krscripts.core.util.PermissionUtil
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -36,9 +34,7 @@ class SplashActivity : AppCompatActivity() {
     lateinit var binding: ActivitySplashBinding
     private var logs = ArrayList<String>()
     private var isRoot: Boolean? = null
-    private val manageFileRequester = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-        checkFileManage { startToFinish() }
-    }
+    private var pendingNext: (() -> Unit)? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,12 +67,29 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun checkFileManage(next: () -> Unit) {
-        if (!checkAccessFiles(this)) {
-            requestAccessFilesDialog(this@SplashActivity, manageFileRequester) {
+        if (!PermissionUtil.checkAccessFiles(this)) {
+            pendingNext = next
+            PermissionUtil.requestAccessFilesDialog(this@SplashActivity) {
                 next()
             }
         } else {
             next()
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == PermissionUtil.REQUEST_CODE_FILE_ACCESS) {
+            if (PermissionUtil.checkAccessFiles(this)) {
+                pendingNext?.invoke()
+            } else {
+                finish()
+            }
+            pendingNext = null
         }
     }
 
