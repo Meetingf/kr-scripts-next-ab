@@ -39,8 +39,7 @@ class SingleSelectRender(
             }
 
             val initialIndex = getParamOptionsCurrentIndex(actionParamInfo, options)
-            val initialOption =
-                options.getOrNull(if (initialIndex > -1 && initialIndex < options.size) initialIndex else 0)
+            val initialOption = options.getOrNull(initialIndex)
 
             initialOption?.let {
                 setText(initialOption.title, false)
