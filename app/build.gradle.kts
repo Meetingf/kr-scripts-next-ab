@@ -5,11 +5,12 @@ plugins {
 import java.util.Properties
 
 // 从 local.properties（已 gitignore）读取 release 签名配置，避免密钥入库
+// 无 local.properties（如 CI）时回退到仓库内的 AOSP testkey（公开密钥，仅用于对上系统 signature 权限）
 val releaseProps = Properties().apply {
     val f = rootProject.file("local.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
-val keystorePath = releaseProps.getProperty("RELEASE_STORE_FILE", "keystore/release.jks")
+val keystorePath = releaseProps.getProperty("RELEASE_STORE_FILE", "keystore/testkey/testkey.p12")
 val keystorePass = releaseProps.getProperty("RELEASE_STORE_PASSWORD", "android")
 val releaseKeyAlias = releaseProps.getProperty("RELEASE_KEY_ALIAS", "android")
 val keyPass = releaseProps.getProperty("RELEASE_KEY_PASSWORD", "android")
