@@ -20,6 +20,11 @@ android {
         version = release(37)
     }
 
+    lint {
+        // targetSdk 有意保持 28（非上架 Play Store），禁用“要求 targetSdk>=33”的 lint 检查，避免 CI 的 lintVital 失败
+        disable += "ExpiredTargetSdkVersion"
+    }
+
     defaultConfig {
         applicationId = "com.dna.tools"
         minSdk = 23
