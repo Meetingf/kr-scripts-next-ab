@@ -32,7 +32,7 @@ class ActivityFileSelector : AppCompatActivity() {
 
     private lateinit var binding: ActivityFileSelectorBinding
 
-    private val manageFileRequester = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    private val permissionRequester = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         loadData()
     }
 
@@ -117,7 +117,7 @@ class ActivityFileSelector : AppCompatActivity() {
                 binding.fileSelectorList.adapter = adapterFileSelector
             }
         } else {
-            requestAccessFilesDialog(this, manageFileRequester) {
+            requestAccessFilesDialog(this, permissionRequester) {
                 this.finish()
             }
         }

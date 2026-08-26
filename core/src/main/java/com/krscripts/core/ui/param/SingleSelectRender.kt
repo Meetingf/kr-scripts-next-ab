@@ -51,15 +51,17 @@ class SingleSelectRender(
                 setOnClickListener {
                     openSingleSelectDialog { index ->
                         val selectedItem = options[index]
-                        setText(selectedItem.title, false)
                         selectedValue = selectedItem.value
+                        setText(selectedItem.title, false)
                     }
                 }
                 inputLayout.endIconMode = TextInputLayout.END_ICON_CUSTOM
                 inputLayout.setEndIconDrawable(R.drawable.baseline_chevron_right_24)
             } else {
                 setOnItemClickListener { _, _, position, _ ->
-                    selectedValue = options[position].value
+                    val selectedItem = options[position]
+                    selectedValue = selectedItem.value
+                    setText(selectedItem.title, false)
                 }
 
                 val adapter = ArrayAdapter(

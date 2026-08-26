@@ -36,7 +36,7 @@ class SplashActivity : AppCompatActivity() {
     lateinit var binding: ActivitySplashBinding
     private var logs = ArrayList<String>()
     private var isRoot: Boolean? = null
-    private val manageFileRequester = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+    private val permissionRequester = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
         checkFileManage { startToFinish() }
     }
 
@@ -72,7 +72,7 @@ class SplashActivity : AppCompatActivity() {
 
     private fun checkFileManage(next: () -> Unit) {
         if (!checkAccessFiles(this)) {
-            requestAccessFilesDialog(this@SplashActivity, manageFileRequester) {
+            requestAccessFilesDialog(this@SplashActivity, permissionRequester) {
                 next()
             }
         } else {

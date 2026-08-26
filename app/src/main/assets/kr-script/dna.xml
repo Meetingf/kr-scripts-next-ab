@@ -60,31 +60,31 @@
              <option value="1"> erofs </option>
              <option value="2"> f2fs </option>
         </param>
-        <param name="Read" label="分区读写" desc="注：仅打包ext4时生效" value="1">
+        <param name="Read" label="分区读写" desc="注：仅打包ext4时生效" value="1" depend-on="tool" depend-value="0">
              <option value="1">读写---rw</option>
              <option value="0">只读---ro</option>
         </param>
-        <param name="Pack" label="打包大小" desc="注：仅打包ext4时生效" value="1">
+        <param name="Pack" label="打包大小" desc="注：仅打包ext4时生效" value="1" depend-on="tool" depend-value="0">
              <option value="1" >自动计算大小</option>
              <option value="0" >原img大小</option>
         </param>
-        <param name="img_type" label="打包格式" desc="注：仅打包ext4,erofs时生效" value="0">
+        <param name="img_type" label="打包格式" desc="注：仅打包ext4,erofs时生效" value="0" depend-on="tool" depend-value="0,1">
              <option value="0" >卡刷格式---raw</option>
              <option value="1" >线刷格式---sparse</option>
         </param>
-        <param name="repack_from" label="打包类型" desc="注：仅打包ext4,erofs时生效" value="0">
+        <param name="repack_from" label="打包类型" desc="注：仅打包ext4,erofs时生效" value="0" depend-on="tool" depend-value="0,1">
              <option value="0" >IMG</option>
              <option value="1" >DAT</option>
              <option value="2" >BR</option>
         </param>
-        <param name="brze" label="br压缩等级" value="3" desc="注：仅打包到br时生效，数字越大打包越慢" type="seekbar" max="7" min="1"/>
-        <param name="erofsze" label="erofs-f2fs压缩等级" value="8" desc="注：仅打包erofs-f2fs时生效"  type="seekbar" max="9" min="0"/>
-        <param name="type" label="erofs压缩方式" desc="注：仅打包erofs时生效" value="lz4hc">
+        <param name="brze" label="br压缩等级" value="3" desc="注：仅打包到br时生效，数字越大打包越慢" type="seekbar" max="7" min="1" depend-on="repack_from" depend-value="0"/>
+        <param name="erofsze" label="erofs-f2fs压缩等级" value="8" desc="注：仅打包erofs-f2fs时生效"  type="seekbar" max="9" min="0" depend-on="tool" depend-value="1,2"/>
+        <param name="type" label="erofs压缩方式" desc="注：仅打包erofs时生效" value="lz4hc" depend-on="tool" depend-value="1">
              <option value="lz4hc" >lz4hc</option>
              <option value="lz4" >lz4</option>
              <option value="lzma" >lzma</option>
         </param>
-        <param name="test" label="压缩ext4镜像空间" desc="注：该开关仅ext4镜像打包生效" type="switch" />
+        <param name="test" label="压缩ext4镜像空间" desc="注：该开关仅ext4镜像打包生效" type="switch" depend-on="tool" depend-value="0"/>
         <param name="test1" label="去除avb,data加密" desc="注：该开关打开将修改fstab文件，可能不通用造成不开机" type="switch" />
     </action>
 

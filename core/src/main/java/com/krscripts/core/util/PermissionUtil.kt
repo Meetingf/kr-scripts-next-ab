@@ -3,10 +3,6 @@ package com.krscripts.core.util
 import android.Manifest
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.os.Build
-import android.os.Environment
-import android.provider.Settings
 import androidx.activity.result.ActivityResultLauncher
 import androidx.core.app.ActivityCompat
 import androidx.core.content.PermissionChecker
@@ -16,31 +12,24 @@ import com.krscripts.core.ui.dialog.DialogHelper
 
 object PermissionUtil {
 
+    private val storagePermissions = arrayOf(
+        Manifest.permission.READ_EXTERNAL_STORAGE,
+        Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    )
+
     fun requestAccessFilesDialog(
         context: Activity,
-        manageFileRequester: ActivityResultLauncher<Intent>? = null,
+        permissionRequester: ActivityResultLauncher<Array<String>>? = null,
         onSkip: () -> Unit = { }
     ) {
         val builder = MaterialAlertDialogBuilder(context)
             .setTitle("权限缺失")
-            .setMessage("请授予文件管理权限")
+            .setMessage("请授予文件读写权限")
             .setPositiveButton("授予") { _, _ ->
-                if (Build.VERSION.SDK_INT >= 30) {
-                    val intent = Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION)
-                    if (manageFileRequester != null)
-                        manageFileRequester.launch(intent)
-                    else {
-                        context.startActivity(intent)
-                    }
+                if (permissionRequester != null) {
+                    permissionRequester.launch(storagePermissions)
                 } else {
-                    ActivityCompat.requestPermissions(
-                        context,
-                        arrayOf(
-                            Manifest.permission.READ_EXTERNAL_STORAGE,
-                            Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                        ),
-                        0x11
-                    )
+                    ActivityCompat.requestPermissions(context, storagePermissions, 0x11)
                 }
             }
             .setNegativeButton(R.string.btn_exit) { _, _ ->
@@ -54,12 +43,8 @@ object PermissionUtil {
     }
 
     fun checkAccessFiles(context: Context): Boolean {
-        return if (Build.VERSION.SDK_INT >= 30) {
-            Environment.isExternalStorageManager()
-        } else {
-            checkPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) &&
-                    checkPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        }
+        return checkPermission(context, Manifest.permission.READ_EXTERNAL_STORAGE) &&
+                checkPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE)
     }
 
     private fun checkPermission(context: Context, permission: String): Boolean {

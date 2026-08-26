@@ -2,6 +2,18 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
+import java.util.Properties
+
+// 从 local.properties（已 gitignore）读取 release 签名配置，避免密钥入库
+val releaseProps = Properties().apply {
+    val f = rootProject.file("local.properties")
+    if (f.exists()) f.inputStream().use { load(it) }
+}
+val keystorePath = releaseProps.getProperty("RELEASE_STORE_FILE", "keystore/release.jks")
+val keystorePass = releaseProps.getProperty("RELEASE_STORE_PASSWORD", "android")
+val releaseKeyAlias = releaseProps.getProperty("RELEASE_KEY_ALIAS", "android")
+val keyPass = releaseProps.getProperty("RELEASE_KEY_PASSWORD", "android")
+
 android {
     namespace = "com.krscripts.app"
     compileSdk {
@@ -11,12 +23,24 @@ android {
     defaultConfig {
         applicationId = "com.dna.tools"
         minSdk = 23
-        targetSdk = 37
-        versionCode = 2
-        versionName = "0.2.0"
+        targetSdk = 28
+        versionCode = 20260825
+        versionName = "260825"
         buildConfigField("String", "FRAMEWORK_VERSION", "\"0.2.0\"")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        create("release") {
+            storeFile = file(keystorePath)
+            storePassword = keystorePass
+            keyAlias = releaseKeyAlias
+            keyPassword = keyPass
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+        }
     }
 
     buildTypes {
@@ -27,7 +51,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
