@@ -77,7 +77,7 @@
              <option value="1" >DAT</option>
              <option value="2" >BR</option>
         </param>
-        <param name="brze" label="br压缩等级" value="3" desc="注：仅打包到br时生效，数字越大打包越慢" type="seekbar" max="7" min="1" depend-on="repack_from" depend-value="0"/>
+        <param name="brze" label="br压缩等级" value="3" desc="注：仅打包到br时生效，数字越大打包越慢" type="seekbar" max="7" min="1" depend-on="repack_from" depend-value="2"/>
         <param name="erofsze" label="erofs-f2fs压缩等级" value="8" desc="注：仅打包erofs-f2fs时生效"  type="seekbar" max="9" min="0" depend-on="tool" depend-value="1,2"/>
         <param name="type" label="erofs压缩方式" desc="注：仅打包erofs时生效" value="lz4hc" depend-on="tool" depend-value="1">
              <option value="lz4hc" >lz4hc</option>
