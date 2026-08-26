@@ -369,6 +369,17 @@ class PageConfigReader {
                 "multiple" -> info.multiple = isTruthy(attrValue, "multiple")
                 "editable" -> info.editable = isTruthy(attrValue, "editable")
                 "separator" -> info.separator = attrValue
+                "depend-on" -> info.dependOn = attrValue
+                "depend-value" -> info.dependValue = attrValue
+                "depend-mode" -> info.dependMode = attrValue
+                "depend-logic" -> info.dependLogic = attrValue
+                "depend-default" -> info.dependDefault = attrValue
+                "depend-initial-state" -> info.dependInitialState = attrValue
+                "depend-negate" -> info.dependNegate = isTruthy(attrValue, "depend-negate")
+                "depend-threshold" -> info.dependThreshold = attrValue.toIntOrNull() ?: -1
+                "depend-include-hidden" -> info.dependIncludeHidden = isTruthy(attrValue, "depend-include-hidden")
+                "depend-cascade" -> info.dependCascade = isTruthy(attrValue, "depend-cascade")
+                "depend-readonly" -> info.dependReadonly = isTruthy(attrValue, "depend-readonly")
             }
         }
     }
