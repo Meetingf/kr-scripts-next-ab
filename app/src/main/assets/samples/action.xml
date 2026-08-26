@@ -89,6 +89,23 @@
             <param name="input_text" placeholder="请输入文本"/>
             <set>echo 可恶</set>
         </action>
+        <action>
+            <title>选项实时显隐</title>
+            <param name="dep" label="控制符" value="0">
+                 <option value="0"> 000 </option>
+                 <option value="1"> 111 </option>
+                 <option value="2"> 222 </option>
+            </param>
+            <param name="test0" label="被控端0" desc="我仅在控制符为”000“时出现" type="switch" depend-on="dep" depend-value="0"/>
+            <param name="test1" label="被控端1" desc="我仅在控制符为”111“时出现" type="switch" depend-on="dep" depend-value="1"/>
+            <param name="test2" label="被控端2" desc="我仅在控制符为”222“时出现" type="switch" depend-on="dep" depend-value="2"/>
+            <set>
+                echo '控制符：' $dep
+				echo '被控端0：' $test0
+				echo '被控端1：' $test1
+				echo '被控端2：' $test2
+            </set>
+        </action>
     </group>
 
     <group title="文件选择">
