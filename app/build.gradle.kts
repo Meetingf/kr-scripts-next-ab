@@ -10,7 +10,6 @@ val releaseProps = Properties().apply {
     val f = rootProject.file("local.properties")
     if (f.exists()) f.inputStream().use { load(it) }
 }
-val keystorePath = releaseProps.getProperty("RELEASE_STORE_FILE", "keystore/testkey/testkey.p12")
 val keystorePass = releaseProps.getProperty("RELEASE_STORE_PASSWORD", "android")
 val releaseKeyAlias = releaseProps.getProperty("RELEASE_KEY_ALIAS", "android")
 val keyPass = releaseProps.getProperty("RELEASE_KEY_PASSWORD", "android")
@@ -34,7 +33,9 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file(keystorePath)
+            // 相对路径一律相对仓库根解析（CI 下无 local.properties 走默认），绝对路径原样使用
+            storeFile = releaseProps.getProperty("RELEASE_STORE_FILE")?.let { file(it) }
+                ?: rootProject.file("keystore/testkey/testkey.p12")
             storePassword = keystorePass
             keyAlias = releaseKeyAlias
             keyPassword = keyPass
