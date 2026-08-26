@@ -25,7 +25,6 @@ class ParamLayoutRender(
 ) {
     private val renderers = mutableListOf<ParamRenderer>()
 
-    // ===== 依赖管理所需状态（移植自 Tool-Tree） =====
     // key = actionParamInfo.name
     private val rowViews = HashMap<String, View>()
     private val valueReaders = HashMap<String, () -> String>()
@@ -251,8 +250,6 @@ class ParamLayoutRender(
         }
         return params
     }
-
-    // ========== 依赖管理实现（移植自 Tool-Tree depend 机制） ==========
 
     private val parenPattern = Regex("\\(([^()]*)\\)")
 
