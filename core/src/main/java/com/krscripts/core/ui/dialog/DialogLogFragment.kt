@@ -44,7 +44,7 @@ class DialogLogFragment : DialogFragment() {
         return MaterialColors.getColor(context,attrIdRes, "Color not found")
     }
     private val colorOutputError by lazy { getMaterialColor(androidx.appcompat.R.attr.colorError) }
-    private val colorOutput by lazy { getMaterialColor(androidx.appcompat.R.attr.colorAccent) }
+    private val colorOutput by lazy { android.graphics.Color.WHITE }
     private val colorInput by lazy { getMaterialColor(androidx.appcompat.R.attr.colorPrimary) }
 
     private val shellEventSource = ShellEventSource()
